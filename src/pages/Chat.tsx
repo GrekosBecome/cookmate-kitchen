@@ -128,28 +128,40 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b p-4 bg-background">
-        <div className="container max-w-2xl mx-auto flex items-center gap-3">
+    <div 
+      className="min-h-screen bg-background flex flex-col"
+      style={{
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
+      }}
+    >
+      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm">
+        <div 
+          className="container max-w-2xl mx-auto px-4 py-3 flex items-center gap-3"
+          style={{
+            paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
+          }}
+        >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate(-1)}
+            className="h-11 w-11 min-h-[44px] min-w-[44px] p-0"
+            aria-label="Go back"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-xl font-bold">Chef Chat 👨‍🍳</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base sm:text-lg font-bold truncate">Chef Chat 👨‍🍳</h1>
             {recipe ? (
-              <p className="text-sm text-muted-foreground italic">Talking about: {recipe.title}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground italic truncate">Talking about: {recipe.title}</p>
             ) : (
-              <p className="text-sm text-muted-foreground italic">Your cooking companion</p>
+              <p className="text-xs sm:text-sm text-muted-foreground italic">Your cooking companion</p>
             )}
           </div>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="container max-w-2xl mx-auto space-y-4">
           {messages.map((message, index) => (
             <div key={index} className="animate-fade-in">
@@ -188,15 +200,21 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="border-t p-4 bg-background">
-        <div className="container max-w-2xl mx-auto space-y-3">
+      {/* Sticky input bar */}
+      <div 
+        className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-30"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
+        }}
+      >
+        <div className="container max-w-2xl mx-auto px-4 py-3 space-y-3">
           <div className="flex gap-2 flex-wrap">
             {quickActions.map((action, idx) => (
               <Button
                 key={action}
                 variant="outline"
                 size="sm"
-                className="text-xs hover:bg-accent/50 transition-all duration-100 animate-fade-in"
+                className="text-[11px] sm:text-xs h-8 sm:h-9 hover:bg-accent/50 transition-all duration-100 animate-fade-in"
                 style={{ animationDelay: `${idx * 50}ms` }}
                 onClick={() => handleQuickAction(action)}
                 disabled={isLoading}
@@ -217,14 +235,15 @@ const Chat = () => {
                 }
               }}
               placeholder="Ask the Chef anything..."
-              className="min-h-[60px] resize-none"
+              className="min-h-[56px] sm:min-h-[60px] resize-none text-sm"
               disabled={isLoading}
             />
             <Button
               onClick={handleSend}
               size="icon"
-              className="h-[60px] w-[60px]"
+              className="h-14 w-14 min-h-[44px] min-w-[44px] flex-shrink-0"
               disabled={isLoading || !input.trim()}
+              aria-label={isLoading ? 'Sending message' : 'Send message'}
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

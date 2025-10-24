@@ -84,21 +84,28 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-2xl mx-auto p-4 space-y-6">
+    <div 
+      className="min-h-screen bg-background pb-20"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+      }}
+    >
+      <div className="container max-w-2xl mx-auto px-4 py-4 space-y-6">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate('/suggestion')}
-          className="gap-2"
+          className="gap-2 h-11 min-h-[44px]"
+          aria-label="Back to suggestions"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back
+          <ArrowLeft className="h-5 w-5" />
+          <span>Back</span>
         </Button>
 
         <header>
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Your preferences, your way
           </p>
         </header>

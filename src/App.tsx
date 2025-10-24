@@ -3,8 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
+import { BottomNav } from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Pantry from "./pages/Pantry";
@@ -18,13 +19,17 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const applyConfidenceDecay = useStore((state) => state.applyConfidenceDecay);
+  const location = useLocation();
 
   useEffect(() => {
     applyConfidenceDecay();
   }, [applyConfidenceDecay]);
 
+  // Hide bottom nav on onboarding and index pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding';
+
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/onboarding" element={<Onboarding />} />
@@ -35,6 +40,15 @@ function AppContent() {
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {!hideBottomNav && <BottomNav />}
+    </>
+  );
+}
+
+function AppWrapper() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
@@ -43,8 +57,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
-      <AppContent />
+      <Sonner 
+        position="top-center"
+        toastOptions={{
+          style: {
+            marginBottom: '80px', // Space for bottom nav
+          },
+        }}
+      />
+      <AppWrapper />
     </TooltipProvider>
   </QueryClientProvider>
 );

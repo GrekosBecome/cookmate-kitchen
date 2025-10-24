@@ -7,14 +7,9 @@ import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ChefHat, ShoppingCart } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { FloatingButtons } from '@/components/FloatingButtons';
 
 const Suggestion = () => {
   const navigate = useNavigate();
@@ -146,27 +141,53 @@ const Suggestion = () => {
   };
 
   const currentRecipe = suggestions[currentIndex];
+  const pendingItems = shoppingState.queue.filter(i => !i.bought);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-2xl mx-auto p-4 space-y-6">
-        <header className="text-center space-y-2 pt-4">
-          <h1 className="text-3xl font-bold">Today's ideas 🍳</h1>
-          <p className="text-muted-foreground">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <header className="text-center space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Today's ideas 🍳</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Chef picked these just for you
           </p>
         </header>
 
+        {/* Shopping reminder card */}
+        {pendingItems.length > 0 && (
+          <Card className="bg-accent/20 border-accent animate-fade-in">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm sm:text-base">Running low on essentials 🛍️</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    {pendingItems.length} {pendingItems.length === 1 ? 'item' : 'items'} waiting on your shopping list
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/pantry?tab=shopping')}
+                  className="flex-shrink-0"
+                >
+                  Show me
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {isPantryStale && (
           <Alert className="animate-fade-in">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="text-sm">
               Pantry last updated {Math.floor((Date.now() - new Date(lastSyncAt).getTime()) / (1000 * 60 * 60 * 24))} days ago — ready for a fresh scan?
             </AlertDescription>
             <Button 
               variant="outline" 
               size="sm" 
-              className="mt-2"
+              className="mt-2 h-9"
               onClick={() => navigate('/pantry')}
             >
               Refresh Pantry
@@ -186,10 +207,10 @@ const Suggestion = () => {
             </div>
           ) : (
             <div className="text-center space-y-4 py-8 animate-fade-in">
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Your fridge is empty — and that's okay. Let's fill it up 🥦
               </p>
-              <Button onClick={handleSimpleEggs} variant="outline">
+              <Button onClick={handleSimpleEggs} variant="outline" className="h-11">
                 Start simple: Eggs & Toast
               </Button>
             </div>
@@ -197,45 +218,13 @@ const Suggestion = () => {
         </div>
 
         {spinCount > 0 && (
-          <p className="text-center text-sm text-muted-foreground animate-fade-in">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground animate-fade-in">
             {spinCount}/2 new ideas shown
           </p>
         )}
-
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={() => navigate('/pantry')}
-          >
-            Manage Pantry
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={() => navigate('/settings')}
-          >
-            Settings
-          </Button>
-        </div>
       </div>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon"
-              onClick={handleOpenChat}
-              className="fixed bottom-24 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-all duration-200 animate-breathe"
-            >
-              <ChefHat className="h-8 w-8" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>Ask the Chef</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <FloatingButtons recipeId={currentRecipe?.id} />
     </div>
   );
 };

@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings as SettingsIcon, Camera, Info } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
+import { Button } from '@/components/ui/button';
 import { ImageUploader } from '@/components/pantry/ImageUploader';
-import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { PantryItemCard } from '@/components/pantry/PantryItemCard';
 import { ManualAddInput } from '@/components/pantry/ManualAddInput';
 import { ShoppingListView } from '@/components/pantry/ShoppingListView';
+import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowLeft, Camera, Info } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FloatingButtons } from '@/components/FloatingButtons';
 import { mockImageDetection } from '@/utils/mockDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type ViewMode = 'list' | 'detect' | 'shopping';
 
@@ -168,14 +169,21 @@ export default function Pantry() {
 
   if (viewMode === 'detect') {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div 
+        className="min-h-screen bg-background flex flex-col pb-28"
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 112px)',
+        }}
+      >
         <div className="flex-1 overflow-auto">
-          <div className="max-w-2xl mx-auto p-6 space-y-6 pb-32">
+          <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold">Detect Ingredients</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Detect Ingredients</h1>
               <Button
                 variant="ghost"
                 onClick={() => setViewMode('list')}
+                className="h-11 min-h-[44px]"
               >
                 Cancel
               </Button>
@@ -183,7 +191,7 @@ export default function Pantry() {
 
             <Alert>
               <Info className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription className="text-sm">
                 Upload 2–3 photos of your fridge or pantry. I'll read the labels and detect ingredients.
               </AlertDescription>
             </Alert>
@@ -195,10 +203,10 @@ export default function Pantry() {
 
             {detectedItems.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-lg sm:text-xl font-semibold">
                   Found {detectedItems.length} ingredients
                 </h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Edit names, quantities, or remove false detections before saving
                 </p>
                 
@@ -218,11 +226,16 @@ export default function Pantry() {
         </div>
 
         {detectedItems.length > 0 && (
-          <div className="sticky bottom-0 border-t bg-card p-4 shadow-lg">
-            <div className="max-w-2xl mx-auto">
+          <div 
+            className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-40"
+            style={{
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
+            }}
+          >
+            <div className="max-w-2xl mx-auto p-4">
               <Button
                 onClick={handleSaveDetected}
-                className="w-full h-14 text-lg font-semibold rounded-full"
+                className="w-full h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold rounded-full"
                 size="lg"
               >
                 Save {detectedItems.length} detected items
@@ -235,122 +248,144 @@ export default function Pantry() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-2xl mx-auto p-6 space-y-6 pb-32">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">My Pantry</h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/settings')}
-            >
-              <SettingsIcon className="h-6 w-6" />
-            </Button>
-          </div>
-
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="list">
-                Pantry ({activeItems.length})
-              </TabsTrigger>
-              <TabsTrigger value="shopping">
-                Shopping ({shoppingState.queue.filter(i => !i.bought).length})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {showStaleWarning && (
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                It's been a while — refresh your pantry with new photos?
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {pantryItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 space-y-6">
-              <div className="bg-muted rounded-full p-8">
-                <Camera className="h-16 w-16 text-muted-foreground" />
-              </div>
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-semibold">Your pantry is empty</h2>
-                <p className="text-muted-foreground max-w-md">
-                  Upload 2–3 fridge photos — I'll read the labels.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Active Items */}
-              {activeItems.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold">
-                    Active ({activeItems.length})
-                  </h2>
-                  <div className="space-y-3">
-                    {activeItems.map(item => (
-                      <PantryItemCard
-                        key={item.id}
-                        item={item}
-                        onToggleUsed={handleToggleUsed}
-                        onRemove={handleRemoveItem}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Used Items */}
-              {usedItems.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold">
-                    Used ({usedItems.length})
-                  </h2>
-                  <div className="space-y-3">
-                    {usedItems.map(item => (
-                      <PantryItemCard
-                        key={item.id}
-                        item={item}
-                        onToggleUsed={handleToggleUsed}
-                        onRemove={handleRemoveItem}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Add manually</h3>
-            <ManualAddInput onAdd={handleManualAdd} />
-          </div>
+    <div 
+      className="min-h-screen bg-background pb-28"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 112px)',
+      }}
+    >
+      <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/suggestion')}
+            className="gap-2 h-11 min-h-[44px]"
+            aria-label="Back to suggestions"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back</span>
+          </Button>
         </div>
+
+        <header className="text-center space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Your Pantry</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {lastSyncAt
+              ? `Last updated ${Math.floor((Date.now() - new Date(lastSyncAt).getTime()) / (1000 * 60 * 60 * 24))} days ago`
+              : 'Start by adding ingredients'}
+          </p>
+        </header>
+
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-11">
+            <TabsTrigger value="list" className="text-sm sm:text-base">
+              Pantry ({activeItems.length})
+            </TabsTrigger>
+            <TabsTrigger value="shopping" className="text-sm sm:text-base">
+              Shopping ({shoppingState.queue.filter(i => !i.bought).length})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {showStaleWarning && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              It's been a while — refresh your pantry with new photos?
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {viewMode === 'shopping' ? (
+          <ShoppingListView
+            shoppingItems={shoppingState.queue}
+            onMarkBought={handleMarkBought}
+            onRemove={handleRemoveShoppingItem}
+          />
+        ) : pantryItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 space-y-6">
+            <div className="bg-muted rounded-full p-8">
+              <Camera className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
+            </div>
+            <div className="text-center space-y-2 px-4">
+              <h2 className="text-xl sm:text-2xl font-semibold">Your pantry is empty</h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md">
+                Upload 2–3 fridge photos — I'll read the labels.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Active Items */}
+            {activeItems.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Active ({activeItems.length})
+                </h2>
+                <div className="space-y-3">
+                  {activeItems.map(item => (
+                    <PantryItemCard
+                      key={item.id}
+                      item={item}
+                      onToggleUsed={handleToggleUsed}
+                      onRemove={handleRemoveItem}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Used Items */}
+            {usedItems.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Used ({usedItems.length})
+                </h2>
+                <div className="space-y-3">
+                  {usedItems.map(item => (
+                    <PantryItemCard
+                      key={item.id}
+                      item={item}
+                      onToggleUsed={handleToggleUsed}
+                      onRemove={handleRemoveItem}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold">Add manually</h3>
+              <ManualAddInput onAdd={handleManualAdd} />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Sticky Action Bar */}
-      <div className="sticky bottom-0 border-t bg-card p-4 shadow-lg">
-        <div className="max-w-2xl mx-auto flex gap-3">
-          <Button
-            onClick={handleStartDetection}
-            className="flex-1 h-14 text-base font-semibold rounded-full"
-            size="lg"
-          >
-            <Camera className="h-5 w-5 mr-2" />
-            Detect from photos
-          </Button>
-          <Button
-            onClick={() => navigate('/suggestion')}
-            variant="outline"
-            className="h-14 px-6 rounded-full"
-            size="lg"
-          >
-            Next
-          </Button>
+      {viewMode === 'list' && (
+        <div 
+          className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-40"
+          style={{
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
+          }}
+        >
+          <div className="max-w-2xl mx-auto p-4 flex gap-3">
+            <Button
+              onClick={handleStartDetection}
+              className="flex-1 h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold rounded-full"
+              size="lg"
+            >
+              <Camera className="h-5 w-5 mr-2" />
+              Detect from photos
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
+
+      <FloatingButtons />
     </div>
   );
 }

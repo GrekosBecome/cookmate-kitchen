@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Clock, Flame, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { FloatingButtons } from '@/components/FloatingButtons';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -139,20 +140,21 @@ const RecipeDetail = () => {
   const totalTime = recipe.steps.reduce((acc, step) => acc + (step.minutes || 0), 0);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="container max-w-2xl mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-background pb-28">
+      <div className="container max-w-2xl mx-auto px-4 py-4 space-y-6">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate('/suggestion')}
-          className="gap-2"
+          className="gap-2 h-11 min-w-[44px] min-h-[44px]"
+          aria-label="Back to suggestions"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back
+          <ArrowLeft className="h-5 w-5" />
+          <span>Back</span>
         </Button>
 
         <header className="space-y-3">
-          <h1 className="text-3xl font-bold">{recipe.title}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">{recipe.title}</h1>
           <div className="flex gap-2 flex-wrap">
             <Badge variant="outline" className="gap-1">
               <Clock className="h-3 w-3" />
@@ -261,34 +263,45 @@ const RecipeDetail = () => {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="container max-w-2xl mx-auto flex gap-3">
+      {/* Sticky bottom CTA bar */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t z-40"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)', // Space for bottom nav
+        }}
+      >
+        <div className="container max-w-2xl mx-auto p-4">
           {!hasMarkedUsed ? (
-            <>
+            <div className="flex gap-3">
               <Button
                 onClick={handleStartCooking}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
+                aria-label="Start cooking"
               >
                 Let's cook
               </Button>
               <Button
                 onClick={handleMarkUsed}
-                className="flex-1"
+                className="flex-1 h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
+                aria-label="Mark as used"
               >
                 Mark as used
               </Button>
-            </>
+            </div>
           ) : (
             <Button
               onClick={() => navigate('/suggestion')}
-              className="w-full"
+              className="w-full h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
+              aria-label="What's next"
             >
               What's next?
             </Button>
           )}
         </div>
       </div>
+
+      <FloatingButtons recipeId={recipe.id} />
     </div>
   );
 };
