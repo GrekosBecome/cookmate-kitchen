@@ -1,7 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Preferences, PantryItem, SuggestionPick, Signal, LearningState } from '@/types';
+import {
+  Preferences,
+  PantryItem,
+  SuggestionPick,
+  Signal,
+  LearningState,
+  UsageEvent,
+  ShoppingState,
+  ShoppingItem,
+  Ingredient,
+} from '@/types';
 import { recordSignal as recordSignalLib, recomputeLearning as recomputeLearningLib } from '@/lib/learning';
+import { updateConfidenceAfterCooking, applyTimeDecay, recalculateShoppingQueue } from '@/lib/shopping';
 
 interface AppState {
   preferences: Preferences | null;
@@ -11,6 +22,8 @@ interface AppState {
   todaysPick: SuggestionPick | null;
   signals: Signal[];
   learning?: LearningState;
+  usageEvents: UsageEvent[];
+  shoppingState: ShoppingState;
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   addPantryItem: (item: PantryItem) => void;
@@ -24,6 +37,15 @@ interface AppState {
   recomputeLearning: () => void;
   resetLearning: () => void;
   consumePantryForRecipe: (ingredientNames: string[]) => number;
+  recordUsageEvent: (event: UsageEvent) => void;
+  applyConfidenceDecay: () => void;
+  regenerateShoppingQueue: () => void;
+  addShoppingItem: (item: Omit<ShoppingItem, 'id' | 'addedAt'>) => void;
+  markShoppingItemBought: (id: string) => void;
+  removeShoppingItem: (id: string) => void;
+  updatePantryConfidenceAfterRecipe: (recipeId: string, recipeName: string, ingredients: Ingredient[]) => void;
+  undoLastUsageEvent: () => void;
+  togglePantryItemFavorite: (id: string) => void;
   reset: () => void;
 }
 
@@ -67,7 +89,7 @@ const mergePantryItems = (existing: PantryItem[], newItems: PantryItem[]): Pantr
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       preferences: null,
       pantryItems: [],
       lastSyncAt: undefined,
@@ -75,6 +97,8 @@ export const useStore = create<AppState>()(
       todaysPick: null,
       signals: [],
       learning: undefined,
+      usageEvents: [],
+      shoppingState: { queue: [], lastGenerated: undefined },
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -145,6 +169,145 @@ export const useStore = create<AppState>()(
         });
         return consumedCount;
       },
+      recordUsageEvent: (event: UsageEvent) => {
+        set((state) => {
+          const updated = [...state.usageEvents, event];
+          return {
+            usageEvents: updated.slice(-500),
+          };
+        });
+      },
+      applyConfidenceDecay: () => {
+        set((state) => {
+          const now = new Date();
+          const decayedItems = state.pantryItems.map((item) => ({
+            ...item,
+            confidence: applyTimeDecay(item, now),
+          }));
+          return { pantryItems: decayedItems };
+        });
+        get().regenerateShoppingQueue();
+      },
+      regenerateShoppingQueue: () => {
+        set((state) => {
+          const newQueue = recalculateShoppingQueue(
+            state.pantryItems,
+            state.shoppingState.queue
+          );
+          return {
+            shoppingState: {
+              queue: newQueue,
+              lastGenerated: new Date().toISOString(),
+            },
+          };
+        });
+      },
+      addShoppingItem: (item) => {
+        set((state) => ({
+          shoppingState: {
+            ...state.shoppingState,
+            queue: [
+              ...state.shoppingState.queue,
+              {
+                ...item,
+                id: `shop-${Date.now()}-${Math.random()}`,
+                addedAt: new Date().toISOString(),
+              },
+            ],
+          },
+        }));
+      },
+      markShoppingItemBought: (id: string) => {
+        set((state) => ({
+          shoppingState: {
+            ...state.shoppingState,
+            queue: state.shoppingState.queue.map((item) =>
+              item.id === id ? { ...item, bought: true } : item
+            ),
+          },
+        }));
+      },
+      removeShoppingItem: (id: string) => {
+        set((state) => ({
+          shoppingState: {
+            ...state.shoppingState,
+            queue: state.shoppingState.queue.filter((item) => item.id !== id),
+          },
+        }));
+      },
+      updatePantryConfidenceAfterRecipe: (recipeId: string, recipeName: string, ingredients: Ingredient[]) => {
+        set((state) => {
+          const now = new Date().toISOString();
+          const updatedItems = state.pantryItems.map((item) => {
+            const usedIngredient = ingredients.find(
+              (ing) =>
+                !ing.optional &&
+                (ing.pantryName || ing.name).toLowerCase() === item.name.toLowerCase()
+            );
+
+            if (usedIngredient) {
+              return {
+                ...item,
+                confidence: updateConfidenceAfterCooking(
+                  item,
+                  true,
+                  usedIngredient.qty
+                ),
+                lastUsed: now,
+              };
+            }
+            return item;
+          });
+
+          return { pantryItems: updatedItems };
+        });
+        get().regenerateShoppingQueue();
+      },
+      undoLastUsageEvent: () => {
+        set((state) => {
+          if (state.usageEvents.length === 0) return state;
+
+          const lastEvent = state.usageEvents[state.usageEvents.length - 1];
+
+          const revertedItems = state.pantryItems.map((item) => {
+            const wasUsed = lastEvent.ingredients.some(
+              (ing) => ing.name.toLowerCase() === item.name.toLowerCase()
+            );
+
+            if (wasUsed && item.lastUsed === lastEvent.ts) {
+              return {
+                ...item,
+                confidence: Math.min(100, (item.confidence ?? 0) + 25),
+                lastUsed: undefined,
+              };
+            }
+            return item;
+          });
+
+          const eventTime = new Date(lastEvent.ts).getTime();
+          const filteredQueue = state.shoppingState.queue.filter(
+            (shopItem) =>
+              new Date(shopItem.addedAt).getTime() < eventTime ||
+              !shopItem.autoGenerated
+          );
+
+          return {
+            pantryItems: revertedItems,
+            usageEvents: state.usageEvents.slice(0, -1),
+            shoppingState: {
+              ...state.shoppingState,
+              queue: filteredQueue,
+            },
+          };
+        });
+      },
+      togglePantryItemFavorite: (id: string) => {
+        set((state) => ({
+          pantryItems: state.pantryItems.map((item) =>
+            item.id === id ? { ...item, favorite: !item.favorite } : item
+          ),
+        }));
+      },
       reset: () =>
         set({
           preferences: null,
@@ -154,6 +317,8 @@ export const useStore = create<AppState>()(
           todaysPick: null,
           signals: [],
           learning: undefined,
+          usageEvents: [],
+          shoppingState: { queue: [], lastGenerated: undefined },
         }),
     }),
     {

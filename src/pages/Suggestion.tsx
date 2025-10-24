@@ -5,8 +5,9 @@ import { getSuggestions } from '@/utils/suggestionEngine';
 import { Recipe } from '@/types';
 import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ChefHat } from 'lucide-react';
+import { AlertCircle, ChefHat, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Tooltip,
@@ -18,7 +19,7 @@ import {
 const Suggestion = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { preferences, pantryItems, todaysPick, setTodaysPick, addSignal, lastSyncAt, learning, recomputeLearning } = useStore();
+  const { preferences, pantryItems, todaysPick, setTodaysPick, addSignal, lastSyncAt, learning, recomputeLearning, shoppingState } = useStore();
   
   const [suggestions, setSuggestions] = useState<Recipe[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);

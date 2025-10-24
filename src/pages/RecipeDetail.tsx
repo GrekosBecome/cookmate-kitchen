@@ -8,13 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Clock, Flame, ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const RecipeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { consumePantryForRecipe, addSignal } = useStore();
+  const {
+    consumePantryForRecipe,
+    addSignal,
+    recordUsageEvent,
+    updatePantryConfidenceAfterRecipe,
+    undoLastUsageEvent,
+    shoppingState,
+  } = useStore();
   
   const recipe = RECIPE_CATALOG.find(r => r.id === id);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
@@ -59,28 +65,71 @@ const RecipeDetail = () => {
   };
 
   const handleMarkUsed = () => {
+    const now = new Date().toISOString();
+
+    // Create usage event
+    const usageEvent = {
+      ts: now,
+      recipeId: recipe.id,
+      recipeName: recipe.title,
+      ingredients: recipe.ingredients
+        .filter((ing) => !ing.optional)
+        .map((ing) => ({
+          name: ing.pantryName || ing.name,
+          qty: ing.qty,
+          unit: ing.unit,
+        })),
+    };
+
+    // Record usage and update confidence
+    recordUsageEvent(usageEvent);
+    updatePantryConfidenceAfterRecipe(recipe.id, recipe.title, recipe.ingredients);
+
+    // Consume pantry items (mark as used)
     const ingredientNames = recipe.ingredients
-      .filter(ing => !ing.optional)
-      .map(ing => ing.pantryName || ing.name);
-    
-    const consumedCount = consumePantryForRecipe(ingredientNames);
-    
-    setHasMarkedUsed(true);
-    
+      .filter((ing) => !ing.optional)
+      .map((ing) => ing.pantryName || ing.name);
+
+    consumePantryForRecipe(ingredientNames);
+
+    // Add learning signal
     addSignal({
-      ts: new Date().toISOString(),
+      ts: now,
       type: 'accepted',
       recipeId: recipe.id,
       tags: recipe.tags,
       needs: recipe.needs,
     });
 
-    toast({
-      title: "Pantry updated! 🎉",
-      description: consumedCount > 0 
-        ? `${consumedCount} items marked as used.`
-        : "Couldn't find matching items — might need a pantry refresh?",
-    });
+    setHasMarkedUsed(true);
+
+    // Check if new shopping items were added
+    const newLowItems = shoppingState.queue.filter(
+      (item) =>
+        !item.bought &&
+        new Date(item.addedAt).getTime() > Date.now() - 5000
+    );
+
+    if (newLowItems.length > 0) {
+      toast.success(`Pantry updated! 🎉 — ${newLowItems.length} items running low`, {
+        action: {
+          label: 'View list',
+          onClick: () => navigate('/pantry?tab=shopping'),
+        },
+        duration: 10000,
+      });
+    } else {
+      toast.success('Pantry updated! 🎉 — Confidence levels adjusted', {
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            undoLastUsageEvent();
+            toast.success('Changes undone');
+          },
+        },
+        duration: 10000,
+      });
+    }
 
     setTimeout(() => {
       navigate('/suggestion');

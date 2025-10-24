@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings as SettingsIcon, Camera, Info } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { ImageUploader } from '@/components/pantry/ImageUploader';
 import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { PantryItemCard } from '@/components/pantry/PantryItemCard';
 import { ManualAddInput } from '@/components/pantry/ManualAddInput';
+import { ShoppingListView } from '@/components/pantry/ShoppingListView';
 import { mockImageDetection } from '@/utils/mockDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-type ViewMode = 'list' | 'detect';
+type ViewMode = 'list' | 'detect' | 'shopping';
 
 export default function Pantry() {
   const navigate = useNavigate();
-  const { pantryItems, lastSyncAt, addPantryItem, addPantryItems, togglePantryItemUsed, removePantryItem } = useStore();
+  const location = useLocation();
+  const {
+    pantryItems,
+    lastSyncAt,
+    addPantryItem,
+    addPantryItems,
+    togglePantryItemUsed,
+    removePantryItem,
+    shoppingState,
+    markShoppingItemBought,
+    removeShoppingItem,
+  } = useStore();
   
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -27,6 +40,15 @@ export default function Pantry() {
   const usedItems = pantryItems.filter(item => item.used);
   const showStaleWarning = lastSyncAt && 
     (Date.now() - new Date(lastSyncAt).getTime()) > 7 * 24 * 60 * 60 * 1000;
+
+  // Check URL params for tab navigation
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'shopping') {
+      setViewMode('shopping');
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (uploadedImages.length > 0 && detectedItems.length === 0) {
@@ -134,6 +156,16 @@ export default function Pantry() {
     }
   };
 
+  const handleMarkBought = (id: string) => {
+    markShoppingItemBought(id);
+    toast.success('Nice! Marked as bought — refresh your pantry when it arrives.');
+  };
+
+  const handleRemoveShoppingItem = (id: string) => {
+    removeShoppingItem(id);
+    toast.success('Removed from shopping list');
+  };
+
   if (viewMode === 'detect') {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -216,6 +248,17 @@ export default function Pantry() {
               <SettingsIcon className="h-6 w-6" />
             </Button>
           </div>
+
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="list">
+                Pantry ({activeItems.length})
+              </TabsTrigger>
+              <TabsTrigger value="shopping">
+                Shopping ({shoppingState.queue.filter(i => !i.bought).length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           {showStaleWarning && (
             <Alert>
