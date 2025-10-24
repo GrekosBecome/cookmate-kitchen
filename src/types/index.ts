@@ -9,12 +9,28 @@ export interface Preferences {
 
 export type DietType = 'Regular' | 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'Keto' | 'Gluten-free';
 
+export type PantryUnit = "pcs" | "g" | "kg" | "ml" | "l" | "tbsp" | "tsp" | "cup";
+
 export interface PantryItem {
   id: string;
   name: string;
-  quantity?: number;
-  unit?: string;
-  addedAt: Date;
+  qty?: number;
+  unit?: PantryUnit;
+  source: "photo" | "manual";
+  confidence?: number;
+  lastSeenAt: string;
+  used?: boolean;
+}
+
+export interface DetectedItem {
+  id: string;
+  name: string;
+  confidence: number;
+}
+
+export interface PantryState {
+  items: PantryItem[];
+  lastSyncAt?: string;
 }
 
 export interface SuggestionPick {
