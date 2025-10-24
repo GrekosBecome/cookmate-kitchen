@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Send, ArrowLeft } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Send, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RECIPE_CATALOG } from '@/data/recipes';
+import { useStore } from '@/store/useStore';
+import { getLLMResponse, ChatMessage } from '@/utils/llmAdapter';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
+interface Message extends ChatMessage {
+  allergenWarning?: string;
 }
 
 const Chat = () => {
@@ -17,9 +18,20 @@ const Chat = () => {
   const [searchParams] = useSearchParams();
   const recipeId = searchParams.get('recipeId');
   const recipe = recipeId ? RECIPE_CATALOG.find(r => r.id === recipeId) : null;
-
+  
+  const { pantryItems, preferences, signals } = useStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     // Initialize messages based on recipe context
@@ -46,38 +58,68 @@ const Chat = () => {
 
   const quickActions = recipe 
     ? [
-        '🧂 Suggest ingredient swap',
-        '⚖️ Scale servings',
-        '⏰ Shorten cook time',
-        '💡 Show a similar recipe',
+        'Suggest ingredient swap',
+        `Scale to ${preferences.servings === 4 ? 2 : 4} servings`,
+        'Shorten cook time',
+        'Show a similar recipe',
       ]
     : [
         'Use my pantry',
         'Scale to 4 servings',
-        'Swap dairy',
-        'Make it vegan',
+        'Suggest swaps',
+        'Quick meal ideas',
       ];
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage = input;
     setInput('');
+    setIsLoading(true);
 
-    setMessages(prev => [
-      ...prev,
-      { role: 'user', content: userMessage },
-      { 
-        role: 'assistant', 
-        content: recipe 
-          ? `Great question about ${recipe.title}! (Real LLM integration will provide personalized cooking advice here)`
-          : 'This is a UI stub. Real LLM integration will be added in Lovable!' 
-      },
-    ]);
+    // Add user message
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+    try {
+      const response = await getLLMResponse({
+        messages: [...messages, { role: 'user', content: userMessage }],
+        pantryItems,
+        preferences,
+        recipe: recipe || undefined,
+        signals,
+      });
+
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: response.content,
+          allergenWarning: response.allergenWarning,
+        },
+      ]);
+    } catch (error) {
+      console.error('Error getting response:', error);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Sorry, I had trouble processing that. Could you try again? 🤔',
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickAction = (action: string) => {
+    if (isLoading) return;
     setInput(action);
+    // Auto-send after a short delay to give user a chance to modify
+    setTimeout(() => {
+      if (action === input) {
+        handleSend();
+      }
+    }, 100);
   };
 
   return (
@@ -105,15 +147,31 @@ const Chat = () => {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="container max-w-2xl mx-auto space-y-4">
           {messages.map((message, index) => (
-            <Card
-              key={index}
-              className={message.role === 'user' ? 'ml-auto max-w-[85%] bg-primary text-primary-foreground' : 'mr-auto max-w-[85%]'}
-            >
-              <CardContent className="p-4">
-                <p className="text-sm">{message.content}</p>
+            <div key={index}>
+              {message.allergenWarning && (
+                <Alert className="mb-2 border-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{message.allergenWarning}</AlertDescription>
+                </Alert>
+              )}
+              <Card
+                className={message.role === 'user' ? 'ml-auto max-w-[85%] bg-primary text-primary-foreground' : 'mr-auto max-w-[85%]'}
+              >
+                <CardContent className="p-4">
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+          {isLoading && (
+            <Card className="mr-auto max-w-[85%]">
+              <CardContent className="p-4 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <p className="text-sm text-muted-foreground">Chef is thinking...</p>
               </CardContent>
             </Card>
-          ))}
+          )}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
@@ -127,6 +185,7 @@ const Chat = () => {
                 size="sm"
                 className="text-xs hover:bg-accent transition-colors"
                 onClick={() => handleQuickAction(action)}
+                disabled={isLoading}
               >
                 {action}
               </Button>
@@ -145,13 +204,19 @@ const Chat = () => {
               }}
               placeholder="Ask the Chef anything..."
               className="min-h-[60px] resize-none"
+              disabled={isLoading}
             />
             <Button
               onClick={handleSend}
               size="icon"
               className="h-[60px] w-[60px]"
+              disabled={isLoading || !input.trim()}
             >
-              <Send className="h-5 w-5" />
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
