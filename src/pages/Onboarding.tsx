@@ -5,7 +5,7 @@ import { Step1Diet } from './onboarding/Step1Diet';
 import { Step2Restrictions } from './onboarding/Step2Restrictions';
 import { Step3Notifications } from './onboarding/Step3Notifications';
 import { useStore, defaultPreferences } from '@/store/useStore';
-import { DietType, Preferences } from '@/types';
+import { Preferences } from '@/types';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ export default function Onboarding() {
       {currentStep === 0 && (
         <Step1Diet
           selectedDiet={formData.diet}
-          onSelectDiet={(diet: DietType) => updateFormData({ diet })}
+          onSelectDiet={(diet: Preferences['diet']) => updateFormData({ diet })}
         />
       )}
       {currentStep === 1 && (

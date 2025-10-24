@@ -1,5 +1,7 @@
 import { SelectableChip } from '@/components/SelectableChip';
-import { DietType } from '@/types';
+import { Preferences } from '@/types';
+
+type DietType = Preferences['diet'];
 
 interface Step1DietProps {
   selectedDiet: DietType;
