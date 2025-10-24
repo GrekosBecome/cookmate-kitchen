@@ -20,7 +20,7 @@ const Chat = () => {
   const recipeId = searchParams.get('recipeId');
   const recipe = recipeId ? RECIPE_CATALOG.find(r => r.id === recipeId) : null;
   
-  const { pantryItems, preferences, signals } = useStore();
+  const { pantryItems, preferences, signals, shoppingState } = useStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +57,8 @@ const Chat = () => {
     }
   }, [recipe]);
 
+  const hasShoppingItems = shoppingState.queue.filter(i => !i.bought).length > 0;
+
   const quickActions = recipe 
     ? [
         'Suggest ingredient swap',
@@ -68,6 +70,7 @@ const Chat = () => {
         'Use my pantry',
         'Scale to 4 servings',
         'Suggest swaps',
+        ...(hasShoppingItems ? ['What should I buy?'] : []),
         'Quick meal ideas',
       ];
 
@@ -88,6 +91,7 @@ const Chat = () => {
         preferences,
         recipe: recipe || undefined,
         signals: signals.filter((s): s is Required<Signal> => !!s.recipeId).map(s => ({ type: s.type, recipeId: s.recipeId })),
+        shoppingState,
       });
 
       setMessages(prev => [

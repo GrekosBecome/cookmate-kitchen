@@ -1,4 +1,4 @@
-import { PantryItem, Preferences, Recipe } from '@/types';
+import { PantryItem, Preferences, Recipe, ShoppingState } from '@/types';
 import { allergenCheck, buildContextMessage, proposeSubstitutions, scaleServings } from './chatTools';
 
 const SYSTEM_PROMPT = `You are CookMate — a warm, concise cooking copilot.
@@ -31,6 +31,7 @@ export interface LLMRequest {
   preferences: Preferences;
   recipe?: Recipe;
   signals?: Array<{ type: string; recipeId: string }>;
+  shoppingState?: ShoppingState;
 }
 
 export interface LLMResponse {
@@ -192,7 +193,8 @@ const callOpenAI = async (request: LLMRequest): Promise<LLMResponse> => {
       request.pantryItems,
       request.preferences,
       request.recipe,
-      request.signals
+      request.signals,
+      request.shoppingState
     );
     
     const messages = [

@@ -1,4 +1,4 @@
-import { PantryItem, Preferences, Recipe, Ingredient } from '@/types';
+import { PantryItem, Preferences, Recipe, Ingredient, ShoppingState } from '@/types';
 
 export interface ScaledIngredient extends Ingredient {
   originalQty?: number;
@@ -175,11 +175,20 @@ export const allergenCheck = (
   return { safe, conflicts, warning };
 };
 
+export const getShoppingContext = (shoppingState: ShoppingState): string => {
+  const pending = shoppingState.queue.filter(i => !i.bought);
+  if (pending.length === 0) return '';
+  
+  const items = pending.map(i => `${i.name} (${i.reason === 'used_up' ? 'used up' : 'running low'})`).join(', ');
+  return `Shopping list: ${items}`;
+};
+
 export const buildContextMessage = (
   pantryItems: PantryItem[],
   preferences: Preferences,
   recipe?: Recipe,
-  signals?: Array<{ type: string; recipeId: string }>
+  signals?: Array<{ type: string; recipeId: string }>,
+  shoppingState?: ShoppingState
 ): string => {
   const activePantry = pantryItems.filter(p => !p.used).slice(0, 40);
   
@@ -200,6 +209,13 @@ export const buildContextMessage = (
     const liked = signals.filter(s => s.type === 'accepted').map(s => s.recipeId);
     const skipped = signals.filter(s => s.type === 'skip').map(s => s.recipeId);
     context += `Signals summary: { liked: ${liked.length} recipes, skipped: ${skipped.length} recipes }\n`;
+  }
+  
+  if (shoppingState) {
+    const shoppingContext = getShoppingContext(shoppingState);
+    if (shoppingContext) {
+      context += `${shoppingContext}\n`;
+    }
   }
   
   context += `User locale: en\n`;
