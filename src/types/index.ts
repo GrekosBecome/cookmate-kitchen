@@ -1,22 +1,11 @@
-export interface Preferences {
-  diet: DietType;
-  allergies: string[];
-  dislikes: string[];
-  notificationTime: string;
-  notificationDays: string[];
-  servings: number;
-}
-
-export type DietType = 'Regular' | 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'Keto' | 'Gluten-free';
-
-export type PantryUnit = "pcs" | "g" | "kg" | "ml" | "l" | "tbsp" | "tsp" | "cup";
+export type PantryUnit = 'pcs' | 'g' | 'kg' | 'ml' | 'l' | 'tbsp' | 'tsp' | 'cup';
 
 export interface PantryItem {
   id: string;
   name: string;
   qty?: number;
   unit?: PantryUnit;
-  source: "photo" | "manual";
+  source: 'photo' | 'manual';
   confidence?: number;
   lastSeenAt: string;
   used?: boolean;
@@ -28,35 +17,53 @@ export interface DetectedItem {
   confidence: number;
 }
 
-export interface PantryState {
-  items: PantryItem[];
-  lastSyncAt?: string;
+export interface Preferences {
+  diet: 'Regular' | 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'Keto' | 'Gluten-free';
+  allergies: string[];
+  dislikes: string[];
+  notificationTime: string;
+  notificationDays: string[];
+  servings: number;
+  privacyNoStoreImages?: boolean;
 }
 
-export interface SuggestionPick {
-  id: string;
-  title: string;
-  description: string;
-  ingredients: string[];
-  cookTime: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+export interface Ingredient {
+  name: string;
+  qty?: number;
+  unit?: string;
+  optional?: boolean;
+  pantryName?: string;
 }
 
-export interface Signal {
-  type: 'preference' | 'pantry' | 'feedback';
-  data: any;
-  timestamp: Date;
+export interface Step {
+  order: number;
+  text: string;
+  minutes?: number;
 }
 
 export interface Recipe {
   id: string;
   title: string;
-  description: string;
-  ingredients: string[];
-  instructions: string[];
-  cookTime: number;
-  prepTime: number;
-  servings: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  imageUrl?: string;
+  timeMin: number;
+  kcal?: number;
+  tags: string[];
+  allergens?: string[];
+  needs: string[];
+  optional?: string[];
+  ingredients: Ingredient[];
+  steps: Step[];
+  substitutions?: Record<string, string>;
+  healthNote?: string;
+}
+
+export interface SuggestionPick {
+  date: string;
+  recipeIds: string[];
+  indexShown: number;
+}
+
+export interface Signal {
+  type: 'viewed' | 'accepted' | 'another' | 'skip';
+  recipeId: string;
+  timestamp: string;
 }

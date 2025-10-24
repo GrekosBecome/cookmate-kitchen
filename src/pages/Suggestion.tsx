@@ -1,42 +1,191 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Clock, ChefHat } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '@/store/useStore';
+import { getSuggestions } from '@/utils/suggestionEngine';
+import { Recipe } from '@/types';
+import { RecipeCard } from '@/components/recipe/RecipeCard';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-export default function Suggestion() {
+const Suggestion = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { preferences, pantryItems, todaysPick, setTodaysPick, addSignal, lastSyncAt } = useStore();
+  
+  const [suggestions, setSuggestions] = useState<Recipe[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [spinCount, setSpinCount] = useState(0);
+
+  const today = new Date().toISOString().split('T')[0];
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
+
+  useEffect(() => {
+    // Check if we need new suggestions
+    if (!todaysPick || todaysPick.date !== today) {
+      generateSuggestions();
+    } else {
+      // Load cached suggestions
+      const cached = todaysPick.recipeIds.map(id => 
+        getSuggestions(preferences, pantryItems, 12).find(r => r.id === id)
+      ).filter(Boolean) as Recipe[];
+      setSuggestions(cached);
+      setCurrentIndex(todaysPick.indexShown);
+    }
+
+    // Log viewed signal
+    addSignal({
+      type: 'viewed',
+      recipeId: suggestions[currentIndex]?.id || 'none',
+      timestamp: new Date().toISOString(),
+    });
+  }, []);
+
+  const generateSuggestions = () => {
+    const newSuggestions = getSuggestions(preferences, pantryItems, 2);
+    setSuggestions(newSuggestions);
+    setCurrentIndex(0);
+    setSpinCount(0);
+    
+    if (newSuggestions.length > 0) {
+      setTodaysPick({
+        date: today,
+        recipeIds: newSuggestions.map(r => r.id),
+        indexShown: 0,
+      });
+    }
+  };
+
+  const handleAnother = () => {
+    if (spinCount >= 2) {
+      toast({
+        title: "Maximum spins reached",
+        description: "Try refreshing your pantry for more variety!",
+      });
+      return;
+    }
+
+    const current = suggestions[currentIndex];
+    if (current) {
+      addSignal({
+        type: 'another',
+        recipeId: current.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    if (currentIndex < suggestions.length - 1) {
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      setTodaysPick({
+        date: today,
+        recipeIds: suggestions.map(r => r.id),
+        indexShown: newIndex,
+      });
+    } else {
+      generateSuggestions();
+    }
+    
+    setSpinCount(prev => prev + 1);
+  };
+
+  const handleSkip = () => {
+    const current = suggestions[currentIndex];
+    if (current) {
+      addSignal({
+        type: 'skip',
+        recipeId: current.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    toast({
+      title: "Skipped",
+      description: "We'll remember your preference!",
+    });
+
+    handleAnother();
+  };
+
+  const handleSimpleEggs = () => {
+    navigate('/recipe/scrambled-eggs-toast');
+  };
+
+  const currentRecipe = suggestions[currentIndex];
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Today's Suggestions</h1>
-          <Button variant="outline" onClick={() => navigate('/settings')}>
-            Settings
-          </Button>
+    <div className="min-h-screen bg-background">
+      <div className="container max-w-2xl mx-auto p-4 space-y-6">
+        <header className="text-center space-y-2 pt-4">
+          <h1 className="text-3xl font-bold">Today's ideas 🍳</h1>
+          <p className="text-muted-foreground">
+            Based on your pantry and preferences
+          </p>
+        </header>
+
+        {isPantryStale && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              It's been a while — refresh with new photos?
+            </AlertDescription>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => navigate('/pantry')}
+            >
+              Update Pantry
+            </Button>
+          </Alert>
+        )}
+
+        <div className="space-y-4">
+          {currentRecipe ? (
+            <RecipeCard
+              recipe={currentRecipe}
+              onAnother={handleAnother}
+              onSkip={handleSkip}
+            />
+          ) : (
+            <div className="text-center space-y-4 py-8">
+              <p className="text-muted-foreground">
+                No matching recipes found. Add more items to your pantry or try:
+              </p>
+              <Button onClick={handleSimpleEggs} variant="outline">
+                Super simple: Eggs & Toast
+              </Button>
+            </div>
+          )}
         </div>
 
-        <Card className="p-8 space-y-4 text-center">
-          <ChefHat className="h-16 w-16 mx-auto text-primary" />
-          <h2 className="text-2xl font-semibold">Suggestions coming soon!</h2>
-          <p className="text-muted-foreground">
-            We're working on personalized recipe suggestions based on your pantry and preferences.
+        {spinCount > 0 && (
+          <p className="text-center text-sm text-muted-foreground">
+            Spins used: {spinCount}/2
           </p>
-        </Card>
+        )}
 
-        <div className="space-y-3">
-          <Button onClick={() => navigate('/pantry')} className="w-full h-12 rounded-full">
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => navigate('/pantry')}
+          >
             Manage Pantry
           </Button>
-          <Button
-            onClick={() => navigate('/chat')}
-            variant="outline"
-            className="w-full h-12 rounded-full"
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => navigate('/settings')}
           >
-            Chat Assistant
+            Settings
           </Button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Suggestion;

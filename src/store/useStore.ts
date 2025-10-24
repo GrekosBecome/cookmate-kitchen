@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Preferences, PantryItem } from '@/types';
+import { Preferences, PantryItem, SuggestionPick, Signal } from '@/types';
 
 interface AppState {
   preferences: Preferences | null;
   pantryItems: PantryItem[];
   lastSyncAt?: string;
   hasCompletedOnboarding: boolean;
+  todaysPick: SuggestionPick | null;
+  signals: Signal[];
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   addPantryItem: (item: PantryItem) => void;
@@ -15,6 +17,9 @@ interface AppState {
   removePantryItem: (id: string) => void;
   togglePantryItemUsed: (id: string) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
+  setTodaysPick: (pick: SuggestionPick) => void;
+  addSignal: (signal: Signal) => void;
+  consumePantryForRecipe: (ingredientNames: string[]) => number;
   reset: () => void;
 }
 
@@ -63,6 +68,8 @@ export const useStore = create<AppState>()(
       pantryItems: [],
       lastSyncAt: undefined,
       hasCompletedOnboarding: false,
+      todaysPick: null,
+      signals: [],
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -97,12 +104,39 @@ export const useStore = create<AppState>()(
           ),
         })),
       setHasCompletedOnboarding: (value) => set({ hasCompletedOnboarding: value }),
+      setTodaysPick: (pick) => set({ todaysPick: pick }),
+      addSignal: (signal) =>
+        set((state) => ({
+          signals: [...state.signals, signal],
+        })),
+      consumePantryForRecipe: (ingredientNames: string[]) => {
+        let consumedCount = 0;
+        set((state) => {
+          const updatedItems = state.pantryItems.map((item) => {
+            const matchesIngredient = ingredientNames.some(name =>
+              item.name.toLowerCase().includes(name.toLowerCase()) ||
+              name.toLowerCase().includes(item.name.toLowerCase())
+            );
+            
+            if (matchesIngredient && !item.used) {
+              consumedCount++;
+              return { ...item, used: true };
+            }
+            return item;
+          });
+          
+          return { pantryItems: updatedItems };
+        });
+        return consumedCount;
+      },
       reset: () =>
         set({
           preferences: null,
           pantryItems: [],
           lastSyncAt: undefined,
           hasCompletedOnboarding: false,
+          todaysPick: null,
+          signals: [],
         }),
     }),
     {

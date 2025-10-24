@@ -1,86 +1,221 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useStore } from '@/store/useStore';
 import { useNavigate } from 'react-router-dom';
+import { useStore, defaultPreferences } from '@/store/useStore';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { SelectableChip } from '@/components/SelectableChip';
+import { ServingsStepper } from '@/components/ServingsStepper';
 import { ArrowLeft, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
-export default function Settings() {
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const HOURS = Array.from({ length: 4 }, (_, i) => {
+  const hour = 7 + i;
+  return `${hour.toString().padStart(2, '0')}:00`;
+});
+
+const Settings = () => {
   const navigate = useNavigate();
-  const { preferences, reset } = useStore();
+  const { toast } = useToast();
+  const { preferences, updatePreferences, reset } = useStore();
 
-  const handleReset = () => {
-    if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-      reset();
-      navigate('/onboarding');
-    }
+  const currentPrefs = preferences || defaultPreferences;
+
+  const handleDietChange = (diet: string) => {
+    updatePreferences({ diet: diet as any });
+  };
+
+  const handleNotificationTimeChange = (time: string) => {
+    updatePreferences({ notificationTime: time });
+  };
+
+  const toggleDay = (day: string) => {
+    const newDays = currentPrefs.notificationDays.includes(day)
+      ? currentPrefs.notificationDays.filter(d => d !== day)
+      : [...currentPrefs.notificationDays, day];
+    updatePreferences({ notificationDays: newDays });
+  };
+
+  const handleServingsChange = (servings: number) => {
+    updatePreferences({ servings });
+  };
+
+  const handlePrivacyToggle = (checked: boolean) => {
+    updatePreferences({ privacyNoStoreImages: checked });
+  };
+
+  const handleDeleteAllData = () => {
+    reset();
+    toast({
+      title: "All data cleared",
+      description: "Your preferences and pantry have been reset.",
+    });
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-          <h1 className="text-3xl font-bold">Settings</h1>
-        </div>
+    <div className="min-h-screen bg-background">
+      <div className="container max-w-2xl mx-auto p-4 space-y-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/suggestion')}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
 
-        {preferences && (
-          <Card className="p-6 space-y-4">
-            <h2 className="text-xl font-semibold">Your Preferences</h2>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium">Diet:</span> {preferences.diet}
-              </div>
-              {preferences.allergies.length > 0 && (
-                <div>
-                  <span className="font-medium">Allergies:</span>{' '}
-                  {preferences.allergies.join(', ')}
-                </div>
-              )}
-              {preferences.dislikes.length > 0 && (
-                <div>
-                  <span className="font-medium">Dislikes:</span>{' '}
-                  {preferences.dislikes.join(', ')}
-                </div>
-              )}
-              <div>
-                <span className="font-medium">Notifications:</span>{' '}
-                {preferences.notificationTime} on {preferences.notificationDays.join(', ')}
-              </div>
-              <div>
-                <span className="font-medium">Default servings:</span> {preferences.servings}
+        <header>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your preferences and data
+          </p>
+        </header>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Diet Preference</CardTitle>
+            <CardDescription>Choose your dietary style</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 flex-wrap">
+              {['Regular', 'Vegetarian', 'Vegan', 'Pescatarian', 'Keto', 'Gluten-free'].map((diet) => (
+                <SelectableChip
+                  key={diet}
+                  label={diet}
+                  selected={currentPrefs.diet === diet}
+                  onToggle={() => handleDietChange(diet)}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>Daily recipe suggestions</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="time-select">Time</Label>
+              <Select
+                value={currentPrefs.notificationTime}
+                onValueChange={handleNotificationTimeChange}
+              >
+                <SelectTrigger id="time-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {HOURS.map((hour) => (
+                    <SelectItem key={hour} value={hour}>
+                      {hour}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Days</Label>
+              <div className="flex gap-2 flex-wrap mt-2">
+                {DAYS.map((day) => (
+                  <SelectableChip
+                    key={day}
+                    label={day}
+                    selected={currentPrefs.notificationDays.includes(day)}
+                    onToggle={() => toggleDay(day)}
+                  />
+                ))}
               </div>
             </div>
-          </Card>
-        )}
+          </CardContent>
+        </Card>
 
-        <div className="space-y-3 pt-4">
-          <Button
-            onClick={() => navigate('/onboarding')}
-            variant="outline"
-            className="w-full h-12 rounded-full"
-          >
-            Update Preferences
-          </Button>
-          <Button
-            onClick={handleReset}
-            variant="destructive"
-            className="w-full h-12 rounded-full"
-          >
-            <Trash2 className="h-5 w-5 mr-2" />
-            Reset All Data
-          </Button>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Servings</CardTitle>
+            <CardDescription>Default number of servings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ServingsStepper
+              value={currentPrefs.servings}
+              onChange={handleServingsChange}
+            />
+          </CardContent>
+        </Card>
 
-        <div className="text-center text-sm text-muted-foreground pt-4">
-          <p>All data is stored locally on your device.</p>
-          <p>You control your data.</p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Privacy</CardTitle>
+            <CardDescription>Control your data</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Process photos locally</Label>
+                <p className="text-sm text-muted-foreground">
+                  Don't store uploaded images
+                </p>
+              </div>
+              <Switch
+                checked={currentPrefs.privacyNoStoreImages || false}
+                onCheckedChange={handlePrivacyToggle}
+              />
+            </div>
+
+            <Separator />
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Delete all data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all your preferences, pantry items, and signals. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAllData}>
+                    Delete everything
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground text-center">
+              Your data is stored locally on your device. You have full control.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-}
+};
+
+export default Settings;
