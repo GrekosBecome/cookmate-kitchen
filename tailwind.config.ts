@@ -47,6 +47,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chip: {
+          selected: "hsl(var(--chip-selected))",
+          unselected: "hsl(var(--chip-unselected))",
+          "text-selected": "hsl(var(--chip-text-selected))",
+          "text-unselected": "hsl(var(--chip-text-unselected))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
