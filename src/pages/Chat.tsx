@@ -134,12 +134,12 @@ const Chat = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex-1">
+          <div>
             <h1 className="text-xl font-bold">Chef Chat 👨‍🍳</h1>
             {recipe ? (
-              <p className="text-sm text-muted-foreground">About: {recipe.title}</p>
+              <p className="text-sm text-muted-foreground italic">Talking about: {recipe.title}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">Your cooking assistant</p>
+              <p className="text-sm text-muted-foreground italic">Your cooking companion</p>
             )}
           </div>
         </div>
@@ -148,27 +148,35 @@ const Chat = () => {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="container max-w-2xl mx-auto space-y-4">
           {messages.map((message, index) => (
-            <div key={index}>
+            <div key={index} className="animate-fade-in">
               {message.allergenWarning && (
-                <Alert className="mb-2 border-destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{message.allergenWarning}</AlertDescription>
+                <Alert className="mb-2 border-destructive/50 bg-destructive/5">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <AlertDescription className="text-destructive">{message.allergenWarning}</AlertDescription>
                 </Alert>
               )}
               <Card
-                className={message.role === 'user' ? 'ml-auto max-w-[85%] bg-primary text-primary-foreground' : 'mr-auto max-w-[85%]'}
+                className={
+                  message.role === 'user' 
+                    ? 'ml-auto max-w-[85%] bg-primary text-primary-foreground' 
+                    : 'mr-auto max-w-[85%] bg-accent/30'
+                }
               >
                 <CardContent className="p-4">
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                 </CardContent>
               </Card>
             </div>
           ))}
           {isLoading && (
-            <Card className="mr-auto max-w-[85%]">
+            <Card className="mr-auto max-w-[85%] bg-accent/30 animate-fade-in">
               <CardContent className="p-4 flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <p className="text-sm text-muted-foreground">Chef is thinking...</p>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/60 animate-steam" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/60 animate-steam" style={{ animationDelay: '200ms' }}></div>
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/60 animate-steam" style={{ animationDelay: '400ms' }}></div>
+                </div>
+                <p className="text-sm text-muted-foreground italic">Chef is thinking...</p>
               </CardContent>
             </Card>
           )}
@@ -179,12 +187,13 @@ const Chat = () => {
       <div className="border-t p-4 bg-background">
         <div className="container max-w-2xl mx-auto space-y-3">
           <div className="flex gap-2 flex-wrap">
-            {quickActions.map((action) => (
+            {quickActions.map((action, idx) => (
               <Button
                 key={action}
                 variant="outline"
                 size="sm"
-                className="text-xs hover:bg-accent transition-colors"
+                className="text-xs hover:bg-accent/50 transition-all duration-100 animate-fade-in"
+                style={{ animationDelay: `${idx * 50}ms` }}
                 onClick={() => handleQuickAction(action)}
                 disabled={isLoading}
               >

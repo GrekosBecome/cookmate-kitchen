@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Flame, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getWhyThisReasons } from '@/lib/learning';
+import { useState } from 'react';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -17,14 +18,23 @@ interface RecipeCardProps {
 export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true, learning }: RecipeCardProps) => {
   const navigate = useNavigate();
   const whyThisReasons = getWhyThisReasons(recipe.tags, learning);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const topNeeds = recipe.needs.slice(0, 3);
   const isFastRecipe = recipe.timeMin <= 20;
 
+  const handleCookThis = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      navigate(`/recipe/${recipe.id}`);
+    }, 400);
+  };
+
   return (
-    <Card className="overflow-hidden">
+    <Card className={`overflow-hidden ${isAnimating ? 'animate-chef-bounce' : ''}`}>
       <CardHeader className="pb-3">
         <CardTitle className="text-xl">{recipe.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">Ready in {recipe.timeMin} minutes</p>
         <div className="flex gap-2 flex-wrap mt-2">
           <Badge variant="outline" className="gap-1">
             <Clock className="h-3 w-3" />
@@ -66,31 +76,34 @@ export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true, lear
         </div>
 
         {showActions && (
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col gap-2 pt-2">
             <Button 
-              onClick={() => navigate(`/recipe/${recipe.id}`)}
-              className="flex-1"
+              onClick={handleCookThis}
+              className="w-full"
+              size="lg"
             >
-              ✅ Cook this
+              Cook this
             </Button>
-            {onAnother && (
-              <Button 
-                onClick={onAnother}
-                variant="outline"
-                className="flex-1"
-              >
-                🔁 Another
-              </Button>
-            )}
-            {onSkip && (
-              <Button 
-                onClick={onSkip}
-                variant="ghost"
-                size="icon"
-              >
-                👎
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {onAnother && (
+                <Button 
+                  onClick={onAnother}
+                  variant="ghost"
+                  className="flex-1"
+                >
+                  Another idea
+                </Button>
+              )}
+              {onSkip && (
+                <Button 
+                  onClick={onSkip}
+                  variant="ghost"
+                  size="sm"
+                >
+                  Skip
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </CardContent>

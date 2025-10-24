@@ -99,7 +99,7 @@ const Settings = () => {
         <header>
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your preferences and data
+            Your preferences, your way
           </p>
         </header>
 
@@ -179,14 +179,14 @@ const Settings = () => {
         <Card>
           <CardHeader>
             <CardTitle>Privacy</CardTitle>
-            <CardDescription>Control your data</CardDescription>
+            <CardDescription>You're in control</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Process photos locally</Label>
                 <p className="text-sm text-muted-foreground">
-                  Don't store uploaded images
+                  Keep your kitchen private
                 </p>
               </div>
               <Switch
@@ -197,28 +197,30 @@ const Settings = () => {
 
             <Separator />
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  Delete all data
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete all your preferences, pantry items, and signals. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAllData}>
-                    Delete everything
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <div className="space-y-2">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-full gap-2 text-muted-foreground hover:text-destructive hover:border-destructive">
+                    <Trash2 className="h-4 w-4" />
+                    Start fresh
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Start fresh?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This clears your pantry and settings — but not your good taste. You can always rebuild.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep everything</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAllData} className="bg-destructive hover:bg-destructive/90">
+                      Clear all data
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </CardContent>
         </Card>
 
@@ -267,24 +269,41 @@ const Settings = () => {
               </p>
             )}
 
-            <Button
-              variant="outline"
-              onClick={() => setShowResetLearningDialog(true)}
-              className="w-full"
-            >
-              Reset Learning
-            </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowResetLearningDialog(true)}
+                className="w-full hover:bg-muted"
+              >
+                Reset learning
+              </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground text-center">
-              Your data is stored locally on your device. You have full control.
+            <p className="text-sm text-muted-foreground text-center italic">
+              Made with ❤️ and a dash of logic. Your data lives on your device—always.
             </p>
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={showResetLearningDialog} onOpenChange={setShowResetLearningDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset your learning?</AlertDialogTitle>
+            <AlertDialogDescription>
+              We'll forget your preferences, but you can always rebuild them. Your pantry and settings stay safe.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep learning</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetLearning} className="bg-muted hover:bg-muted/80 text-foreground">
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

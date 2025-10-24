@@ -152,15 +152,15 @@ const Suggestion = () => {
         <header className="text-center space-y-2 pt-4">
           <h1 className="text-3xl font-bold">Today's ideas 🍳</h1>
           <p className="text-muted-foreground">
-            Based on your pantry and preferences
+            Chef picked these just for you
           </p>
         </header>
 
         {isPantryStale && (
-          <Alert>
+          <Alert className="animate-fade-in">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              It's been a while — refresh with new photos?
+              Pantry last updated {Math.floor((Date.now() - new Date(lastSyncAt).getTime()) / (1000 * 60 * 60 * 24))} days ago — ready for a fresh scan?
             </AlertDescription>
             <Button 
               variant="outline" 
@@ -168,34 +168,36 @@ const Suggestion = () => {
               className="mt-2"
               onClick={() => navigate('/pantry')}
             >
-              Update Pantry
+              Refresh Pantry
             </Button>
           </Alert>
         )}
 
         <div className="space-y-4">
           {currentRecipe ? (
-            <RecipeCard
-              recipe={currentRecipe}
-              onAnother={handleAnother}
-              onSkip={handleSkip}
-              learning={learning}
-            />
+            <div className="animate-fade-in">
+              <RecipeCard
+                recipe={currentRecipe}
+                onAnother={handleAnother}
+                onSkip={handleSkip}
+                learning={learning}
+              />
+            </div>
           ) : (
-            <div className="text-center space-y-4 py-8">
+            <div className="text-center space-y-4 py-8 animate-fade-in">
               <p className="text-muted-foreground">
-                No matching recipes found. Add more items to your pantry or try:
+                Your fridge is empty — and that's okay. Let's fill it up 🥦
               </p>
               <Button onClick={handleSimpleEggs} variant="outline">
-                Super simple: Eggs & Toast
+                Start simple: Eggs & Toast
               </Button>
             </div>
           )}
         </div>
 
         {spinCount > 0 && (
-          <p className="text-center text-sm text-muted-foreground">
-            Spins used: {spinCount}/2
+          <p className="text-center text-sm text-muted-foreground animate-fade-in">
+            {spinCount}/2 new ideas shown
           </p>
         )}
 
@@ -223,7 +225,7 @@ const Suggestion = () => {
             <Button
               size="icon"
               onClick={handleOpenChat}
-              className="fixed bottom-24 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 animate-[bounce_1s_ease-in-out_3]"
+              className="fixed bottom-24 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-all duration-200 animate-breathe"
             >
               <ChefHat className="h-8 w-8" />
             </Button>

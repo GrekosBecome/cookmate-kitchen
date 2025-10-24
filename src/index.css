@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 30 20% 98%;
+    --background: 42 40% 98%;
     --foreground: 24 24% 10%;
 
     --card: 0 0% 100%;
@@ -17,62 +17,57 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 24 24% 10%;
 
-    --primary: 16 88% 58%;
+    --primary: 154 44% 56%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 142 48% 52%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 30 20% 94%;
+    --muted: 42 30% 96%;
     --muted-foreground: 24 10% 45%;
 
-    --accent: 45 93% 58%;
+    --accent: 45 93% 78%;
     --accent-foreground: 24 24% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 16 88% 58%;
+    --border: 42 25% 90%;
+    --input: 42 25% 90%;
+    --ring: 154 44% 56%;
 
     --radius: 1rem;
     
-    --chip-selected: 16 88% 58%;
-    --chip-unselected: 30 20% 94%;
+    --chip-selected: 154 44% 56%;
+    --chip-unselected: 42 30% 96%;
     --chip-text-selected: 0 0% 100%;
     --chip-text-unselected: 24 24% 10%;
     
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 100ms cubic-bezier(0.25, 0.1, 0.25, 1);
+    --transition-smooth: 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
+    --transition-slow: 400ms cubic-bezier(0.25, 0.1, 0.25, 1);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 24 24% 10%;
-    --foreground: 30 20% 98%;
+    --foreground: 42 40% 98%;
 
     --card: 24 20% 14%;
-    --card-foreground: 30 20% 98%;
+    --card-foreground: 42 40% 98%;
 
     --popover: 24 20% 14%;
-    --popover-foreground: 30 20% 98%;
+    --popover-foreground: 42 40% 98%;
 
-    --primary: 16 88% 58%;
+    --primary: 154 44% 56%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 142 48% 52%;
@@ -81,20 +76,21 @@ All colors MUST be HSL.
     --muted: 24 15% 20%;
     --muted-foreground: 30 10% 65%;
 
-    --accent: 45 93% 58%;
+    --accent: 45 93% 78%;
     --accent-foreground: 24 24% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 24 15% 24%;
     --input: 24 15% 24%;
-    --ring: 16 88% 58%;
+    --ring: 154 44% 56%;
     
-    --chip-selected: 16 88% 58%;
+    --chip-selected: 154 44% 56%;
     --chip-unselected: 24 15% 20%;
     --chip-text-selected: 0 0% 100%;
-    --chip-text-unselected: 30 20% 98%;
+    --chip-text-unselected: 42 40% 98%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -113,5 +109,6 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }

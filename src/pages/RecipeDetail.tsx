@@ -76,10 +76,10 @@ const RecipeDetail = () => {
     });
 
     toast({
-      title: "Pantry updated!",
+      title: "Pantry updated! 🎉",
       description: consumedCount > 0 
         ? `${consumedCount} items marked as used.`
-        : "No matching items found in pantry.",
+        : "Couldn't find matching items — might need a pantry refresh?",
     });
 
     setTimeout(() => {
@@ -221,13 +221,13 @@ const RecipeDetail = () => {
                 variant="outline"
                 className="flex-1"
               >
-                Start cooking
+                Let's cook
               </Button>
               <Button
                 onClick={handleMarkUsed}
                 className="flex-1"
               >
-                Mark used
+                Mark as used
               </Button>
             </>
           ) : (
@@ -235,7 +235,7 @@ const RecipeDetail = () => {
               onClick={() => navigate('/suggestion')}
               className="w-full"
             >
-              Back to Suggestions
+              What's next?
             </Button>
           )}
         </div>
