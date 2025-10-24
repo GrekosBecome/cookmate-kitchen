@@ -1,5 +1,6 @@
-import { Recipe, Preferences, PantryItem } from '@/types';
+import { Recipe, Preferences, PantryItem, LearningState } from '@/types';
 import { RECIPE_CATALOG } from '@/data/recipes';
+import { getTagBoost } from '@/lib/learning';
 
 interface ScoredRecipe {
   recipe: Recipe;
@@ -102,18 +103,34 @@ export function scoreRecipes(
 export function getSuggestions(
   preferences: Preferences | null,
   pantryItems: PantryItem[],
-  count: number = 2
+  count: number = 2,
+  learning?: LearningState
 ): Recipe[] {
   // Filter recipes by preferences
   const filtered = filterRecipesByPreferences(RECIPE_CATALOG, preferences);
 
   // Score recipes
-  const scored = scoreRecipes(filtered, pantryItems);
+  const scored = scoreRecipes(filtered, pantryItems).map(item => {
+    let finalScore = item.score;
+    
+    // Add learning boost
+    if (learning) {
+      const learningBoost = item.recipe.tags
+        .map(tag => Math.max(0, getTagBoost(tag, learning)))
+        .reduce((sum, boost) => sum + boost, 0);
+      finalScore += learningBoost;
+    }
+    
+    return { ...item, score: finalScore };
+  });
 
-  // Sort by score descending
+  // Sort by score descending, then by time ascending
   const sorted = scored
     .filter(s => s.score > 0)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.recipe.timeMin - b.recipe.timeMin;
+    });
 
   // Return top N recipes
   return sorted.slice(0, count).map(s => s.recipe);

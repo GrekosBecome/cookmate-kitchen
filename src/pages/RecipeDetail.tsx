@@ -68,9 +68,11 @@ const RecipeDetail = () => {
     setHasMarkedUsed(true);
     
     addSignal({
+      ts: new Date().toISOString(),
       type: 'accepted',
       recipeId: recipe.id,
-      timestamp: new Date().toISOString(),
+      tags: recipe.tags,
+      needs: recipe.needs,
     });
 
     toast({

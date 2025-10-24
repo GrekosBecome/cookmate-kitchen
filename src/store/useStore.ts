@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Preferences, PantryItem, SuggestionPick, Signal } from '@/types';
+import { Preferences, PantryItem, SuggestionPick, Signal, LearningState } from '@/types';
+import { recordSignal as recordSignalLib, recomputeLearning as recomputeLearningLib } from '@/lib/learning';
 
 interface AppState {
   preferences: Preferences | null;
@@ -9,6 +10,7 @@ interface AppState {
   hasCompletedOnboarding: boolean;
   todaysPick: SuggestionPick | null;
   signals: Signal[];
+  learning?: LearningState;
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   addPantryItem: (item: PantryItem) => void;
@@ -19,6 +21,8 @@ interface AppState {
   setHasCompletedOnboarding: (value: boolean) => void;
   setTodaysPick: (pick: SuggestionPick) => void;
   addSignal: (signal: Signal) => void;
+  recomputeLearning: () => void;
+  resetLearning: () => void;
   consumePantryForRecipe: (ingredientNames: string[]) => number;
   reset: () => void;
 }
@@ -70,6 +74,7 @@ export const useStore = create<AppState>()(
       hasCompletedOnboarding: false,
       todaysPick: null,
       signals: [],
+      learning: undefined,
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -106,9 +111,20 @@ export const useStore = create<AppState>()(
       setHasCompletedOnboarding: (value) => set({ hasCompletedOnboarding: value }),
       setTodaysPick: (pick) => set({ todaysPick: pick }),
       addSignal: (signal) =>
-        set((state) => ({
-          signals: [...state.signals, signal],
-        })),
+        set((state) => {
+          const newSignals = recordSignalLib(signal, state.signals);
+          return { signals: newSignals };
+        }),
+      recomputeLearning: () =>
+        set((state) => {
+          const newLearning = recomputeLearningLib(state.signals, state.learning);
+          return { learning: newLearning };
+        }),
+      resetLearning: () =>
+        set({
+          learning: undefined,
+          signals: [],
+        }),
       consumePantryForRecipe: (ingredientNames: string[]) => {
         let consumedCount = 0;
         set((state) => {
@@ -137,6 +153,7 @@ export const useStore = create<AppState>()(
           hasCompletedOnboarding: false,
           todaysPick: null,
           signals: [],
+          learning: undefined,
         }),
     }),
     {

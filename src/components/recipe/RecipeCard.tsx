@@ -1,19 +1,22 @@
-import { Recipe } from '@/types';
+import { Recipe, LearningState } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, Flame } from 'lucide-react';
+import { Clock, Flame, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getWhyThisReasons } from '@/lib/learning';
 
 interface RecipeCardProps {
   recipe: Recipe;
   onAnother?: () => void;
   onSkip?: () => void;
   showActions?: boolean;
+  learning?: LearningState;
 }
 
-export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true }: RecipeCardProps) => {
+export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true, learning }: RecipeCardProps) => {
   const navigate = useNavigate();
+  const whyThisReasons = getWhyThisReasons(recipe.tags, learning);
 
   const topNeeds = recipe.needs.slice(0, 3);
   const isFastRecipe = recipe.timeMin <= 20;
@@ -39,6 +42,15 @@ export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true }: Re
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {whyThisReasons.length > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/50 rounded-md p-2">
+            <Sparkles className="h-3 w-3 text-primary" />
+            <span>
+              Because you liked <strong>{whyThisReasons.join(' & ')}</strong> recently
+            </span>
+          </div>
+        )}
+
         <div>
           <p className="text-sm text-muted-foreground mb-2">Main ingredients:</p>
           <div className="flex gap-2 flex-wrap">

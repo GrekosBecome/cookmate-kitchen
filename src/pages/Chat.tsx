@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RECIPE_CATALOG } from '@/data/recipes';
 import { useStore } from '@/store/useStore';
 import { getLLMResponse, ChatMessage } from '@/utils/llmAdapter';
+import { Signal } from '@/types';
 
 interface Message extends ChatMessage {
   allergenWarning?: string;
@@ -86,7 +87,7 @@ const Chat = () => {
         pantryItems,
         preferences,
         recipe: recipe || undefined,
-        signals,
+        signals: signals.filter((s): s is Required<Signal> => !!s.recipeId).map(s => ({ type: s.type, recipeId: s.recipeId })),
       });
 
       setMessages(prev => [

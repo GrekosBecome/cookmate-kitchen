@@ -63,7 +63,15 @@ export interface SuggestionPick {
 }
 
 export interface Signal {
+  ts: string;
   type: 'viewed' | 'accepted' | 'another' | 'skip';
-  recipeId: string;
-  timestamp: string;
+  recipeId?: string;
+  tags?: string[];
+  needs?: string[];
+}
+
+export interface LearningState {
+  tagWeights: Record<string, number>;
+  tagDecayAnchor?: string;
+  lastUpdated?: string;
 }

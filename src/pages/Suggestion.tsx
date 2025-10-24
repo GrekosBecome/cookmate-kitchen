@@ -18,7 +18,7 @@ import {
 const Suggestion = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { preferences, pantryItems, todaysPick, setTodaysPick, addSignal, lastSyncAt } = useStore();
+  const { preferences, pantryItems, todaysPick, setTodaysPick, addSignal, lastSyncAt, learning, recomputeLearning } = useStore();
   
   const [suggestions, setSuggestions] = useState<Recipe[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -29,28 +29,40 @@ const Suggestion = () => {
   const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
 
   useEffect(() => {
+    // Recompute learning on app start
+    recomputeLearning();
+
     // Check if we need new suggestions
     if (!todaysPick || todaysPick.date !== today) {
       generateSuggestions();
     } else {
       // Load cached suggestions
       const cached = todaysPick.recipeIds.map(id => 
-        getSuggestions(preferences, pantryItems, 12).find(r => r.id === id)
+        getSuggestions(preferences, pantryItems, 12, learning).find(r => r.id === id)
       ).filter(Boolean) as Recipe[];
       setSuggestions(cached);
       setCurrentIndex(todaysPick.indexShown);
     }
-
-    // Log viewed signal
-    addSignal({
-      type: 'viewed',
-      recipeId: suggestions[currentIndex]?.id || 'none',
-      timestamp: new Date().toISOString(),
-    });
   }, []);
 
+  useEffect(() => {
+    // Log viewed signal when suggestions change
+    if (suggestions.length > 0 && currentIndex >= 0) {
+      const current = suggestions[currentIndex];
+      if (current) {
+        addSignal({
+          ts: new Date().toISOString(),
+          type: 'viewed',
+          recipeId: current.id,
+          tags: current.tags,
+          needs: current.needs,
+        });
+      }
+    }
+  }, [suggestions, currentIndex]);
+
   const generateSuggestions = () => {
-    const newSuggestions = getSuggestions(preferences, pantryItems, 2);
+    const newSuggestions = getSuggestions(preferences, pantryItems, 2, learning);
     setSuggestions(newSuggestions);
     setCurrentIndex(0);
     setSpinCount(0);
@@ -76,9 +88,11 @@ const Suggestion = () => {
     const current = suggestions[currentIndex];
     if (current) {
       addSignal({
+        ts: new Date().toISOString(),
         type: 'another',
         recipeId: current.id,
-        timestamp: new Date().toISOString(),
+        tags: current.tags,
+        needs: current.needs,
       });
     }
 
@@ -101,9 +115,11 @@ const Suggestion = () => {
     const current = suggestions[currentIndex];
     if (current) {
       addSignal({
+        ts: new Date().toISOString(),
         type: 'skip',
         recipeId: current.id,
-        timestamp: new Date().toISOString(),
+        tags: current.tags,
+        needs: current.needs,
       });
     }
 
@@ -163,6 +179,7 @@ const Suggestion = () => {
               recipe={currentRecipe}
               onAnother={handleAnother}
               onSkip={handleSkip}
+              learning={learning}
             />
           ) : (
             <div className="text-center space-y-4 py-8">

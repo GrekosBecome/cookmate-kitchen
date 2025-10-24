@@ -8,8 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { getTopTags } from '@/lib/learning';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,9 +34,13 @@ const HOURS = Array.from({ length: 4 }, (_, i) => {
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { preferences, updatePreferences, reset } = useStore();
+  const { preferences, updatePreferences, reset, learning, resetLearning } = useStore();
+  const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
 
   const currentPrefs = preferences || defaultPreferences;
+  const topTags = getTopTags(learning, 8);
+  const likedTags = topTags.filter(t => t.weight > 0);
+  const mutedTags = topTags.filter(t => t.weight < 0);
 
   const handleDietChange = (diet: string) => {
     updatePreferences({ diet: diet as any });
@@ -65,6 +72,15 @@ const Settings = () => {
       description: "Your preferences and pantry have been reset.",
     });
     navigate('/');
+  };
+
+  const handleResetLearning = () => {
+    resetLearning();
+    setShowResetLearningDialog(false);
+    toast({
+      title: "Learning data reset",
+      description: "Your personalization has been cleared.",
+    });
   };
 
   return (
@@ -203,6 +219,61 @@ const Settings = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              Learning
+            </CardTitle>
+            <CardDescription>
+              We learn your taste over time — you can reset this anytime.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {likedTags.length > 0 && (
+              <div className="space-y-2">
+                <Label>Liked Tags</Label>
+                <div className="flex flex-wrap gap-2">
+                  {likedTags.map(({ tag, weight }) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      {tag} (+{weight.toFixed(1)})
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {mutedTags.length > 0 && (
+              <div className="space-y-2">
+                <Label>Muted Tags</Label>
+                <div className="flex flex-wrap gap-2">
+                  {mutedTags.map(({ tag, weight }) => (
+                    <Badge key={tag} variant="outline" className="gap-1">
+                      <TrendingDown className="h-3 w-3" />
+                      {tag} ({weight.toFixed(1)})
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {likedTags.length === 0 && mutedTags.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                No learning data yet. Keep using the app to personalize your suggestions!
+              </p>
+            )}
+
+            <Button
+              variant="outline"
+              onClick={() => setShowResetLearningDialog(true)}
+              className="w-full"
+            >
+              Reset Learning
+            </Button>
           </CardContent>
         </Card>
 
