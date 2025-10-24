@@ -6,8 +6,14 @@ import { Recipe } from '@/types';
 import { RecipeCard } from '@/components/recipe/RecipeCard';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const Suggestion = () => {
   const navigate = useNavigate();
@@ -113,6 +119,15 @@ const Suggestion = () => {
     navigate('/recipe/scrambled-eggs-toast');
   };
 
+  const handleOpenChat = () => {
+    const recipeId = currentRecipe?.id;
+    if (recipeId) {
+      navigate(`/chat?recipeId=${recipeId}`);
+    } else {
+      navigate('/chat');
+    }
+  };
+
   const currentRecipe = suggestions[currentIndex];
 
   return (
@@ -184,6 +199,23 @@ const Suggestion = () => {
           </Button>
         </div>
       </div>
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              onClick={handleOpenChat}
+              className="fixed bottom-24 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 animate-[bounce_1s_ease-in-out_3]"
+            >
+              <ChefHat className="h-8 w-8" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Ask the Chef</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
