@@ -300,7 +300,7 @@ Please:
     <div 
       className="min-h-screen bg-background flex flex-col"
       style={{
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
       }}
     >
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm">
@@ -396,7 +396,7 @@ Please:
       <div 
         className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-30"
         style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
         }}
       >
         <div className="container max-w-2xl mx-auto px-4 py-3 space-y-3">
