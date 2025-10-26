@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Camera, Info } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FloatingButtons } from '@/components/FloatingButtons';
-import { mockImageDetection } from '@/utils/mockDetection';
+import { detectIngredientsFromImages } from '@/utils/visionDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
 import { track } from '@/lib/analytics';
@@ -37,6 +37,7 @@ export default function Pantry() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
   const [editedItems, setEditedItems] = useState<Map<string, { name: string; qty: number; unit: PantryUnit }>>(new Map());
+  const [isDetecting, setIsDetecting] = useState(false);
 
   const activeItems = pantryItems.filter(item => !item.used);
   const usedItems = pantryItems.filter(item => item.used);
@@ -55,12 +56,25 @@ export default function Pantry() {
   }, [location.search]);
 
   useEffect(() => {
-    if (uploadedImages.length > 0 && detectedItems.length === 0) {
-      // Mock detection when images are uploaded
-      const detected = mockImageDetection(uploadedImages.length);
-      setDetectedItems(detected);
+    if (uploadedImages.length > 0 && detectedItems.length === 0 && !isDetecting) {
+      setIsDetecting(true);
+      
+      detectIngredientsFromImages(uploadedImages)
+        .then(detected => {
+          setDetectedItems(detected);
+          if (detected.length > 0) {
+            toast.success(`Found ${detected.length} ingredients in your photos`);
+          }
+        })
+        .catch(error => {
+          console.error('Detection failed:', error);
+          toast.error('Detection failed, please try again');
+        })
+        .finally(() => {
+          setIsDetecting(false);
+        });
     }
-  }, [uploadedImages, detectedItems.length]);
+  }, [uploadedImages, detectedItems.length, isDetecting]);
 
   const handleImagesChange = (images: string[]) => {
     setUploadedImages(images);
@@ -205,6 +219,13 @@ export default function Pantry() {
               onImagesChange={handleImagesChange}
               maxImages={5}
             />
+
+            {isDetecting && (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="mt-4 text-sm text-muted-foreground">Analyzing your photos...</p>
+              </div>
+            )}
 
             {detectedItems.length > 0 && (
               <div className="space-y-4">

@@ -2,3 +2,6 @@ project_id = "gsozaqboqcjbthbighqg"
 
 [functions.chef-chat]
 verify_jwt = false
+
+[functions.detect-ingredients]
+verify_jwt = false
