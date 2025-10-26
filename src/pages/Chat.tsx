@@ -10,6 +10,7 @@ import { useStore } from '@/store/useStore';
 import { getLLMResponse, ChatMessage } from '@/utils/llmAdapter';
 import { Signal } from '@/types';
 import { track } from '@/lib/analytics';
+import { saveChef, loadChef } from '@/lib/sessionChat';
 
 interface Message extends ChatMessage {
   allergenWarning?: string;
@@ -33,6 +34,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [restoredFromCache, setRestoredFromCache] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -43,8 +45,27 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Handle back navigation to /recipes
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      navigate('/recipes', { replace: true });
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [navigate]);
+
   useEffect(() => {
     track('opened_screen', { screen: 'chat', recipeId });
+    
+    // Try to restore from cache first
+    const cached = loadChef();
+    if (cached && cached.messages.length > 0) {
+      setMessages(cached.messages);
+      setInput(cached.draft || '');
+      setRestoredFromCache(true);
+      return;
+    }
     
     // Check if we have detailed recipe context from "Let's cook"
     const haveParam = searchParams.get('have');
@@ -162,6 +183,40 @@ Please:
     updateMemory({ lastChatDate: new Date().toISOString() });
   }, [recipeId]);
 
+  // Auto-save session on changes
+  useEffect(() => {
+    if (messages.length > 0) {
+      const ctx = {
+        recipeId: recipeId || undefined,
+        recipeTitle: searchParams.get('recipeTitle') || undefined,
+        have: searchParams.get('have') || undefined,
+        need: searchParams.get('need') || undefined,
+      };
+      saveChef({ messages, draft: input, ctx });
+    }
+  }, [messages, input, recipeId, searchParams]);
+
+  // Persist on visibility change / beforeunload
+  useEffect(() => {
+    const persist = () => {
+      if (messages.length > 0) {
+        const ctx = {
+          recipeId: recipeId || undefined,
+          recipeTitle: searchParams.get('recipeTitle') || undefined,
+          have: searchParams.get('have') || undefined,
+          need: searchParams.get('need') || undefined,
+        };
+        saveChef({ messages, draft: input, ctx });
+      }
+    };
+    window.addEventListener('visibilitychange', persist);
+    window.addEventListener('beforeunload', persist);
+    return () => {
+      window.removeEventListener('visibilitychange', persist);
+      window.removeEventListener('beforeunload', persist);
+    };
+  }, [messages, input, recipeId, searchParams]);
+
   const hasShoppingItems = shoppingState.queue.filter(i => !i.bought).length > 0;
 
   const quickActions = recipe 
@@ -258,9 +313,9 @@ Please:
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/recipes')}
             className="h-11 w-11 min-h-[44px] min-w-[44px] p-0"
-            aria-label="Go back"
+            aria-label="Go back to recipes"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -293,6 +348,12 @@ Please:
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="container max-w-2xl mx-auto space-y-4">
+          {restoredFromCache && (
+            <div className="text-center animate-fade-in">
+              <p className="text-xs text-muted-foreground">Restored your chat from a few minutes ago ⏳</p>
+            </div>
+          )}
+          
           {messages.map((message, index) => (
             <div key={index} className="animate-fade-in">
               {message.allergenWarning && (
