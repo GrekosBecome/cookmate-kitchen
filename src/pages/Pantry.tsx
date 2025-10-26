@@ -8,7 +8,7 @@ import { ShoppingListView } from '@/components/pantry/ShoppingListView';
 import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Camera, Info } from 'lucide-react';
+import { ArrowLeft, Camera, Info, ChefHat } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visionDetection';
@@ -326,7 +326,15 @@ export default function Pantry() {
           </Button>
         </div>
 
-        <header className="text-center space-y-2">
+        <header className="text-center space-y-2 relative">
+          <Button
+            size="icon"
+            onClick={() => navigate('/chat')}
+            className="absolute -top-2 right-0 h-12 w-12 rounded-full shadow-md hover:scale-110 active:scale-95 transition-all duration-200"
+            aria-label="Ask the Chef"
+          >
+            <ChefHat className="h-5 w-5" />
+          </Button>
           <h1 className="text-2xl sm:text-3xl font-bold">Your Pantry</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
             {lastSyncAt
@@ -438,7 +446,7 @@ export default function Pantry() {
         </div>
       )}
 
-      <FloatingButtons />
+      
     </div>
   );
 }
