@@ -180,14 +180,7 @@ const generateMockResponse = (request: LLMRequest): LLMResponse => {
   };
 };
 
-const callOpenAI = async (request: LLMRequest): Promise<LLMResponse> => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    console.log('No OpenAI API key found, falling back to mock');
-    return generateMockResponse(request);
-  }
-  
+const callEdgeFunction = async (request: LLMRequest): Promise<LLMResponse> => {
   try {
     const context = buildContextMessage(
       request.pantryItems,
@@ -197,33 +190,34 @@ const callOpenAI = async (request: LLMRequest): Promise<LLMResponse> => {
       request.shoppingState
     );
     
-    const messages = [
-      { role: 'system' as const, content: SYSTEM_PROMPT },
-      { role: 'system' as const, content: context },
-      ...request.messages.filter(m => m.role !== 'system'),
-    ];
+    const messages = request.messages.filter(m => m.role !== 'system');
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/chef-chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
         messages,
-        temperature: 0.6,
-        max_tokens: 400,
+        context,
       }),
     });
     
     if (!response.ok) {
-      console.error('OpenAI API error:', response.status);
+      console.error('Edge function error:', response.status);
       return generateMockResponse(request);
     }
     
     const data = await response.json();
-    const content = data.choices[0]?.message?.content || 'Sorry, I had trouble generating a response.';
+    
+    // If the response indicates it's a mock or fallback, use local mock
+    if (data.isMock) {
+      console.log('Edge function returned mock response');
+      return generateMockResponse(request);
+    }
+    
+    const content = data.content || 'Sorry, I had trouble generating a response.';
     
     // Check allergens
     let allergenWarning: string | undefined;
@@ -236,12 +230,12 @@ const callOpenAI = async (request: LLMRequest): Promise<LLMResponse> => {
     
     return { content, allergenWarning };
   } catch (error) {
-    console.error('Error calling OpenAI:', error);
+    console.error('Error calling edge function:', error);
     return generateMockResponse(request);
   }
 };
 
 export const getLLMResponse = async (request: LLMRequest): Promise<LLMResponse> => {
-  // Try OpenAI first, fall back to mock if unavailable
-  return callOpenAI(request);
+  // Try edge function first, fall back to mock if unavailable
+  return callEdgeFunction(request);
 };
