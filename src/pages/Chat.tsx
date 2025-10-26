@@ -68,17 +68,55 @@ Please:
 3) Call out any allergen risks from my preferences,
 4) Offer a time-saving tip.`;
 
-      setMessages([
+      // Initialize with both assistant welcome and user message
+      const initialMessages: Message[] = [
         {
           role: "assistant",
           content: "👨‍🍳 Welcome! I'm your personal cooking assistant. I can help you with recipes, substitutions, scaling, and cooking tips.",
         },
-      ]);
+        {
+          role: "user",
+          content: initialMsg,
+        },
+      ];
       
-      // Auto-send the message to get Chef's response
+      setMessages(initialMessages);
+      
+      // Auto-fetch Chef's response without adding user message again
       setIsLoading(true);
-      setTimeout(() => {
-        handleSend(initialMsg);
+      setTimeout(async () => {
+        try {
+          const response = await getLLMResponse({
+            messages: initialMessages,
+            pantryItems,
+            preferences,
+            recipe: recipe || undefined,
+            signals: signals.filter((s): s is Required<Signal> => !!s.recipeId).map(s => ({ type: s.type, recipeId: s.recipeId })),
+            shoppingState,
+          });
+
+          if (response.content) {
+            setMessages(prev => [
+              ...prev,
+              {
+                role: 'assistant',
+                content: response.content!,
+                allergenWarning: response.allergenWarning,
+              },
+            ]);
+          }
+        } catch (error) {
+          console.error('Error getting response:', error);
+          setMessages(prev => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: 'Sorry, I had trouble processing that. Could you try again? 🤔',
+            },
+          ]);
+        } finally {
+          setIsLoading(false);
+        }
       }, 100);
     } else if (recipe) {
       // Default recipe context
