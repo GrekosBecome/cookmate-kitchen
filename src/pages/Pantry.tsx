@@ -205,8 +205,11 @@ export default function Pantry() {
   };
 
   const handleMarkBought = (id: string) => {
+    const item = shoppingState.queue.find(i => i.id === id);
     markShoppingItemBought(id);
-    toast.success('Nice! Marked as bought — refresh your pantry when it arrives.');
+    toast.success(item ? `✓ ${item.name} marked as bought — pantry restocked!` : 'Marked as bought', {
+      duration: 4000,
+    });
   };
 
   const handleRemoveShoppingItem = (id: string) => {

@@ -20,9 +20,9 @@ export function ShoppingListView({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
         <ShoppingCart className="h-16 w-16 text-muted-foreground/50 mb-4" />
-        <h3 className="text-xl font-semibold mb-2">All stocked up! 🎉</h3>
+        <h3 className="text-xl font-semibold mb-2">All stocked up! 🧺</h3>
         <p className="text-muted-foreground">
-          Your pantry looks great. We'll let you know when items run low.
+          Nice! Nothing to buy right now. Chef will add things here as you cook.
         </p>
       </div>
     );

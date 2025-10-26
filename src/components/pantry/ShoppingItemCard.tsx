@@ -25,10 +25,10 @@ export function ShoppingItemCard({
 
   const reasonText =
     item.reason === 'used_up'
-      ? 'Used up in last recipe'
+      ? 'Used up'
       : item.reason === 'missing_from_recipe'
       ? 'Missing from recipe'
-      : 'Running low';
+      : 'Low stock';
 
   return (
     <div

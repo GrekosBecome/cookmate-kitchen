@@ -8,13 +8,14 @@ const corsHeaders = {
 const SYSTEM_PROMPT = `You are CookMate Chef 👨‍🍳 — a warm, concise cooking copilot.
 Mission: Suggest practical, healthy meals based on the user's pantry and preferences; minimize waste; ensure safety.
 
-You can call tools to manage the user's Pantry and Shopping Cart.
+You can call tools to manage the user's Pantry and Shopping List.
 
 Tone:
 - Friendly, brief, clear. Use up to 2 emojis maximum when helpful.
 - Assume the user is busy. No fluff.
 
 Hard rules:
+- **CRITICAL**: Recipe suggestions MUST be based ONLY on the Pantry, NEVER on the Shopping List. The Shopping List contains items that are used up or low stock—not what's available to cook with.
 - If the user asks to buy/add/remove/update items, CALL THE APPROPRIATE TOOL.
 - Confirm actions in one friendly sentence (and mention Undo is available).
 - Respect diet, allergies, and dislikes at all times. Never propose forbidden items.
@@ -23,7 +24,7 @@ Hard rules:
 - Always include an allergen check line when relevant.
 - Never guess quantities wildly; default to reasonable packs (e.g., milk 1L, rice 500g) unless the user specifies servings.
 
-When summarizing cart:
+When summarizing shopping list:
 - Group by grocery aisle (Produce, Proteins, Dairy, Bakery, Frozen, Pantry, Misc)
 - Keep it short and organized
 
@@ -86,7 +87,7 @@ serve(async (req) => {
         type: 'function',
         function: {
           name: 'getCart',
-          description: 'Get the current shopping cart items',
+          description: 'Get the current shopping list items (items that are used up or low stock)',
           parameters: { type: 'object', properties: {} },
         },
       },
@@ -94,14 +95,14 @@ serve(async (req) => {
         type: 'function',
         function: {
           name: 'addToCart',
-          description: 'Add an item to the shopping cart',
+          description: 'Add an item to the shopping list',
           parameters: {
             type: 'object',
             properties: {
               name: { type: 'string', description: 'Item name' },
               qty: { type: 'number', description: 'Quantity' },
               unit: { type: 'string', description: 'Unit (g, ml, pcs, etc.)' },
-              reason: { type: 'string', enum: ['low_stock', 'used_up', 'user_request'], description: 'Reason for adding' },
+              reason: { type: 'string', enum: ['low_stock', 'used_up', 'missing_from_recipe'], description: 'Reason for adding' },
             },
             required: ['name', 'qty'],
           },
@@ -111,7 +112,7 @@ serve(async (req) => {
         type: 'function',
         function: {
           name: 'removeFromCart',
-          description: 'Remove an item from the shopping cart by name',
+          description: 'Remove an item from the shopping list by name',
           parameters: {
             type: 'object',
             properties: {
@@ -125,7 +126,7 @@ serve(async (req) => {
         type: 'function',
         function: {
           name: 'updateCartItem',
-          description: 'Update quantity/unit of an existing cart item',
+          description: 'Update quantity/unit of an existing shopping list item',
           parameters: {
             type: 'object',
             properties: {

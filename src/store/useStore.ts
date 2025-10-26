@@ -237,14 +237,43 @@ export const useStore = create<AppState>()(
         }));
       },
       markShoppingItemBought: (id: string) => {
-        set((state) => ({
-          shoppingState: {
-            ...state.shoppingState,
-            queue: state.shoppingState.queue.map((item) =>
-              item.id === id ? { ...item, bought: true } : item
-            ),
-          },
-        }));
+        set((state) => {
+          const item = state.shoppingState.queue.find((i) => i.id === id);
+          if (!item) return state;
+
+          // Restock pantry: increase confidence to 80 or set if not exists
+          const pantryName = item.name.toLowerCase();
+          const existingPantryItem = state.pantryItems.find(
+            (p) => p.name.toLowerCase() === pantryName
+          );
+
+          const updatedPantryItems = existingPantryItem
+            ? state.pantryItems.map((p) =>
+                p.name.toLowerCase() === pantryName
+                  ? { ...p, confidence: 80, lastSeenAt: new Date().toISOString() }
+                  : p
+              )
+            : [
+                ...state.pantryItems,
+                {
+                  id: `pantry-${Date.now()}-${Math.random()}`,
+                  name: item.name,
+                  qty: item.suggestedQty || 1,
+                  unit: item.unit,
+                  source: 'manual' as const,
+                  confidence: 80,
+                  lastSeenAt: new Date().toISOString(),
+                },
+              ];
+
+          return {
+            pantryItems: updatedPantryItems,
+            shoppingState: {
+              ...state.shoppingState,
+              queue: state.shoppingState.queue.filter((i) => i.id !== id),
+            },
+          };
+        });
       },
       removeShoppingItem: (id: string) => {
         set((state) => ({
@@ -359,7 +388,7 @@ export const useStore = create<AppState>()(
                 },
                 operations: s.operations.slice(0, -1),
               }));
-              return { success: true, message: `Removed ${lastOp.data.name} from cart` };
+              return { success: true, message: `Removed ${lastOp.data.name} from shopping list` };
               
             case 'removeFromCart':
               // Re-add the item that was removed
@@ -370,7 +399,7 @@ export const useStore = create<AppState>()(
                 },
                 operations: s.operations.slice(0, -1),
               }));
-              return { success: true, message: `Restored ${lastOp.data.item.name} to cart` };
+              return { success: true, message: `Restored ${lastOp.data.item.name} to shopping list` };
               
             case 'updateCartItem':
               // Restore previous values

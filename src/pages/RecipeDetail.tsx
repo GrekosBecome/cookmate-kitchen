@@ -134,9 +134,9 @@ const RecipeDetail = () => {
     );
 
     if (newLowItems.length > 0) {
-      toast.success(`Pantry updated! 🎉 — ${newLowItems.length} items running low`, {
+      toast.success(`Added ${newLowItems.length} item${newLowItems.length > 1 ? 's' : ''} to shopping list 🧺`, {
         action: {
-          label: 'View list',
+          label: 'View',
           onClick: () => navigate('/pantry?tab=shopping'),
         },
         duration: 10000,
