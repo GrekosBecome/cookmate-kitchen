@@ -26,6 +26,7 @@ interface AppState {
   usageEvents: UsageEvent[];
   shoppingState: ShoppingState;
   memory: UserMemory;
+  operations: Array<{ id: string; type: string; timestamp: string; data: any }>;
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   updateMemory: (memory: Partial<UserMemory>) => void;
@@ -50,6 +51,8 @@ interface AppState {
   updatePantryConfidenceAfterRecipe: (recipeId: string, recipeName: string, ingredients: Ingredient[]) => void;
   undoLastUsageEvent: () => void;
   togglePantryItemFavorite: (id: string) => void;
+  recordOperation: (type: string, data: any) => void;
+  undoLastOperation: () => { success: boolean; message: string };
   reset: () => void;
 }
 
@@ -104,6 +107,7 @@ export const useStore = create<AppState>()(
       usageEvents: [],
       shoppingState: { queue: [], lastGenerated: undefined },
       memory: defaultMemory,
+      operations: [],
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -323,6 +327,73 @@ export const useStore = create<AppState>()(
           ),
         }));
       },
+      recordOperation: (type: string, data: any) => {
+        set((state) => ({
+          operations: [
+            ...state.operations.slice(-20), // Keep last 20
+            {
+              id: `op-${Date.now()}`,
+              type,
+              timestamp: new Date().toISOString(),
+              data,
+            },
+          ],
+        }));
+      },
+      undoLastOperation: () => {
+        const state = get();
+        if (state.operations.length === 0) {
+          return { success: false, message: 'Nothing to undo' };
+        }
+
+        const lastOp = state.operations[state.operations.length - 1];
+        
+        try {
+          switch (lastOp.type) {
+            case 'addToCart':
+              // Remove the item that was added
+              set((s) => ({
+                shoppingState: {
+                  ...s.shoppingState,
+                  queue: s.shoppingState.queue.filter(item => item.id !== lastOp.data.id),
+                },
+                operations: s.operations.slice(0, -1),
+              }));
+              return { success: true, message: `Removed ${lastOp.data.name} from cart` };
+              
+            case 'removeFromCart':
+              // Re-add the item that was removed
+              set((s) => ({
+                shoppingState: {
+                  ...s.shoppingState,
+                  queue: [...s.shoppingState.queue, lastOp.data.item],
+                },
+                operations: s.operations.slice(0, -1),
+              }));
+              return { success: true, message: `Restored ${lastOp.data.item.name} to cart` };
+              
+            case 'updateCartItem':
+              // Restore previous values
+              const itemId = lastOp.data.id;
+              set((s) => ({
+                shoppingState: {
+                  ...s.shoppingState,
+                  queue: s.shoppingState.queue.map(item =>
+                    item.id === itemId ? lastOp.data.previous : item
+                  ),
+                },
+                operations: s.operations.slice(0, -1),
+              }));
+              return { success: true, message: `Restored ${lastOp.data.previous.name}` };
+              
+            default:
+              set((s) => ({ operations: s.operations.slice(0, -1) }));
+              return { success: true, message: 'Operation undone' };
+          }
+        } catch (error) {
+          return { success: false, message: 'Failed to undo operation' };
+        }
+      },
       reset: () =>
         set({
           preferences: null,
@@ -335,6 +406,7 @@ export const useStore = create<AppState>()(
           usageEvents: [],
           shoppingState: { queue: [], lastGenerated: undefined },
           memory: defaultMemory,
+          operations: [],
         }),
     }),
     {
