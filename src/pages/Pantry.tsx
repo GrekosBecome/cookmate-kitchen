@@ -159,18 +159,18 @@ export default function Pantry() {
     setEditedItems(new Map());
   };
 
-  const handleManualAdd = (name: string) => {
+  const handleManualAdd = (name: string, qty: number, unit: PantryUnit) => {
     const item: PantryItem = {
       id: `pantry-${Date.now()}-${Math.random()}`,
       name: name.toLowerCase(),
-      qty: 1,
-      unit: 'pcs',
+      qty,
+      unit,
       source: 'manual',
       lastSeenAt: new Date().toISOString(),
       used: false,
     };
     addPantryItem(item);
-    toast.success(`Added ${name} to pantry`);
+    toast.success(`Added ${name} 🍎`);
   };
 
   const handleToggleUsed = (id: string) => {
@@ -409,11 +409,6 @@ export default function Pantry() {
                 </div>
               </div>
             )}
-
-            <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold">Add manually</h3>
-              <ManualAddInput onAdd={handleManualAdd} />
-            </div>
           </>
         )}
       </div>
@@ -426,15 +421,16 @@ export default function Pantry() {
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
           }}
         >
-          <div className="max-w-2xl mx-auto p-4 flex gap-3">
+          <div className="max-w-2xl mx-auto p-4 space-y-3">
             <Button
               onClick={handleStartDetection}
-              className="flex-1 h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold rounded-full"
+              className="w-full h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold rounded-full"
               size="lg"
             >
               <Camera className="h-5 w-5 mr-2" />
               Detect from photos
             </Button>
+            <ManualAddInput onAdd={handleManualAdd} />
           </div>
         </div>
       )}
