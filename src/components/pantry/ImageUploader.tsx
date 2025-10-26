@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { CameraCapture } from './CameraCapture';
 
 interface ImageUploaderProps {
   onImagesChange: (images: string[]) => void;
@@ -10,6 +10,7 @@ interface ImageUploaderProps {
 
 export const ImageUploader = ({ onImagesChange, maxImages = 5 }: ImageUploaderProps) => {
   const [images, setImages] = useState<string[]>([]);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,6 +41,17 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5 }: ImageUploaderPr
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const openCamera = () => {
+    if (images.length >= maxImages) return;
+    setCameraOpen(true);
+  };
+
+  const handleCameraCapture = (imageData: string) => {
+    const updated = [...images, imageData];
+    setImages(updated);
+    onImagesChange(updated);
   };
 
   return (
@@ -76,7 +88,7 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5 }: ImageUploaderPr
       {images.length < maxImages && (
         <div className="grid grid-cols-2 gap-3">
           <Button
-            onClick={openFilePicker}
+            onClick={openCamera}
             variant="outline"
             className="h-24 flex flex-col gap-2"
           >
@@ -97,6 +109,12 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5 }: ImageUploaderPr
       <p className="text-xs text-muted-foreground text-center">
         {images.length}/{maxImages} images • Upload photos of your fridge or pantry
       </p>
+
+      <CameraCapture
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCapture={handleCameraCapture}
+      />
     </div>
   );
 };
