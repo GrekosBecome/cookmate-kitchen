@@ -74,7 +74,26 @@ const RecipeDetail = () => {
   const handleStartCooking = () => {
     track('clicked_cta', { action: 'start_cooking', recipeId: recipe.id });
     addRecentAction('start_cooking', { recipeId: recipe.id });
-    document.getElementById('steps-section')?.scrollIntoView({ behavior: 'smooth' });
+    
+    // Compute have and need arrays based on checked state
+    const have = recipe.ingredients
+      .filter((ing, idx) => checkedIngredients.has(idx) && !ing.optional)
+      .map(ing => ing.name);
+    
+    const need = recipe.ingredients
+      .filter((ing, idx) => !checkedIngredients.has(idx) && !ing.optional)
+      .map(ing => ing.name);
+    
+    // Navigate to chat with recipe context
+    const params = new URLSearchParams({
+      recipeId: recipe.id,
+      recipeTitle: recipe.title,
+      have: have.join(','),
+      need: need.join(','),
+      timeMin: recipe.timeMin?.toString() || '',
+    });
+    
+    navigate(`/chat?${params.toString()}`);
   };
 
   const handleMarkUsed = () => {

@@ -46,11 +46,44 @@ const Chat = () => {
   useEffect(() => {
     track('opened_screen', { screen: 'chat', recipeId });
     
-    // Initialize messages based on recipe context
-    if (recipe) {
+    // Check if we have detailed recipe context from "Let's cook"
+    const haveParam = searchParams.get('have');
+    const needParam = searchParams.get('need');
+    const recipeTitle = searchParams.get('recipeTitle');
+    
+    if (recipeTitle && (haveParam !== null || needParam !== null)) {
+      // Pre-seeded from "Let's cook" button
+      const have = haveParam ? haveParam.split(',').filter(Boolean) : [];
+      const need = needParam ? needParam.split(',').filter(Boolean) : [];
+      const servings = preferences.servings || 2;
+      
+      const initialMsg = `I'm about to cook **${recipeTitle}** for ${servings} servings.
+
+I already have: ${have.length > 0 ? have.join(', ') : '—'}.
+I'm missing: ${need.length > 0 ? need.join(', ') : '—'}.
+
+Please:
+1) Confirm the steps with exact quantities for my servings,
+2) Suggest up to 2 substitutions for each missing item,
+3) Call out any allergen risks from my preferences,
+4) Offer a time-saving tip.`;
+
+      setMessages([
+        {
+          role: "assistant",
+          content: "👨‍🍳 Welcome! I'm your personal cooking assistant. I can help you with recipes, substitutions, scaling, and cooking tips.",
+        },
+      ]);
+      
+      // Auto-send the message to get Chef's response
+      setIsLoading(true);
+      setTimeout(() => {
+        handleSend(initialMsg);
+      }, 100);
+    } else if (recipe) {
+      // Default recipe context
       let greeting = `Hello! I'm your CookMate Chef 👨‍🍳. You're now talking about: **${recipe.title}**`;
       
-      // Add memory context if available
       if (memory.lastRecipeName && memory.lastRecipeName !== recipe.title) {
         greeting = `Hey, remember ${memory.lastRecipeName}? Here's something new: **${recipe.title}** 👨‍🍳`;
       }
@@ -66,6 +99,7 @@ const Chat = () => {
         },
       ]);
     } else {
+      // No recipe context
       let greeting = "Hello! I'm your CookMate Chef 👨‍🍳. Want to talk about today's recipe or substitutions?";
       
       if (memory.lastChatDate) {
@@ -88,7 +122,7 @@ const Chat = () => {
     
     // Update memory
     updateMemory({ lastChatDate: new Date().toISOString() });
-  }, [recipe]);
+  }, [recipeId]);
 
   const hasShoppingItems = shoppingState.queue.filter(i => !i.bought).length > 0;
 
@@ -107,22 +141,22 @@ const Chat = () => {
         'Quick meal ideas',
       ];
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSend = async (messageText?: string) => {
+    const textToSend = messageText || input.trim();
+    if (!textToSend || isLoading) return;
 
     track('chat_message_sent', { recipeId });
     addRecentAction('chat', { recipeId });
 
-    const userMessage = input;
-    setInput('');
+    if (!messageText) setInput('');
     setIsLoading(true);
 
     // Add user message
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMessages(prev => [...prev, { role: 'user', content: textToSend }]);
 
     try {
       const response = await getLLMResponse({
-        messages: [...messages, { role: 'user', content: userMessage }],
+        messages: [...messages, { role: 'user', content: textToSend }],
         pantryItems,
         preferences,
         recipe: recipe || undefined,
@@ -158,13 +192,16 @@ const Chat = () => {
   const handleQuickAction = (action: string) => {
     if (isLoading) return;
     setInput(action);
-    // Auto-send after a short delay to give user a chance to modify
-    setTimeout(() => {
-      if (action === input) {
-        handleSend();
-      }
-    }, 100);
+    setTimeout(() => handleSend(action), 50);
   };
+
+  // Recipe context chip
+  const recipeTitle = searchParams.get('recipeTitle');
+  const haveParam = searchParams.get('have');
+  const needParam = searchParams.get('need');
+  const showRecipeContext = recipeTitle && (haveParam !== null || needParam !== null);
+  const haveCount = haveParam ? haveParam.split(',').filter(Boolean).length : 0;
+  const needCount = needParam ? needParam.split(',').filter(Boolean).length : 0;
 
   return (
     <div 
@@ -198,6 +235,22 @@ const Chat = () => {
             )}
           </div>
         </div>
+        
+        {/* Recipe Context Chip */}
+        {showRecipeContext && (
+          <div className="container max-w-2xl mx-auto px-4 pb-3">
+            <button
+              onClick={() => navigate(`/recipe/${recipeId}`)}
+              className="w-full flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg text-sm hover:bg-muted transition-colors"
+            >
+              <span className="flex-1 text-left">
+                <span className="font-medium">Cooking: {recipeTitle}</span>
+                <span className="text-muted-foreground"> • Have: {haveCount} • Need: {needCount}</span>
+              </span>
+              <span className="text-xs text-muted-foreground">Change</span>
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -279,7 +332,7 @@ const Chat = () => {
               disabled={isLoading}
             />
             <Button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               size="icon"
               className="h-14 w-14 min-h-[44px] min-w-[44px] flex-shrink-0"
               disabled={isLoading || !input.trim()}
