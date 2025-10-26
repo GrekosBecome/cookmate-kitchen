@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Clock, Flame, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { FloatingButtons } from '@/components/FloatingButtons';
+import { track } from '@/lib/analytics';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -21,12 +22,21 @@ const RecipeDetail = () => {
     updatePantryConfidenceAfterRecipe,
     undoLastUsageEvent,
     shoppingState,
+    updateMemory,
+    addRecentAction,
   } = useStore();
   
   const recipe = RECIPE_CATALOG.find(r => r.id === id);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const [hasMarkedUsed, setHasMarkedUsed] = useState(false);
+  
+  // Track page view
+  useState(() => {
+    if (recipe) {
+      track('opened_screen', { screen: 'recipe', recipeId: recipe.id });
+    }
+  });
 
   if (!recipe) {
     return (
@@ -62,11 +72,23 @@ const RecipeDetail = () => {
   };
 
   const handleStartCooking = () => {
+    track('clicked_cta', { action: 'start_cooking', recipeId: recipe.id });
+    addRecentAction('start_cooking', { recipeId: recipe.id });
     document.getElementById('steps-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleMarkUsed = () => {
+    track('recipe_completed', { recipeId: recipe.id });
+    addRecentAction('recipe_completed', { recipeId: recipe.id });
+    
     const now = new Date().toISOString();
+
+    // Update memory
+    updateMemory({
+      lastRecipe: recipe.id,
+      lastRecipeName: recipe.title,
+      lastCookDate: now,
+    });
 
     // Create usage event
     const usageEvent = {

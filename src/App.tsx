@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import Chat from "./pages/Chat";
 import RecipeDetail from "./pages/RecipeDetail";
 import NotFound from "./pages/NotFound";
+import Insights from "./pages/Insights";
 
 const queryClient = new QueryClient();
 
@@ -36,10 +37,11 @@ function AppContent() {
         <Route path="/pantry" element={<Pantry />} />
         <Route path="/suggestion" element={<Suggestion />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/recipe/:id" element={<RecipeDetail />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/recipe/:id" element={<RecipeDetail />} />
+          <Route path="/insights" element={<Insights />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       {!hideBottomNav && <BottomNav />}
     </>
   );

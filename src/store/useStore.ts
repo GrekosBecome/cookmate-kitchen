@@ -11,6 +11,7 @@ import {
   ShoppingItem,
   Ingredient,
 } from '@/types';
+import { UserMemory, defaultMemory } from '@/types/memory';
 import { recordSignal as recordSignalLib, recomputeLearning as recomputeLearningLib } from '@/lib/learning';
 import { updateConfidenceAfterCooking, applyTimeDecay, recalculateShoppingQueue } from '@/lib/shopping';
 
@@ -24,8 +25,11 @@ interface AppState {
   learning?: LearningState;
   usageEvents: UsageEvent[];
   shoppingState: ShoppingState;
+  memory: UserMemory;
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
+  updateMemory: (memory: Partial<UserMemory>) => void;
+  addRecentAction: (type: string, data?: any) => void;
   addPantryItem: (item: PantryItem) => void;
   addPantryItems: (items: PantryItem[]) => void;
   updatePantryItem: (id: string, updates: Partial<PantryItem>) => void;
@@ -99,6 +103,7 @@ export const useStore = create<AppState>()(
       learning: undefined,
       usageEvents: [],
       shoppingState: { queue: [], lastGenerated: undefined },
+      memory: defaultMemory,
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -106,6 +111,16 @@ export const useStore = create<AppState>()(
             ? { ...state.preferences, ...newPreferences }
             : { ...defaultPreferences, ...newPreferences },
         })),
+      updateMemory: (partial) => set((state) => ({ memory: { ...state.memory, ...partial } })),
+      addRecentAction: (type, data) => set((state) => ({
+        memory: {
+          ...state.memory,
+          recentActions: [
+            ...state.memory.recentActions.slice(-19),
+            { type, ts: new Date().toISOString(), data }
+          ]
+        }
+      })),
       addPantryItem: (item) =>
         set((state) => ({
           pantryItems: mergePantryItems(state.pantryItems, [item]),
@@ -319,6 +334,7 @@ export const useStore = create<AppState>()(
           learning: undefined,
           usageEvents: [],
           shoppingState: { queue: [], lastGenerated: undefined },
+          memory: defaultMemory,
         }),
     }),
     {

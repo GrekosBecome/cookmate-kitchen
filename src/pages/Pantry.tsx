@@ -14,6 +14,7 @@ import { FloatingButtons } from '@/components/FloatingButtons';
 import { mockImageDetection } from '@/utils/mockDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
+import { track } from '@/lib/analytics';
 
 type ViewMode = 'list' | 'detect' | 'shopping';
 
@@ -44,6 +45,8 @@ export default function Pantry() {
 
   // Check URL params for tab navigation
   useEffect(() => {
+    track('opened_screen', { screen: 'pantry', tab: viewMode });
+    
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     if (tab === 'shopping') {
@@ -68,6 +71,7 @@ export default function Pantry() {
   };
 
   const handleStartDetection = () => {
+    track('clicked_cta', { action: 'detect_photos' });
     setViewMode('detect');
     setUploadedImages([]);
     setDetectedItems([]);
@@ -103,6 +107,7 @@ export default function Pantry() {
     });
 
     addPantryItems(itemsToSave);
+    track('pantry_scan', { itemsCount: itemsToSave.length });
     toast.success(`Added ${itemsToSave.length} items to pantry`);
     
     // Reset detection state

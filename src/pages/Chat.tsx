@@ -9,6 +9,7 @@ import { RECIPE_CATALOG } from '@/data/recipes';
 import { useStore } from '@/store/useStore';
 import { getLLMResponse, ChatMessage } from '@/utils/llmAdapter';
 import { Signal } from '@/types';
+import { track } from '@/lib/analytics';
 
 interface Message extends ChatMessage {
   allergenWarning?: string;
@@ -20,7 +21,7 @@ const Chat = () => {
   const recipeId = searchParams.get('recipeId');
   const recipe = recipeId ? RECIPE_CATALOG.find(r => r.id === recipeId) : null;
   
-  const { pantryItems, preferences, signals, shoppingState } = useStore();
+  const { pantryItems, preferences, signals, shoppingState, memory, updateMemory, addRecentAction } = useStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,12 +36,21 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
+    track('opened_screen', { screen: 'chat', recipeId });
+    
     // Initialize messages based on recipe context
     if (recipe) {
+      let greeting = `Hello! I'm your CookMate Chef 👨‍🍳. You're now talking about: **${recipe.title}**`;
+      
+      // Add memory context if available
+      if (memory.lastRecipeName && memory.lastRecipeName !== recipe.title) {
+        greeting = `Hey, remember ${memory.lastRecipeName}? Here's something new: **${recipe.title}** 👨‍🍳`;
+      }
+      
       setMessages([
         {
           role: 'assistant',
-          content: `Hello! I'm your CookMate Chef 👨‍🍳. You're now talking about: **${recipe.title}**`,
+          content: greeting,
         },
         {
           role: 'assistant',
@@ -48,13 +58,28 @@ const Chat = () => {
         },
       ]);
     } else {
+      let greeting = "Hello! I'm your CookMate Chef 👨‍🍳. Want to talk about today's recipe or substitutions?";
+      
+      if (memory.lastChatDate) {
+        const daysSinceChat = Math.floor(
+          (Date.now() - new Date(memory.lastChatDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (daysSinceChat < 2) {
+          greeting = "Back already? Let's cook something fresh 🥗";
+        }
+      }
+      
       setMessages([
         {
           role: 'assistant',
-          content: "Hello! I'm your CookMate Chef 👨‍🍳. Want to talk about today's recipe or substitutions?",
+          content: greeting,
         },
       ]);
     }
+    
+    // Update memory
+    updateMemory({ lastChatDate: new Date().toISOString() });
   }, [recipe]);
 
   const hasShoppingItems = shoppingState.queue.filter(i => !i.bought).length > 0;
@@ -76,6 +101,9 @@ const Chat = () => {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+
+    track('chat_message_sent', { recipeId });
+    addRecentAction('chat', { recipeId });
 
     const userMessage = input;
     setInput('');

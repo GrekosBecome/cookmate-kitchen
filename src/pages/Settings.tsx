@@ -12,7 +12,7 @@ import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown } from 'lucide-react
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { track } from '@/lib/analytics';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 4 }, (_, i) => {
@@ -34,8 +35,12 @@ const HOURS = Array.from({ length: 4 }, (_, i) => {
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { preferences, updatePreferences, reset, learning, resetLearning } = useStore();
+  const { preferences, updatePreferences, reset, learning, resetLearning, memory, updateMemory } = useStore();
   const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
+  
+  useEffect(() => {
+    track('opened_screen', { screen: 'settings' });
+  }, []);
 
   const currentPrefs = preferences || defaultPreferences;
   const topTags = getTopTags(learning, 8);
@@ -43,6 +48,7 @@ const Settings = () => {
   const mutedTags = topTags.filter(t => t.weight < 0);
 
   const handleDietChange = (diet: string) => {
+    track('diet_changed', { diet });
     updatePreferences({ diet: diet as any });
   };
 
@@ -63,6 +69,16 @@ const Settings = () => {
 
   const handlePrivacyToggle = (checked: boolean) => {
     updatePreferences({ privacyNoStoreImages: checked });
+  };
+  
+  const handleMemoryToggle = (checked: boolean) => {
+    updateMemory({ memoryLearningEnabled: checked });
+    toast({
+      title: checked ? "Memory enabled" : "Memory disabled",
+      description: checked 
+        ? "We'll remember your preferences and adapt over time." 
+        : "We'll stop tracking your cooking patterns.",
+    });
   };
 
   const handleDeleteAllData = () => {
@@ -199,6 +215,21 @@ const Settings = () => {
               <Switch
                 checked={currentPrefs.privacyNoStoreImages || false}
                 onCheckedChange={handlePrivacyToggle}
+              />
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Allow memory learning</Label>
+                <p className="text-sm text-muted-foreground">
+                  Let Chef remember your preferences
+                </p>
+              </div>
+              <Switch
+                checked={memory.memoryLearningEnabled}
+                onCheckedChange={handleMemoryToggle}
               />
             </div>
 

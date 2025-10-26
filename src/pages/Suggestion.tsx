@@ -10,11 +10,25 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FloatingButtons } from '@/components/FloatingButtons';
+import { track } from '@/lib/analytics';
 
 const Suggestion = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { preferences, pantryItems, todaysPick, setTodaysPick, addSignal, lastSyncAt, learning, recomputeLearning, shoppingState } = useStore();
+  const { 
+    preferences, 
+    pantryItems, 
+    todaysPick, 
+    setTodaysPick, 
+    addSignal, 
+    lastSyncAt, 
+    learning, 
+    recomputeLearning, 
+    shoppingState,
+    memory,
+    updateMemory,
+    addRecentAction
+  } = useStore();
   
   const [suggestions, setSuggestions] = useState<Recipe[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,6 +39,8 @@ const Suggestion = () => {
   const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
 
   useEffect(() => {
+    track('opened_screen', { screen: 'suggestion' });
+    
     // Recompute learning on app start
     recomputeLearning();
 
@@ -73,6 +89,9 @@ const Suggestion = () => {
   };
 
   const handleAnother = () => {
+    track('clicked_cta', { action: 'another' });
+    addRecentAction('another');
+    
     if (spinCount >= 2) {
       toast({
         title: "Maximum spins reached",
@@ -108,6 +127,9 @@ const Suggestion = () => {
   };
 
   const handleSkip = () => {
+    track('clicked_cta', { action: 'skip' });
+    addRecentAction('skip');
+    
     const current = suggestions[currentIndex];
     if (current) {
       addSignal({
@@ -142,14 +164,36 @@ const Suggestion = () => {
 
   const currentRecipe = suggestions[currentIndex];
   const pendingItems = shoppingState.queue.filter(i => !i.bought);
+  
+  // Dynamic greeting based on memory
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Afternoon cravings";
+    return "Evening ideas";
+  };
+  
+  const getContextMessage = () => {
+    if (memory.lastRecipeName && memory.lastCookDate) {
+      const daysSinceLastCook = Math.floor(
+        (Date.now() - new Date(memory.lastCookDate).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      
+      if (daysSinceLastCook === 0) return `${memory.lastRecipeName} was tasty! Ready for another?`;
+      if (daysSinceLastCook === 1) return `Back for more? Yesterday's ${memory.lastRecipeName} was great.`;
+      if (daysSinceLastCook < 7) return `Haven't cooked in ${daysSinceLastCook} days — let's change that 🍳`;
+    }
+    
+    return "Chef picked these just for you";
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         <header className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">Today's ideas 🍳</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{getGreeting()} 🍳</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Chef picked these just for you
+            {getContextMessage()}
           </p>
         </header>
 
@@ -208,10 +252,10 @@ const Suggestion = () => {
           ) : (
             <div className="text-center space-y-4 py-8 animate-fade-in">
               <p className="text-sm sm:text-base text-muted-foreground">
-                Your fridge is empty — and that's okay. Let's fill it up 🥦
+                Your fridge is empty — let's fill it up 🥦
               </p>
               <Button onClick={handleSimpleEggs} variant="outline" className="h-11">
-                Start simple: Eggs & Toast
+                Start simple: Scrambled eggs
               </Button>
             </div>
           )}
