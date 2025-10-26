@@ -34,16 +34,9 @@ export interface LLMRequest {
   shoppingState?: ShoppingState;
 }
 
-export interface ToolCall {
-  id: string;
-  name: string;
-  arguments: any;
-}
-
 export interface LLMResponse {
   content?: string;
   allergenWarning?: string;
-  toolCalls?: ToolCall[];
 }
 
 const detectIntent = (userMessage: string): { type: string; details: any } => {
@@ -221,15 +214,9 @@ const callEdgeFunction = async (request: LLMRequest): Promise<LLMResponse> => {
     const data = await response.json();
     
     // If the response indicates it's a mock or fallback, use local mock
-    if (data.isMock && !data.toolCalls) {
+    if (data.isMock) {
       console.log('Edge function returned mock response');
       return generateMockResponse(request);
-    }
-    
-    // Check if we got tool calls
-    if (data.toolCalls) {
-      console.log('Received tool calls from LLM:', data.toolCalls);
-      return { toolCalls: data.toolCalls };
     }
     
     const content = data.content || 'Sorry, I had trouble generating a response.';

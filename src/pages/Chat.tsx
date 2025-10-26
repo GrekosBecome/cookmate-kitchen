@@ -3,23 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, ArrowLeft, AlertCircle, Loader2, Undo2, CheckCircle } from 'lucide-react';
+import { Send, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RECIPE_CATALOG } from '@/data/recipes';
 import { useStore } from '@/store/useStore';
 import { getLLMResponse, ChatMessage } from '@/utils/llmAdapter';
 import { Signal } from '@/types';
 import { track } from '@/lib/analytics';
-import { executeToolCalls, ToolExecutionContext } from '@/utils/toolExecutor';
-import { useToast } from '@/hooks/use-toast';
 
 interface Message extends ChatMessage {
   allergenWarning?: string;
-  toolConfirmation?: {
-    action: string;
-    details: string;
-    canUndo: boolean;
-  };
 }
 
 const Chat = () => {
@@ -36,12 +29,7 @@ const Chat = () => {
     memory, 
     updateMemory, 
     addRecentAction,
-    addShoppingItem,
-    removeShoppingItem,
-    recordOperation,
-    undoLastOperation,
   } = useStore();
-  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -142,119 +130,8 @@ const Chat = () => {
         shoppingState,
       });
 
-      // Check if we got tool calls
-      if (response.toolCalls) {
-        console.log('Processing tool calls:', response.toolCalls);
-        
-        // Execute tools
-        const toolContext: ToolExecutionContext = {
-          pantry: pantryItems,
-          cart: shoppingState.queue,
-          addShoppingItem,
-          removeShoppingItem,
-          recordOperation,
-          undoLastOperation,
-        };
-        
-        const toolResults = executeToolCalls(response.toolCalls, toolContext);
-        console.log('Tool results:', toolResults);
-        
-        // Format confirmation message
-        let confirmationMsg = '';
-        let actionSummary = '';
-        
-        toolResults.forEach((result, idx) => {
-          const toolCall = response.toolCalls![idx];
-          const res = result.result;
-          
-          switch (toolCall.name) {
-            case 'addToCart':
-              if (res.added) {
-                actionSummary = 'Added to cart';
-                confirmationMsg += `✅ Added **${res.item.name}** (${res.item.qty}${res.item.unit ? ' ' + res.item.unit : ''}) to your cart.\n`;
-              } else {
-                confirmationMsg += `ℹ️ ${res.message}\n`;
-              }
-              break;
-              
-            case 'removeFromCart':
-              if (res.removed) {
-                actionSummary = 'Removed from cart';
-                confirmationMsg += `🗑️ Removed **${res.item.name}** from your cart.\n`;
-              } else {
-                confirmationMsg += `ℹ️ ${res.message}\n`;
-              }
-              break;
-              
-            case 'updateCartItem':
-              if (res.updated) {
-                actionSummary = 'Updated cart';
-                confirmationMsg += `🔄 Updated **${res.item.name}** to ${res.item.qty}${res.item.unit ? ' ' + res.item.unit : ''}.\n`;
-              } else {
-                confirmationMsg += `ℹ️ ${res.message}\n`;
-              }
-              break;
-              
-            case 'summarizeCart':
-              actionSummary = 'Cart summary';
-              confirmationMsg += `**Shopping Cart Summary** (${res.totalItems} items)\n\n`;
-              Object.entries(res.byAisle).forEach(([aisle, items]: [string, any[]]) => {
-                if (items.length > 0) {
-                  confirmationMsg += `**${aisle}:**\n`;
-                  items.forEach(item => {
-                    confirmationMsg += `- ${item.name} (${item.qty}${item.unit ? ' ' + item.unit : ''})\n`;
-                  });
-                  confirmationMsg += `\n`;
-                }
-              });
-              break;
-              
-            case 'suggestSubstitutes':
-              actionSummary = 'Substitutes';
-              confirmationMsg += `**Substitutes for ${res.missing}:**\n`;
-              res.alternatives.forEach((alt: string) => {
-                confirmationMsg += `- ${alt}\n`;
-              });
-              if (res.inPantry.length > 0) {
-                confirmationMsg += `\n**In your pantry:** ${res.inPantry.join(', ')}\n`;
-              }
-              break;
-              
-            case 'undoLastChange':
-              if (res.undone) {
-                actionSummary = 'Undone';
-                confirmationMsg += `↩️ ${res.message}\n`;
-                toast({
-                  title: 'Undone',
-                  description: res.message,
-                });
-              } else {
-                confirmationMsg += `ℹ️ ${res.message}\n`;
-              }
-              break;
-              
-            case 'getPantry':
-            case 'getCart':
-              // These are read-only, no confirmation needed
-              break;
-          }
-        });
-        
-        // Add confirmation message
-        setMessages(prev => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: confirmationMsg || 'Done! ✅',
-            toolConfirmation: actionSummary ? {
-              action: actionSummary,
-              details: confirmationMsg,
-              canUndo: ['addToCart', 'removeFromCart', 'updateCartItem'].includes(response.toolCalls![0]?.name),
-            } : undefined,
-          },
-        ]);
-      } else if (response.content) {
-        // Regular text response
+      // Add response (tools are now handled server-side)
+      if (response.content) {
         setMessages(prev => [
           ...prev,
           {
@@ -287,30 +164,6 @@ const Chat = () => {
         handleSend();
       }
     }, 100);
-  };
-
-  const handleUndo = () => {
-    const result = undoLastOperation();
-    if (result.success) {
-      toast({
-        title: 'Undone',
-        description: result.message,
-      });
-      // Add system message
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: `↩️ ${result.message}`,
-        },
-      ]);
-    } else {
-      toast({
-        title: 'Cannot undo',
-        description: result.message,
-        variant: 'destructive',
-      });
-    }
   };
 
   return (
@@ -356,31 +209,6 @@ const Chat = () => {
                   <AlertCircle className="h-4 w-4 text-destructive" />
                   <AlertDescription className="text-destructive">{message.allergenWarning}</AlertDescription>
                 </Alert>
-              )}
-              
-              {message.toolConfirmation && (
-                <Card className="mr-auto max-w-[85%] mb-2 border-primary/30 bg-primary/5">
-                  <CardContent className="p-3 flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-primary mb-1">{message.toolConfirmation.action}</p>
-                      <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                        {message.toolConfirmation.details}
-                      </p>
-                    </div>
-                    {message.toolConfirmation.canUndo && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleUndo}
-                        className="flex-shrink-0 h-7 px-2 text-xs"
-                      >
-                        <Undo2 className="h-3 w-3 mr-1" />
-                        Undo
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
               )}
               
               <Card

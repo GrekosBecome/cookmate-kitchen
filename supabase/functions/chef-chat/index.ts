@@ -36,12 +36,12 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, context, pantry, cart } = await req.json();
+    const { messages, context, pantry = [], cart = [] } = await req.json();
     console.log('Chef chat request received:', { 
       messageCount: messages?.length, 
       hasContext: !!context,
-      pantryCount: pantry?.length || 0,
-      cartCount: cart?.length || 0
+      pantryCount: pantry.length,
+      cartCount: cart.length
     });
     
     const apiKey = Deno.env.get('OPENAI_API_KEY');
@@ -214,26 +214,115 @@ serve(async (req) => {
     if (message.tool_calls && message.tool_calls.length > 0) {
       console.log('OpenAI requested tool calls:', message.tool_calls.length);
       
-      // Execute tool calls and return results
-      const toolResults = message.tool_calls.map((toolCall: any) => {
+      // Execute tools locally
+      const toolMessages: any[] = message.tool_calls.map((toolCall: any) => {
         const functionName = toolCall.function.name;
         const args = JSON.parse(toolCall.function.arguments || '{}');
         
         console.log(`Executing tool: ${functionName}`, args);
         
-        // Return tool call info for client to execute
+        let result: any = {};
+        
+        // Execute tool based on name
+        switch (functionName) {
+          case 'getPantry':
+            result = pantry.map((item: any) => ({
+              name: item.name,
+              qty: item.qty,
+              unit: item.unit,
+              confidence: item.confidence,
+            }));
+            break;
+            
+          case 'getCart':
+            result = cart
+              .filter((item: any) => !item.bought)
+              .map((item: any) => ({
+                name: item.name,
+                qty: item.suggestedQty,
+                unit: item.unit,
+                reason: item.reason,
+              }));
+            break;
+            
+          case 'suggestSubstitutes':
+            const missing = args.missing?.toLowerCase() || '';
+            const substituteMap: Record<string, string[]> = {
+              milk: ['oat milk', 'almond milk', 'soy milk'],
+              butter: ['olive oil', 'coconut oil', 'ghee'],
+              egg: ['flax egg', 'chia egg', 'applesauce'],
+              flour: ['almond flour', 'coconut flour', 'oat flour'],
+              sugar: ['honey', 'maple syrup', 'agave'],
+              chicken: ['tofu', 'tempeh', 'seitan'],
+              beef: ['mushrooms', 'lentils', 'black beans'],
+            };
+            
+            let alternatives: string[] = [];
+            for (const [key, subs] of Object.entries(substituteMap)) {
+              if (missing.includes(key) || key.includes(missing)) {
+                alternatives = subs;
+                break;
+              }
+            }
+            
+            const inPantry = pantry
+              .filter((item: any) => !item.used && (item.confidence || 100) > 30)
+              .map((item: any) => item.name)
+              .slice(0, 5);
+            
+            result = {
+              missing: args.missing,
+              alternatives: alternatives.length > 0 ? alternatives : ['Try similar items from your pantry'],
+              inPantry,
+            };
+            break;
+            
+          default:
+            result = { message: `Tool ${functionName} not implemented on server` };
+        }
+        
         return {
-          id: toolCall.id,
-          name: functionName,
-          arguments: args,
+          role: 'tool',
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(result),
         };
       });
       
-      return new Response(
-        JSON.stringify({ 
-          toolCalls: toolResults,
-          isMock: false 
+      // Send tool results back to OpenAI for final response
+      console.log('Sending tool results back to OpenAI...');
+      const followUpMessages = [
+        ...fullMessages,
+        message, // Original assistant message with tool_calls
+        ...toolMessages, // Tool results
+      ];
+      
+      const followUpResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: followUpMessages,
+          temperature: 0.6,
+          max_tokens: 500,
         }),
+      });
+      
+      if (!followUpResponse.ok) {
+        const errorText = await followUpResponse.text();
+        console.error('OpenAI follow-up error:', followUpResponse.status, errorText);
+        throw new Error('Failed to get follow-up response');
+      }
+      
+      const followUpData = await followUpResponse.json();
+      const finalContent = followUpData.choices[0]?.message?.content || 'Sorry, I had trouble processing that.';
+      
+      console.log('OpenAI final response received');
+      
+      return new Response(
+        JSON.stringify({ content: finalContent, isMock: false }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
@@ -241,7 +330,7 @@ serve(async (req) => {
       );
     }
     
-    // Regular text response
+    // Regular text response (no tools)
     const content = message.content || 'Sorry, I had trouble generating a response.';
     
     console.log('OpenAI response received successfully');
