@@ -43,44 +43,11 @@ export const FloatingButtons = ({ recipeId }: FloatingButtonsProps) => {
   return (
     <TooltipProvider>
       <div 
-        className="fixed bottom-20 left-0 right-0 flex justify-between px-4 pointer-events-none z-40"
+        className="fixed bottom-20 right-4 pointer-events-none z-40"
         style={{
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* Pantry Shortcut - Left */}
-        {!isOnPantryPage && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={handlePantryClick}
-                className={cn(
-                  "relative h-14 w-14 rounded-full shadow-lg pointer-events-auto",
-                  "hover:scale-110 active:scale-95 transition-all duration-200",
-                  "animate-fade-in",
-                  pendingShoppingItems > 0 && "animate-pulse"
-                )}
-                aria-label={pendingShoppingItems > 0 ? `Shopping list (${pendingShoppingItems} items)` : 'Open pantry'}
-              >
-                <ShoppingCart className="h-6 w-6" />
-                {pendingShoppingItems > 0 && (
-                  <Badge 
-                    className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-[10px] flex items-center justify-center"
-                    variant="destructive"
-                  >
-                    {pendingShoppingItems > 9 ? '9+' : pendingShoppingItems}
-                  </Badge>
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{pendingShoppingItems > 0 ? `Shopping list (${pendingShoppingItems})` : 'Open pantry'}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
         {/* Chef Shortcut - Right */}
         {!isOnChatPage && (
           <Tooltip>
@@ -89,7 +56,7 @@ export const FloatingButtons = ({ recipeId }: FloatingButtonsProps) => {
                 size="icon"
                 onClick={handleChefClick}
                 className={cn(
-                  "h-14 w-14 rounded-full shadow-lg pointer-events-auto ml-auto",
+                  "h-14 w-14 rounded-full shadow-lg pointer-events-auto",
                   "hover:scale-110 active:scale-95 transition-all duration-200",
                   "animate-fade-in animate-breathe"
                 )}

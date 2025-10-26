@@ -222,22 +222,6 @@ const Suggestion = () => {
           </Card>
         )}
 
-        {isPantryStale && (
-          <Alert className="animate-fade-in">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              Pantry last updated {Math.floor((Date.now() - new Date(lastSyncAt).getTime()) / (1000 * 60 * 60 * 24))} days ago — ready for a fresh scan?
-            </AlertDescription>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 h-9"
-              onClick={() => navigate('/pantry')}
-            >
-              Refresh Pantry
-            </Button>
-          </Alert>
-        )}
 
         <div className="space-y-4">
           {currentRecipe ? (
