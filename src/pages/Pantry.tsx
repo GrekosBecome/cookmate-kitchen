@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Camera, Info } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FloatingButtons } from '@/components/FloatingButtons';
-import { detectIngredientsFromImages } from '@/utils/visionDetection';
+import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visionDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
 import { track } from '@/lib/analytics';
@@ -59,21 +59,35 @@ export default function Pantry() {
     if (uploadedImages.length > 0 && detectedItems.length === 0 && !isDetecting) {
       setIsDetecting(true);
       
-      detectIngredientsFromImages(uploadedImages)
-        .then(detected => {
-          setDetectedItems(detected);
-          if (detected.length > 0) {
-            toast.success(`Found ${detected.length} ingredients in your photos`);
-          } else {
-            toast.info('No ingredients detected. Try different photos or add items manually.');
+      // Step 1: Validate images for food content and no people
+      analyzeImagesForFood(uploadedImages)
+        .then(validation => {
+          if (!validation.success) {
+            // Validation failed - show error and clear images
+            toast.error(validation.error || 'Image validation failed');
+            setUploadedImages([]);
+            setDetectedItems([]);
+            setIsDetecting(false);
+            return;
           }
+          
+          // Step 2: Images passed validation, proceed with ingredient detection
+          return detectIngredientsFromImages(uploadedImages)
+            .then(detected => {
+              setDetectedItems(detected);
+              if (detected.length > 0) {
+                toast.success(`Found ${detected.length} ingredients in your photos`);
+              } else {
+                toast.info('No ingredients detected. Try different photos or add items manually.');
+              }
+            });
         })
         .catch(error => {
           console.error('Detection failed:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           
           if (errorMessage.includes('Invalid API key') || errorMessage.includes('API_KEY_INVALID')) {
-            toast.error('Invalid API key. Please update your Google Cloud Vision API key in settings.');
+            toast.error('Invalid API key. Please check your API keys in settings.');
           } else if (errorMessage.includes('timeout')) {
             toast.error('Request timed out. Please try with fewer or smaller images.');
           } else {

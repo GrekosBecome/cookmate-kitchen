@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.detect-ingredients]
 verify_jwt = false
+
+[functions.analyze-image]
+verify_jwt = false
