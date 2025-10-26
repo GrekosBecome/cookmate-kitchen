@@ -45,11 +45,11 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Handle back navigation to /recipes
+  // Handle back navigation to home (recipes page)
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       e.preventDefault();
-      navigate('/recipes', { replace: true });
+      navigate('/', { replace: true });
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -313,7 +313,7 @@ Please:
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/recipes')}
+            onClick={() => navigate('/')}
             className="h-11 w-11 min-h-[44px] min-w-[44px] p-0"
             aria-label="Go back to recipes"
           >
