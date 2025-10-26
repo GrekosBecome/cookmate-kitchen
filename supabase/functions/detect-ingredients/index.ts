@@ -79,6 +79,18 @@ serve(async (req) => {
         if (!visionResponse.ok) {
           const errorText = await visionResponse.text();
           console.error(`Vision API error for image ${i + 1}:`, errorText);
+          
+          // Check if it's an invalid API key error
+          if (visionResponse.status === 400 && errorText.includes('API_KEY_INVALID')) {
+            console.error('Invalid API key detected, returning error response');
+            return new Response(
+              JSON.stringify({ 
+                error: 'Invalid API key. Please check your GOOGLE_CLOUD_VISION_API_KEY secret.',
+                useMock: true 
+              }),
+              { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
           continue;
         }
 

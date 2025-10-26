@@ -64,11 +64,25 @@ export default function Pantry() {
           setDetectedItems(detected);
           if (detected.length > 0) {
             toast.success(`Found ${detected.length} ingredients in your photos`);
+          } else {
+            toast.info('No ingredients detected. Try different photos or add items manually.');
           }
         })
         .catch(error => {
           console.error('Detection failed:', error);
-          toast.error('Detection failed, please try again');
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          if (errorMessage.includes('Invalid API key') || errorMessage.includes('API_KEY_INVALID')) {
+            toast.error('Invalid API key. Please update your Google Cloud Vision API key in settings.');
+          } else if (errorMessage.includes('timeout')) {
+            toast.error('Request timed out. Please try with fewer or smaller images.');
+          } else {
+            toast.error("Couldn't analyze this photo right now — please try again later 🌿");
+          }
+          
+          // Clear state to allow retry
+          setUploadedImages([]);
+          setDetectedItems([]);
         })
         .finally(() => {
           setIsDetecting(false);
