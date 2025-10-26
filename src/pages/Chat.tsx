@@ -339,20 +339,27 @@ Please:
         }}
       >
         <div className="container max-w-2xl mx-auto px-4 py-3 space-y-3">
-          <div className="flex gap-2 flex-wrap">
-            {quickActions.map((action, idx) => (
-              <Button
-                key={action}
-                variant="outline"
-                size="sm"
-                className="text-[11px] sm:text-xs h-8 sm:h-9 hover:bg-accent/50 transition-all duration-100 animate-fade-in"
-                style={{ animationDelay: `${idx * 50}ms` }}
-                onClick={() => handleQuickAction(action)}
-                disabled={isLoading}
-              >
-                {action}
-              </Button>
-            ))}
+          <div className="relative animate-fade-in">
+            {/* Fade gradients for scroll hint */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
+            
+            {/* Horizontal scrollable container */}
+            <div className="flex overflow-x-auto gap-2 px-2 py-1 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+              {quickActions.map((action, idx) => (
+                <button
+                  key={action}
+                  onClick={() => handleQuickAction(action)}
+                  disabled={isLoading}
+                  className="flex-shrink-0 whitespace-nowrap rounded-full border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-accent hover:text-accent-foreground active:scale-95 transition-all duration-100 disabled:opacity-50 disabled:pointer-events-none snap-start animate-fade-in"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                  aria-label={action}
+                  tabIndex={0}
+                >
+                  {action}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-2">
