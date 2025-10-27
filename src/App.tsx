@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { BottomNav } from "@/components/BottomNav";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
 import Onboarding from "./pages/Onboarding";
 import Pantry from "./pages/Pantry";
 import Suggestion from "./pages/Suggestion";
@@ -33,6 +34,7 @@ function AppContent() {
     <>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/landing" element={<Landing />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/pantry" element={<Pantry />} />
         <Route path="/suggestion" element={<Suggestion />} />

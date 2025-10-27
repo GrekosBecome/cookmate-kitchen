@@ -10,7 +10,7 @@ const Index = () => {
   useEffect(() => {
     // Smart redirect logic
     if (!hasCompletedOnboarding) {
-      navigate('/onboarding', { replace: true });
+      navigate('/landing', { replace: true });
     } else if (pantryItems.length === 0) {
       navigate('/pantry', { replace: true });
     } else {
