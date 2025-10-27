@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChefHat, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,6 +9,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useStore } from '@/store/useStore';
 import { cn } from '@/lib/utils';
+import chefIcon from '@/assets/chef-icon.png';
 
 interface FloatingButtonsProps {
   recipeId?: string;
@@ -56,13 +56,17 @@ export const FloatingButtons = ({ recipeId }: FloatingButtonsProps) => {
                 size="icon"
                 onClick={handleChefClick}
                 className={cn(
-                  "h-14 w-14 rounded-full shadow-lg pointer-events-auto",
+                  "h-14 w-14 rounded-full shadow-lg pointer-events-auto overflow-hidden p-0",
                   "hover:scale-110 active:scale-95 transition-all duration-200",
                   "animate-fade-in animate-breathe"
                 )}
                 aria-label="Ask the Chef"
               >
-                <ChefHat className="h-6 w-6" />
+                <img 
+                  src={chefIcon} 
+                  alt="Chef" 
+                  className="w-full h-full object-cover"
+                />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="left">
