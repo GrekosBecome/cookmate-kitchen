@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
+import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { ServicesSection } from '@/components/landing/ServicesSection';
+import { StatsSection } from '@/components/landing/StatsSection';
+import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { InstallSection } from '@/components/landing/InstallSection';
 
 const Landing = () => {
@@ -19,13 +21,15 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
+      <ServicesSection />
+      <StatsSection />
+      <TestimonialsSection />
       <InstallSection />
       
       {/* Footer */}
-      <footer className="border-t py-12">
+      <footer id="contact" className="border-t py-12">
         <div className="container max-w-6xl mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
             © 2025 CookMate. Your Smart Kitchen Companion.
