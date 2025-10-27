@@ -20,17 +20,7 @@ Decision Logic:
 - BORDERLINE if: food_coverage >= 0.10 AND food_coverage < 0.15 AND person_present==false (uncertain detection).
 - ACCEPT otherwise (food is clearly present).
 
-Return JSON only (no prose):
-{
-  "person_present": boolean,
-  "objects": [
-    {"label": "tomato", "is_food": true, "box": {"x":0.12,"y":0.34,"w":0.18,"h":0.22}},
-    ...
-  ],
-  "food_coverage": 0.42,
-  "decision": "ACCEPT" | "BORDERLINE" | "REJECT",
-  "reason": "Brief explanation in plain English"
-}`;
+Use the analyze_food_image tool to return your analysis.`;
 
 interface AnalysisResult {
   person_present: boolean;
@@ -59,17 +49,17 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('OPENAI_API_KEY');
+    const apiKey = Deno.env.get('LOVABLE_API_KEY');
     
     if (!apiKey) {
-      console.error('OPENAI_API_KEY not found');
+      console.error('LOVABLE_API_KEY not found');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Analyzing ${images.length} images with OpenAI Vision`);
+    console.log(`Analyzing ${images.length} images with Gemini Vision`);
     
     const results: AnalysisResult[] = [];
     
@@ -82,14 +72,14 @@ serve(async (req) => {
         : `data:image/jpeg;base64,${imageData}`;
 
       try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'google/gemini-2.5-flash',
             messages: [
               {
                 role: 'system',
@@ -101,13 +91,69 @@ serve(async (req) => {
                   {
                     type: 'image_url',
                     image_url: {
-                      url: imageUrl,
-                      detail: 'high'
+                      url: imageUrl
                     }
                   }
                 ]
               }
             ],
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "analyze_food_image",
+                  description: "Analyze an image to detect food content and determine if it should be accepted.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      person_present: {
+                        type: "boolean",
+                        description: "Whether a person or face is prominent in the image"
+                      },
+                      objects: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            label: { type: "string", description: "Name of the detected object" },
+                            is_food: { type: "boolean", description: "Whether this object is food" },
+                            box: {
+                              type: "object",
+                              properties: {
+                                x: { type: "number", minimum: 0, maximum: 1 },
+                                y: { type: "number", minimum: 0, maximum: 1 },
+                                w: { type: "number", minimum: 0, maximum: 1 },
+                                h: { type: "number", minimum: 0, maximum: 1 }
+                              },
+                              required: ["x", "y", "w", "h"]
+                            }
+                          },
+                          required: ["label", "is_food", "box"]
+                        }
+                      },
+                      food_coverage: {
+                        type: "number",
+                        minimum: 0,
+                        maximum: 1,
+                        description: "Total area covered by food (sum of food boxes)"
+                      },
+                      decision: {
+                        type: "string",
+                        enum: ["ACCEPT", "BORDERLINE", "REJECT"],
+                        description: "Decision on whether to accept the image"
+                      },
+                      reason: {
+                        type: "string",
+                        description: "Brief explanation for the decision"
+                      }
+                    },
+                    required: ["person_present", "objects", "food_coverage", "decision", "reason"],
+                    additionalProperties: false
+                  }
+                }
+              }
+            ],
+            tool_choice: { type: "function", function: { name: "analyze_food_image" } },
             max_tokens: 1000,
             temperature: 0.1
           }),
@@ -115,11 +161,25 @@ serve(async (req) => {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`OpenAI API error for image ${i + 1}:`, response.status, errorText);
+          console.error(`Lovable AI error for image ${i + 1}:`, response.status, errorText);
+          
+          if (response.status === 429) {
+            return new Response(
+              JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+              { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          if (response.status === 402) {
+            return new Response(
+              JSON.stringify({ error: 'Payment required. Please add credits to your Lovable AI workspace.' }),
+              { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
           
           if (response.status === 401) {
             return new Response(
-              JSON.stringify({ error: 'Invalid OpenAI API key' }),
+              JSON.stringify({ error: 'Invalid API key' }),
               { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
@@ -128,21 +188,19 @@ serve(async (req) => {
         }
 
         const data = await response.json();
-        const content = data.choices?.[0]?.message?.content;
+        const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
         
-        if (!content) {
-          console.error(`No content in response for image ${i + 1}`);
+        if (!toolCall || toolCall.function?.name !== 'analyze_food_image') {
+          console.error(`No valid tool call in response for image ${i + 1}`);
           continue;
         }
 
-        // Parse the JSON response
+        // Parse the tool call arguments
         let analysis: AnalysisResult;
         try {
-          // Remove markdown code blocks if present
-          const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-          analysis = JSON.parse(cleanContent);
+          analysis = JSON.parse(toolCall.function.arguments);
         } catch (parseError) {
-          console.error(`Failed to parse JSON for image ${i + 1}:`, content);
+          console.error(`Failed to parse tool call arguments for image ${i + 1}:`, toolCall.function.arguments);
           continue;
         }
 

@@ -12,7 +12,7 @@ export const analyzeImagesForFood = async (
   coveragePercent?: number;
 }> => {
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Image analysis timeout after 15 seconds')), 15000);
+    setTimeout(() => reject(new Error('Image analysis timeout after 30 seconds')), 30000);
   });
 
   try {
@@ -55,9 +55,9 @@ export const analyzeImagesForFood = async (
 export const detectIngredientsFromImages = async (
   images: string[]
 ): Promise<DetectedItem[]> => {
-  // Create timeout promise (15 seconds)
+  // Create timeout promise (30 seconds)
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Request timeout after 15 seconds')), 15000);
+    setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000);
   });
 
   try {
