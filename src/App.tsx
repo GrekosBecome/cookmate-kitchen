@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { BottomNav } from "@/components/BottomNav";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Onboarding from "./pages/Onboarding";
@@ -16,6 +17,7 @@ import Chat from "./pages/Chat";
 import RecipeDetail from "./pages/RecipeDetail";
 import NotFound from "./pages/NotFound";
 import Insights from "./pages/Insights";
+import Offline from "./pages/Offline";
 
 const queryClient = new QueryClient();
 
@@ -27,8 +29,8 @@ function AppContent() {
     applyConfidenceDecay();
   }, [applyConfidenceDecay]);
 
-  // Hide bottom nav on onboarding and index pages
-  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding';
+  // Hide bottom nav on onboarding, index, landing and offline pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline';
 
   return (
     <>
@@ -39,12 +41,14 @@ function AppContent() {
         <Route path="/pantry" element={<Pantry />} />
         <Route path="/suggestion" element={<Suggestion />} />
         <Route path="/settings" element={<Settings />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/recipe/:id" element={<RecipeDetail />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/recipe/:id" element={<RecipeDetail />} />
+        <Route path="/insights" element={<Insights />} />
+        <Route path="/offline" element={<Offline />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       {!hideBottomNav && <BottomNav />}
+      <InstallPrompt />
     </>
   );
 }

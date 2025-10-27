@@ -20,26 +20,39 @@ export default defineConfig(({ mode }) => ({
         name: "CookMate - Your Smart Kitchen Companion",
         short_name: "CookMate",
         description: "Get personalized recipe suggestions based on your pantry and preferences",
-        theme_color: "#F47736",
+        theme_color: "#65C6A4",
         background_color: "#FAF7F5",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
+        scope: "/",
         icons: [
           {
             src: "icon-192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any maskable",
           },
           {
             src: "icon-512.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
+        screenshots: [
+          {
+            src: "icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            form_factor: "narrow",
           },
         ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        navigateFallback: '/offline',
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -49,6 +62,21 @@ export default defineConfig(({ mode }) => ({
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5, // 5 minutes
               },
               cacheableResponse: {
                 statuses: [0, 200],
