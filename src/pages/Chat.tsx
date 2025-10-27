@@ -303,7 +303,7 @@ Please:
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 76px)',
       }}
     >
-      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur-sm">
         <div 
           className="container max-w-2xl mx-auto px-4 py-3 flex items-center gap-3"
           style={{
@@ -394,7 +394,7 @@ Please:
 
       {/* Sticky input bar */}
       <div 
-        className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-30"
+        className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-60"
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 76px)',
         }}
