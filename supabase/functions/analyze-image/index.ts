@@ -6,17 +6,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SYSTEM_PROMPT = `You are a vision gatekeeper for a cooking app. Analyze each image and return a strict JSON report.
+const SYSTEM_PROMPT = `You are a vision gatekeeper for a cooking app. Analyze images to detect food while being forgiving of typical kitchen photos.
+
 Rules:
-- Detect persons/faces. If any present, set person_present=true.
+- Detect persons/faces. If any person/face is prominent in the image, set person_present=true.
 - Detect objects and label whether each is FOOD (true/false).
+- Accept photos with food as the main subject, even if hands, utensils, tables, or packaging are visible in the background.
 - Provide bounding boxes normalized to image width/height: {x, y, w, h} in [0..1].
-- Compute food_coverage = sum of FOOD boxes area.
-- Decision:
-  - REJECT if person_present==true OR food_coverage < 0.20 OR no FOOD objects.
-  - ACCEPT otherwise.
-- No prose. Return JSON only.
-Schema:
+- Compute food_coverage = sum of FOOD boxes area (0.0 to 1.0).
+
+Decision Logic:
+- REJECT if: (person_present==true AND food_coverage < 0.10) OR no FOOD objects detected at all.
+- BORDERLINE if: food_coverage >= 0.10 AND food_coverage < 0.15 AND person_present==false (uncertain detection).
+- ACCEPT otherwise (food is clearly present).
+
+Return JSON only (no prose):
 {
   "person_present": boolean,
   "objects": [
@@ -24,8 +28,8 @@ Schema:
     ...
   ],
   "food_coverage": 0.42,
-  "decision": "ACCEPT" | "REJECT",
-  "reason": "string"
+  "decision": "ACCEPT" | "BORDERLINE" | "REJECT",
+  "reason": "Brief explanation in plain English"
 }`;
 
 interface AnalysisResult {
@@ -36,7 +40,7 @@ interface AnalysisResult {
     box: { x: number; y: number; w: number; h: number };
   }>;
   food_coverage: number;
-  decision: 'ACCEPT' | 'REJECT';
+  decision: 'ACCEPT' | 'BORDERLINE' | 'REJECT';
   reason: string;
 }
 
@@ -146,19 +150,30 @@ serve(async (req) => {
           decision: analysis.decision,
           person_present: analysis.person_present,
           food_coverage: analysis.food_coverage,
-          objects_count: analysis.objects?.length || 0
+          objects_count: analysis.objects?.length || 0,
+          reason: analysis.reason
         });
 
         results.push(analysis);
 
-        // If any image is rejected, return immediately
+        // Handle rejection cases
         if (analysis.decision === 'REJECT') {
+          let errorMessage = 'Please upload a photo showing food or ingredients.';
+          
+          // Contextual error messages
+          if (analysis.person_present && analysis.food_coverage < 0.10) {
+            errorMessage = `This photo shows a person with minimal food visible (${Math.round(analysis.food_coverage * 100)}%). Please take a closer shot focusing on the ingredients.`;
+          } else if (analysis.objects.filter(obj => obj.is_food).length === 0) {
+            errorMessage = "We couldn't detect any food in this photo. Please upload images showing ingredients or groceries.";
+          }
+          
           return new Response(
             JSON.stringify({ 
-              error: 'We only accept clear food photos without people. Please retake a close shot of the ingredients.',
+              error: errorMessage,
               reason: analysis.reason,
               person_present: analysis.person_present,
-              food_coverage: analysis.food_coverage
+              food_coverage: analysis.food_coverage,
+              decision: 'REJECT'
             }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
@@ -177,6 +192,10 @@ serve(async (req) => {
       );
     }
 
+    // Check for borderline cases
+    const hasBorderline = results.some(r => r.decision === 'BORDERLINE');
+    const avgCoverage = results.reduce((sum, r) => sum + r.food_coverage, 0) / results.length;
+    
     // Return all food objects with bounding boxes
     const foodObjects = results.flatMap(r => 
       r.objects.filter(obj => obj.is_food)
@@ -187,7 +206,9 @@ serve(async (req) => {
         success: true,
         analyzed: results.length,
         foodObjects,
-        avgCoverage: results.reduce((sum, r) => sum + r.food_coverage, 0) / results.length
+        avgCoverage,
+        borderline: hasBorderline,
+        coveragePercent: Math.round(avgCoverage * 100)
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

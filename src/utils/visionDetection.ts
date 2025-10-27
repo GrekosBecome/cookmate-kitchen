@@ -4,7 +4,13 @@ import { mockImageDetection } from './mockDetection';
 
 export const analyzeImagesForFood = async (
   images: string[]
-): Promise<{ success: boolean; error?: string; reason?: string }> => {
+): Promise<{ 
+  success: boolean; 
+  error?: string; 
+  reason?: string; 
+  borderline?: boolean; 
+  coveragePercent?: number;
+}> => {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('Image analysis timeout after 15 seconds')), 15000);
   });
@@ -33,8 +39,12 @@ export const analyzeImagesForFood = async (
       };
     }
 
-    console.log(`Analysis complete: ${data.analyzed} images validated`);
-    return { success: true };
+    console.log(`Analysis complete: ${data.analyzed} images validated, coverage: ${data.coveragePercent}%`);
+    return { 
+      success: true,
+      borderline: data.borderline || false,
+      coveragePercent: data.coveragePercent || 0
+    };
   } catch (error) {
     console.error('Error analyzing images:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

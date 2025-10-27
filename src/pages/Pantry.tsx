@@ -8,13 +8,23 @@ import { ShoppingListView } from '@/components/pantry/ShoppingListView';
 import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Camera, Info, ChefHat } from 'lucide-react';
+import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visionDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
 import { track } from '@/lib/analytics';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type ViewMode = 'list' | 'detect' | 'shopping';
 
@@ -38,6 +48,8 @@ export default function Pantry() {
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
   const [editedItems, setEditedItems] = useState<Map<string, { name: string; qty: number; unit: PantryUnit }>>(new Map());
   const [isDetecting, setIsDetecting] = useState(false);
+  const [showBorderlineDialog, setShowBorderlineDialog] = useState(false);
+  const [borderlineCoverage, setBorderlineCoverage] = useState(0);
 
   const activeItems = pantryItems.filter(item => !item.used);
   const usedItems = pantryItems.filter(item => item.used);
@@ -67,6 +79,14 @@ export default function Pantry() {
             toast.error(validation.error || 'Image validation failed');
             setUploadedImages([]);
             setDetectedItems([]);
+            setIsDetecting(false);
+            return;
+          }
+          
+          // Check for borderline cases (uncertain detection)
+          if (validation.borderline && validation.coveragePercent) {
+            setBorderlineCoverage(validation.coveragePercent);
+            setShowBorderlineDialog(true);
             setIsDetecting(false);
             return;
           }
@@ -103,6 +123,37 @@ export default function Pantry() {
         });
     }
   }, [uploadedImages, detectedItems.length, isDetecting]);
+
+  const handleProceedWithBorderline = () => {
+    setShowBorderlineDialog(false);
+    setIsDetecting(true);
+    
+    detectIngredientsFromImages(uploadedImages)
+      .then(detected => {
+        setDetectedItems(detected);
+        if (detected.length > 0) {
+          toast.success(`Found ${detected.length} ingredients in your photos`);
+        } else {
+          toast.info('No ingredients detected. Try different photos or add items manually.');
+        }
+      })
+      .catch(error => {
+        console.error('Detection failed:', error);
+        toast.error("Couldn't analyze this photo right now — please try again later 🌿");
+        setUploadedImages([]);
+        setDetectedItems([]);
+      })
+      .finally(() => {
+        setIsDetecting(false);
+      });
+  };
+
+  const handleRetryBorderline = () => {
+    setShowBorderlineDialog(false);
+    setUploadedImages([]);
+    setDetectedItems([]);
+    setBorderlineCoverage(0);
+  };
 
   const handleImagesChange = (images: string[]) => {
     setUploadedImages(images);
@@ -446,7 +497,33 @@ export default function Pantry() {
         </div>
       )}
 
-      
+      {/* Borderline Detection Dialog */}
+      <AlertDialog open={showBorderlineDialog} onOpenChange={setShowBorderlineDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Uncertain Food Detection
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                We detected some food in your photo, but the coverage is low ({borderlineCoverage}%).
+              </p>
+              <p className="text-sm">
+                For better results, try taking a closer shot of your ingredients. Or you can proceed with the current photo.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleRetryBorderline}>
+              Try Different Photo
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleProceedWithBorderline}>
+              Proceed Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
