@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from './CameraCapture';
@@ -6,12 +6,23 @@ import { CameraCapture } from './CameraCapture';
 interface ImageUploaderProps {
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
+  autoOpenCamera?: boolean;
+  autoOpenGallery?: boolean;
 }
 
-export const ImageUploader = ({ onImagesChange, maxImages = 5 }: ImageUploaderProps) => {
+export const ImageUploader = ({ onImagesChange, maxImages = 5, autoOpenCamera = false, autoOpenGallery = false }: ImageUploaderProps) => {
   const [images, setImages] = useState<string[]>([]);
   const [cameraOpen, setCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-open camera or gallery when props are set
+  useEffect(() => {
+    if (autoOpenCamera && images.length < maxImages) {
+      setCameraOpen(true);
+    } else if (autoOpenGallery && images.length < maxImages) {
+      fileInputRef.current?.click();
+    }
+  }, [autoOpenCamera, autoOpenGallery]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

@@ -52,6 +52,7 @@ export default function Pantry() {
   const [showBorderlineDialog, setShowBorderlineDialog] = useState(false);
   const [borderlineCoverage, setBorderlineCoverage] = useState(0);
   const [showAddOptions, setShowAddOptions] = useState(false);
+  const [autoAction, setAutoAction] = useState<'camera' | 'gallery' | null>(null);
 
   const activeItems = pantryItems.filter(item => !item.used);
   const usedItems = pantryItems.filter(item => item.used);
@@ -285,7 +286,10 @@ export default function Pantry() {
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Detect Ingredients</h1>
               <Button
                 variant="ghost"
-                onClick={() => setViewMode('list')}
+                onClick={() => {
+                  setViewMode('list');
+                  setAutoAction(null);
+                }}
                 className="h-11 min-h-[44px]"
               >
                 Cancel
@@ -302,6 +306,8 @@ export default function Pantry() {
             <ImageUploader
               onImagesChange={handleImagesChange}
               maxImages={5}
+              autoOpenCamera={autoAction === 'camera'}
+              autoOpenGallery={autoAction === 'gallery'}
             />
 
             {isDetecting && (
@@ -519,9 +525,26 @@ export default function Pantry() {
       <AddOptionsSheet
         open={showAddOptions}
         onOpenChange={setShowAddOptions}
-        onCameraClick={handleStartDetection}
-        onPhotosClick={handleStartDetection}
-        onManualClick={() => setViewMode('manual')}
+        onCameraClick={() => {
+          track('clicked_cta', { action: 'detect_camera' });
+          setAutoAction('camera');
+          setViewMode('detect');
+          setUploadedImages([]);
+          setDetectedItems([]);
+          setEditedItems(new Map());
+        }}
+        onPhotosClick={() => {
+          track('clicked_cta', { action: 'detect_gallery' });
+          setAutoAction('gallery');
+          setViewMode('detect');
+          setUploadedImages([]);
+          setDetectedItems([]);
+          setEditedItems(new Map());
+        }}
+        onManualClick={() => {
+          track('clicked_cta', { action: 'manual_add' });
+          setViewMode('manual');
+        }}
       />
 
       {/* Borderline Detection Dialog */}
