@@ -6,9 +6,10 @@ import { PantryItemCard } from '@/components/pantry/PantryItemCard';
 import { ManualAddInput } from '@/components/pantry/ManualAddInput';
 import { ShoppingListView } from '@/components/pantry/ShoppingListView';
 import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
+import { AddOptionsSheet } from '@/components/pantry/AddOptionsSheet';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle, Plus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visionDetection';
@@ -26,7 +27,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-type ViewMode = 'list' | 'detect' | 'shopping';
+type ViewMode = 'list' | 'detect' | 'shopping' | 'manual';
 
 export default function Pantry() {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ export default function Pantry() {
   const [isDetecting, setIsDetecting] = useState(false);
   const [showBorderlineDialog, setShowBorderlineDialog] = useState(false);
   const [borderlineCoverage, setBorderlineCoverage] = useState(0);
+  const [showAddOptions, setShowAddOptions] = useState(false);
 
   const activeItems = pantryItems.filter(item => !item.used);
   const usedItems = pantryItems.filter(item => item.used);
@@ -368,7 +370,7 @@ export default function Pantry() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/suggestion')}
+            onClick={() => viewMode === 'manual' ? setViewMode('list') : navigate('/suggestion')}
             className="gap-2 h-11 min-h-[44px]"
             aria-label="Back to suggestions"
           >
@@ -475,27 +477,52 @@ export default function Pantry() {
         )}
       </div>
 
-      {/* Sticky Action Bar */}
+      {/* Floating Add Button */}
       {viewMode === 'list' && (
+        <div 
+          className="fixed bottom-0 left-0 right-0 z-40"
+          style={{
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+          }}
+        >
+          <div className="max-w-2xl mx-auto px-4">
+            <Button
+              onClick={() => setShowAddOptions(true)}
+              size="lg"
+              className="w-full h-14 rounded-full text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <Plus className="h-6 w-6 mr-2" />
+              Add Ingredients
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Add View */}
+      {viewMode === 'manual' && (
         <div 
           className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-40"
           style={{
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)',
           }}
         >
-          <div className="max-w-2xl mx-auto p-4 space-y-3">
-            <Button
-              onClick={handleStartDetection}
-              className="w-full h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold rounded-full"
-              size="lg"
-            >
-              <Camera className="h-5 w-5 mr-2" />
-              Detect from photos
-            </Button>
-            <ManualAddInput onAdd={handleManualAdd} />
+          <div className="max-w-2xl mx-auto p-4">
+            <ManualAddInput onAdd={(name, qty, unit) => {
+              handleManualAdd(name, qty, unit);
+              setViewMode('list');
+            }} />
           </div>
         </div>
       )}
+
+      {/* Add Options Sheet */}
+      <AddOptionsSheet
+        open={showAddOptions}
+        onOpenChange={setShowAddOptions}
+        onCameraClick={handleStartDetection}
+        onPhotosClick={handleStartDetection}
+        onManualClick={() => setViewMode('manual')}
+      />
 
       {/* Borderline Detection Dialog */}
       <AlertDialog open={showBorderlineDialog} onOpenChange={setShowBorderlineDialog}>
