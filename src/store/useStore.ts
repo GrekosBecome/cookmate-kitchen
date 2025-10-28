@@ -58,6 +58,7 @@ interface AppState {
 
 const defaultPreferences: Preferences = {
   diet: 'Regular',
+  mealPreferences: [],
   allergies: [],
   dislikes: [],
   notificationTime: '08:00',

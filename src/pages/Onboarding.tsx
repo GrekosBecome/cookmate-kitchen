@@ -51,8 +51,14 @@ export default function Onboarding() {
     >
       {currentStep === 0 && (
         <Step1Diet
-          selectedDiet={formData.diet}
-          onSelectDiet={(diet: Preferences['diet']) => updateFormData({ diet })}
+          selectedPreferences={formData.mealPreferences}
+          onTogglePreference={(preference: string) => {
+            const isSelected = formData.mealPreferences.includes(preference);
+            const newPreferences = isSelected
+              ? formData.mealPreferences.filter(p => p !== preference)
+              : [...formData.mealPreferences, preference];
+            updateFormData({ mealPreferences: newPreferences });
+          }}
         />
       )}
       {currentStep === 1 && (
