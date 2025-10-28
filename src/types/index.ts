@@ -21,6 +21,7 @@ export interface DetectedItem {
 
 export interface Preferences {
   diet: 'Regular' | 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'Keto' | 'Gluten-free';
+  goals: string[];
   mealPreferences: string[];
   allergies: string[];
   dislikes: string[];

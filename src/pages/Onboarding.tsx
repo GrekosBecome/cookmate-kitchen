@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/OnboardingLayout';
+import { Step0Goals } from './onboarding/Step0Goals';
 import { Step1Diet } from './onboarding/Step1Diet';
 import { Step2Restrictions } from './onboarding/Step2Restrictions';
 import { Step3Notifications } from './onboarding/Step3Notifications';
@@ -15,7 +16,7 @@ export default function Onboarding() {
   const [formData, setFormData] = useState<Preferences>(defaultPreferences);
 
   const handleNext = () => {
-    if (currentStep < 2) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
       // Final step
@@ -42,14 +43,26 @@ export default function Onboarding() {
   return (
     <OnboardingLayout
       currentStep={currentStep}
-      totalSteps={3}
+      totalSteps={4}
       onBack={currentStep > 0 ? handleBack : undefined}
       onNext={handleNext}
       onSkip={handleSkip}
-      nextLabel={currentStep === 2 ? 'Set up pantry' : 'Continue'}
-      skipLabel={currentStep === 2 ? 'Done' : 'Skip'}
+      nextLabel={currentStep === 3 ? 'Set up pantry' : 'Continue'}
+      skipLabel={currentStep === 3 ? 'Done' : 'Skip'}
     >
       {currentStep === 0 && (
+        <Step0Goals
+          selectedGoals={formData.goals}
+          onToggleGoal={(goal: string) => {
+            const isSelected = formData.goals.includes(goal);
+            const newGoals = isSelected
+              ? formData.goals.filter(g => g !== goal)
+              : [...formData.goals, goal];
+            updateFormData({ goals: newGoals });
+          }}
+        />
+      )}
+      {currentStep === 1 && (
         <Step1Diet
           selectedPreferences={formData.mealPreferences}
           onTogglePreference={(preference: string) => {
@@ -61,7 +74,7 @@ export default function Onboarding() {
           }}
         />
       )}
-      {currentStep === 1 && (
+      {currentStep === 2 && (
         <Step2Restrictions
           allergies={formData.allergies}
           dislikes={formData.dislikes}
@@ -69,7 +82,7 @@ export default function Onboarding() {
           onUpdateDislikes={(dislikes) => updateFormData({ dislikes })}
         />
       )}
-      {currentStep === 2 && (
+      {currentStep === 3 && (
         <Step3Notifications
           notificationTime={formData.notificationTime}
           notificationDays={formData.notificationDays}
