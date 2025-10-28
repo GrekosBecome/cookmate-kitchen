@@ -38,8 +38,9 @@ export const Step2Restrictions = ({
   };
 
   const addDislike = () => {
-    if (dislikeInput.trim() && !dislikes.includes(dislikeInput.trim())) {
-      onUpdateDislikes([...dislikes, dislikeInput.trim()]);
+    const trimmed = dislikeInput.trim();
+    if (trimmed && trimmed.length <= 50 && !dislikes.includes(trimmed)) {
+      onUpdateDislikes([...dislikes, trimmed]);
       setDislikeInput('');
     }
   };
@@ -49,7 +50,7 @@ export const Step2Restrictions = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-2xl mx-auto">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Any allergies or dislikes?</h1>
         <p className="text-muted-foreground text-lg">
@@ -59,8 +60,8 @@ export const Step2Restrictions = ({
 
       {/* Allergies */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Allergies</h2>
-        <div className="flex flex-wrap gap-3">
+        <h2 className="text-2xl font-bold">Allergies</h2>
+        <div className="flex flex-wrap gap-2.5">
           {commonAllergies.map((allergy) => (
             <SelectableChip
               key={allergy}
@@ -75,14 +76,15 @@ export const Step2Restrictions = ({
 
       {/* Dislikes */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Dislikes</h2>
+        <h2 className="text-2xl font-bold">Dislikes</h2>
         <div className="space-y-3">
           <Input
             placeholder="Type an ingredient you dislike..."
             value={dislikeInput}
             onChange={(e) => setDislikeInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addDislike()}
-            className="h-12 text-base rounded-full"
+            maxLength={50}
+            className="h-14 text-base rounded-full border-2 px-6 bg-background"
           />
           {dislikes.length > 0 && (
             <div className="flex flex-wrap gap-2">
