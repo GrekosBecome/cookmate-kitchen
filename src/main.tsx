@@ -2,28 +2,19 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { registerSW } from 'virtual:pwa-register';
-import { toast } from 'sonner';
 import { applyPath } from "@/lib/deeplink";
 
-// Register killer service worker
-const updateSW = registerSW({
-  onNeedRefresh() {
-    toast('New version available!', {
-      description: 'Click to update and reload',
-      duration: 0,
-      action: {
-        label: 'Update',
-        onClick: () => {
-          updateSW(true);
-        },
-      },
+// Manual killer SW registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(registration => {
+      console.log('[App] Killer SW registered:', registration);
+      registration.update();
+    })
+    .catch(error => {
+      console.error('[App] Killer SW registration failed:', error);
     });
-  },
-  onOfflineReady() {
-    toast.success('App ready to work offline!');
-  },
-});
+}
 
 // Deep link handling for native WebView messages
 window.addEventListener("message", (ev) => {
