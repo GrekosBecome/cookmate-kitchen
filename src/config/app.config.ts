@@ -1,8 +1,8 @@
 export const AppConfig = {
-  lovableUrl: "https://5b916d50-4661-4c65-933e-1881660781d8.lovableproject.com/",
+  lovableUrl: "https://cookmate-kitchen.lovable.app",
   stripe: {
-    priceMonthly: "price_XXXXX", // Placeholder for future Stripe integration
-    priceYearly: "price_XXXXX"
+    priceMonthly: "price_MONTHLY_xxxx", // Update with real Stripe price ID when ready
+    priceYearly: "price_YEARLY_yyyy"    // Update with real Stripe price ID when ready
   },
   ios: {
     productMonthly: "com.cookmate.kitchen.premium.monthly",
