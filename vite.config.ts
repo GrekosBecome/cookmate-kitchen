@@ -13,92 +13,38 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    // PWA temporarily disabled to fix Service Worker caching issue
-    // VitePWA({
-    //   registerType: "prompt",
-    //   includeAssets: ["icon-192.png", "icon-512.png"],
-    //   manifest: {
-    //     name: "CookMate - Your Smart Kitchen Companion",
-    //     short_name: "CookMate",
-    //     description: "Get personalized recipe suggestions based on your pantry and preferences",
-    //     theme_color: "#65C6A4",
-    //     background_color: "#FAF7F5",
-    //     display: "standalone",
-    //     orientation: "portrait",
-    //     start_url: "/",
-    //     scope: "/",
-    //     icons: [
-    //       {
-    //         src: "icon-192.png",
-    //         sizes: "192x192",
-    //         type: "image/png",
-    //         purpose: "any maskable",
-    //       },
-    //       {
-    //         src: "icon-512.png",
-    //         sizes: "512x512",
-    //         type: "image/png",
-    //         purpose: "any maskable",
-    //       },
-    //     ],
-    //     screenshots: [
-    //       {
-    //         src: "icon-512.png",
-    //         sizes: "512x512",
-    //         type: "image/png",
-    //         form_factor: "narrow",
-    //       },
-    //     ],
-    //   },
-    //   workbox: {
-    //     globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2}"],
-    //     navigateFallback: '/offline',
-    //     navigateFallbackDenylist: [/^\/api/],
-    //     runtimeCaching: [
-    //       {
-    //         urlPattern: ({ request }) => request.mode === 'navigate',
-    //         handler: "NetworkFirst",
-    //         options: {
-    //           cacheName: "pages-cache",
-    //           networkTimeoutSeconds: 3,
-    //           expiration: {
-    //             maxEntries: 5,
-    //             maxAgeSeconds: 60 * 60 * 24, // 24 hours
-    //           },
-    //         },
-    //       },
-    //       {
-    //         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-    //         handler: "CacheFirst",
-    //         options: {
-    //           cacheName: "google-fonts-cache",
-    //           expiration: {
-    //             maxEntries: 10,
-    //             maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-    //           },
-    //           cacheableResponse: {
-    //             statuses: [0, 200],
-    //           },
-    //         },
-    //       },
-    //       {
-    //         urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-    //         handler: "NetworkFirst",
-    //         options: {
-    //           cacheName: "api-cache",
-    //           networkTimeoutSeconds: 10,
-    //           expiration: {
-    //             maxEntries: 50,
-    //             maxAgeSeconds: 60 * 5, // 5 minutes
-    //           },
-    //           cacheableResponse: {
-    //             statuses: [0, 200],
-    //           },
-    //         },
-    //       },
-    //     ],
-    //   },
-    // }),
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.js',
+      injectRegister: 'script',
+      registerType: 'autoUpdate',
+      manifest: {
+        name: "CookMate - Your Smart Kitchen Companion",
+        short_name: "CookMate",
+        description: "Get personalized recipe suggestions based on your pantry and preferences",
+        theme_color: "#65C6A4",
+        background_color: "#FAF7F5",
+        display: "standalone",
+        orientation: "portrait",
+        start_url: "/",
+        scope: "/",
+        icons: [
+          {
+            src: "icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+          {
+            src: "icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
+      },
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {
