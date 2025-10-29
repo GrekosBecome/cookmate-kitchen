@@ -1,84 +1,11 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- CRITICAL: Force unregister ALL Service Workers FIRST -->
-    <script>
-      (function() {
-        console.log('🚀 [Nuke Script] Starting aggressive cleanup...');
-        
-        // Check if we've already done this cleanup
-        var nukeKey = 'cookmate_nuked';
-        var hasNuked = sessionStorage.getItem(nukeKey);
-        
-        if (!hasNuked && 'serviceWorker' in navigator) {
-          console.log('💣 [Nuke Script] First visit - nuking everything!');
-          
-          navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            console.log('📝 [Nuke Script] Found ' + registrations.length + ' service workers');
-            
-            var unregisterPromises = [];
-            for (var i = 0; i < registrations.length; i++) {
-              var reg = registrations[i];
-              console.log('🗑️ [Nuke Script] Unregistering:', reg.scope);
-              unregisterPromises.push(reg.unregister());
-            }
-            
-            Promise.all(unregisterPromises).then(function() {
-              console.log('✅ [Nuke Script] All SWs unregistered');
-              
-              // Clear all caches
-              if ('caches' in window) {
-                caches.keys().then(function(names) {
-                  var deletePromises = [];
-                  for (var j = 0; j < names.length; j++) {
-                    console.log('🗑️ [Nuke Script] Deleting cache:', names[j]);
-                    deletePromises.push(caches.delete(names[j]));
-                  }
-                  
-                  Promise.all(deletePromises).then(function() {
-                    console.log('✅ [Nuke Script] All caches deleted');
-                    
-                    // Mark as nuked and force reload
-                    sessionStorage.setItem(nukeKey, 'true');
-                    console.log('🔄 [Nuke Script] Forcing hard reload...');
-                    
-                    setTimeout(function() {
-                      window.location.reload(true);
-                    }, 100);
-                  });
-                });
-              } else {
-                sessionStorage.setItem(nukeKey, 'true');
-                console.log('🔄 [Nuke Script] No caches - forcing hard reload...');
-                setTimeout(function() {
-                  window.location.reload(true);
-                }, 100);
-              }
-            }).catch(function(err) {
-              console.error('❌ [Nuke Script] Unregister failed:', err);
-              sessionStorage.setItem(nukeKey, 'true');
-            });
-          });
-        } else {
-          console.log('✨ [Nuke Script] Already nuked or no SW support');
-        }
-      })();
-    </script>
-    
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
     <title>CookMate - Your AI Kitchen Companion | Smart Recipe Suggestions</title>
-    <meta
-      name="description"
-      content="Never wonder what's for dinner again. CookMate uses AI to suggest personalized recipes based on your pantry ingredients. Smart pantry tracking, AI chef chat, and cooking insights."
-    />
-    <meta
-      name="keywords"
-      content="recipe app, cooking app, AI chef, pantry tracker, meal planning, recipe suggestions, smart cooking"
-    />
+    <meta name="description" content="Never wonder what's for dinner again. CookMate uses AI to suggest personalized recipes based on your pantry ingredients. Smart pantry tracking, AI chef chat, and cooking insights." />
+    <meta name="keywords" content="recipe app, cooking app, AI chef, pantry tracker, meal planning, recipe suggestions, smart cooking" />
     <meta name="author" content="CookMate" />
     <meta name="theme-color" content="#65C6A4" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -88,54 +15,18 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <meta property="og:title" content="CookMate - Your AI Kitchen Companion" />
-    <meta
-      property="og:description"
-      content="Never wonder what's for dinner again. Get AI-powered recipe suggestions based on what you have in your pantry."
-    />
+    <meta property="og:description" content="Never wonder what's for dinner again. Get AI-powered recipe suggestions based on what you have in your pantry." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <!-- Native Bridge - Must load synchronously BEFORE React -->
-    <script>
-      (function () {
-        console.log('🔧 [Config Script] Setting up AppConfig and NativeBridge...');
-        
-        window.AppConfig = {
-          lovableUrl: "https://cookmate-kitchen.lovable.app",
-          stripe: {
-            priceMonthly: "price_MONTHLY_xxxx",
-            priceYearly: "price_YEARLY_yyyy"
-          },
-          ios: {
-            productMonthly: "com.cookmate.kitchen.premium.monthly",
-            productYearly: "com.cookmate.kitchen.premium.yearly"
-          }
-        };
-        
-        console.log('✅ [Config Script] window.AppConfig =', window.AppConfig);
-
-        if (!window.NativeBridge) {
-          window.NativeBridge = { platform: "web", version: "0.1-web" };
-          console.log('✅ [Config Script] window.NativeBridge =', window.NativeBridge);
-        }
-
-        try { 
-          window.dispatchEvent(new Event("native-ready"));
-          console.log('✅ [Config Script] native-ready event dispatched');
-        } catch (e) {
-          console.error('❌ [Config Script] Failed to dispatch event:', e);
-        }
-      })();
-    </script>
   </head>
 
   <body>
