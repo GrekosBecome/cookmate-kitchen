@@ -48,6 +48,7 @@ export interface Step {
 export interface Recipe {
   id: string;
   title: string;
+  description?: string;
   timeMin: number;
   kcal?: number;
   tags: string[];
@@ -58,6 +59,11 @@ export interface Recipe {
   steps: Step[];
   substitutions?: Record<string, string>;
   healthNote?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  cuisine?: string;
+  platingTips?: string;
+  winePairing?: string;
+  aiGenerated?: boolean;
 }
 
 export interface SuggestionPick {

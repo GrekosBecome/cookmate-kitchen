@@ -27,6 +27,8 @@ interface AppState {
   shoppingState: ShoppingState;
   memory: UserMemory;
   operations: Array<{ id: string; type: string; timestamp: string; data: any }>;
+  aiGeneratedRecipes: any[];
+  lastAIGeneration?: string;
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   updateMemory: (memory: Partial<UserMemory>) => void;
@@ -53,6 +55,8 @@ interface AppState {
   togglePantryItemFavorite: (id: string) => void;
   recordOperation: (type: string, data: any) => void;
   undoLastOperation: () => { success: boolean; message: string };
+  setAIGeneratedRecipes: (recipes: any[]) => void;
+  clearAIGeneratedRecipes: () => void;
   reset: () => void;
 }
 
@@ -110,6 +114,8 @@ export const useStore = create<AppState>()(
       shoppingState: { queue: [], lastGenerated: undefined },
       memory: defaultMemory,
       operations: [],
+      aiGeneratedRecipes: [],
+      lastAIGeneration: undefined,
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -425,6 +431,16 @@ export const useStore = create<AppState>()(
           return { success: false, message: 'Failed to undo operation' };
         }
       },
+      setAIGeneratedRecipes: (recipes: any[]) => 
+        set({ 
+          aiGeneratedRecipes: recipes,
+          lastAIGeneration: new Date().toISOString()
+        }),
+      clearAIGeneratedRecipes: () => 
+        set({ 
+          aiGeneratedRecipes: [],
+          lastAIGeneration: undefined
+        }),
       reset: () =>
         set({
           preferences: null,
@@ -438,6 +454,8 @@ export const useStore = create<AppState>()(
           shoppingState: { queue: [], lastGenerated: undefined },
           memory: defaultMemory,
           operations: [],
+          aiGeneratedRecipes: [],
+          lastAIGeneration: undefined,
         }),
     }),
     {
