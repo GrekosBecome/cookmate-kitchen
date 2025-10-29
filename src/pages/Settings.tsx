@@ -25,6 +25,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { track } from '@/lib/analytics';
+import { useNativeBridge } from '@/hooks/useNativeBridge';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 4 }, (_, i) => {
@@ -37,6 +38,7 @@ const Settings = () => {
   const { toast } = useToast();
   const { preferences, updatePreferences, reset, learning, resetLearning, memory, updateMemory } = useStore();
   const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
+  const { isNative, bridge } = useNativeBridge();
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
@@ -314,6 +316,19 @@ const Settings = () => {
               >
                 Reset learning
               </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Environment</CardTitle>
+            <CardDescription>App information</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm space-y-1">
+              <p>Platform: {isNative ? `Native (${bridge?.platform?.toUpperCase()})` : 'Web/PWA'}</p>
+              {bridge?.version && <p>Bridge Version: {bridge.version}</p>}
+            </div>
           </CardContent>
         </Card>
 
