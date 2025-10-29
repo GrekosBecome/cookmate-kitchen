@@ -1,6 +1,35 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- CRITICAL: Force unregister ALL Service Workers FIRST -->
+    <script>
+      (function() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (let registration of registrations) {
+              registration.unregister();
+              console.log('🗑️ Unregistered Service Worker:', registration.scope);
+            }
+            if (registrations.length > 0) {
+              console.log('✅ Unregistered ' + registrations.length + ' service workers');
+            }
+          }).catch(function(err) {
+            console.error('❌ Service Worker unregistration failed:', err);
+          });
+          
+          // Clear all caches
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (let name of names) {
+                caches.delete(name);
+                console.log('🗑️ Deleted cache:', name);
+              }
+            });
+          }
+        }
+      })();
+    </script>
+    
     <meta charset="UTF-8" />
     <meta
       name="viewport"
