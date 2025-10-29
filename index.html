@@ -4,28 +4,63 @@
     <!-- CRITICAL: Force unregister ALL Service Workers FIRST -->
     <script>
       (function() {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            for (let registration of registrations) {
-              registration.unregister();
-              console.log('🗑️ Unregistered Service Worker:', registration.scope);
-            }
-            if (registrations.length > 0) {
-              console.log('✅ Unregistered ' + registrations.length + ' service workers');
-            }
-          }).catch(function(err) {
-            console.error('❌ Service Worker unregistration failed:', err);
-          });
+        console.log('🚀 [Nuke Script] Starting aggressive cleanup...');
+        
+        // Check if we've already done this cleanup
+        var nukeKey = 'cookmate_nuked';
+        var hasNuked = sessionStorage.getItem(nukeKey);
+        
+        if (!hasNuked && 'serviceWorker' in navigator) {
+          console.log('💣 [Nuke Script] First visit - nuking everything!');
           
-          // Clear all caches
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              for (let name of names) {
-                caches.delete(name);
-                console.log('🗑️ Deleted cache:', name);
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            console.log('📝 [Nuke Script] Found ' + registrations.length + ' service workers');
+            
+            var unregisterPromises = [];
+            for (var i = 0; i < registrations.length; i++) {
+              var reg = registrations[i];
+              console.log('🗑️ [Nuke Script] Unregistering:', reg.scope);
+              unregisterPromises.push(reg.unregister());
+            }
+            
+            Promise.all(unregisterPromises).then(function() {
+              console.log('✅ [Nuke Script] All SWs unregistered');
+              
+              // Clear all caches
+              if ('caches' in window) {
+                caches.keys().then(function(names) {
+                  var deletePromises = [];
+                  for (var j = 0; j < names.length; j++) {
+                    console.log('🗑️ [Nuke Script] Deleting cache:', names[j]);
+                    deletePromises.push(caches.delete(names[j]));
+                  }
+                  
+                  Promise.all(deletePromises).then(function() {
+                    console.log('✅ [Nuke Script] All caches deleted');
+                    
+                    // Mark as nuked and force reload
+                    sessionStorage.setItem(nukeKey, 'true');
+                    console.log('🔄 [Nuke Script] Forcing hard reload...');
+                    
+                    setTimeout(function() {
+                      window.location.reload(true);
+                    }, 100);
+                  });
+                });
+              } else {
+                sessionStorage.setItem(nukeKey, 'true');
+                console.log('🔄 [Nuke Script] No caches - forcing hard reload...');
+                setTimeout(function() {
+                  window.location.reload(true);
+                }, 100);
               }
+            }).catch(function(err) {
+              console.error('❌ [Nuke Script] Unregister failed:', err);
+              sessionStorage.setItem(nukeKey, 'true');
             });
-          }
+          });
+        } else {
+          console.log('✨ [Nuke Script] Already nuked or no SW support');
         }
       })();
     </script>
@@ -72,6 +107,8 @@
     <!-- Native Bridge - Must load synchronously BEFORE React -->
     <script>
       (function () {
+        console.log('🔧 [Config Script] Setting up AppConfig and NativeBridge...');
+        
         window.AppConfig = {
           lovableUrl: "https://cookmate-kitchen.lovable.app",
           stripe: {
@@ -83,12 +120,20 @@
             productYearly: "com.cookmate.kitchen.premium.yearly"
           }
         };
+        
+        console.log('✅ [Config Script] window.AppConfig =', window.AppConfig);
 
         if (!window.NativeBridge) {
           window.NativeBridge = { platform: "web", version: "0.1-web" };
+          console.log('✅ [Config Script] window.NativeBridge =', window.NativeBridge);
         }
 
-        try { window.dispatchEvent(new Event("native-ready")); } catch (e) {}
+        try { 
+          window.dispatchEvent(new Event("native-ready"));
+          console.log('✅ [Config Script] native-ready event dispatched');
+        } catch (e) {
+          console.error('❌ [Config Script] Failed to dispatch event:', e);
+        }
       })();
     </script>
   </head>
