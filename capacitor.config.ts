@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.5b916d5046614c65933e1881660781d8',
+  appId: 'com.cookmate.kitchen',
   appName: 'cookmate-kitchen',
   webDir: 'dist',
   server: {
