@@ -3,7 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 import { useStore } from "@/store/useStore";
 import { BottomNav } from "@/components/BottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -24,10 +26,36 @@ const queryClient = new QueryClient();
 function AppContent() {
   const applyConfidenceDecay = useStore((state) => state.applyConfidenceDecay);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     applyConfidenceDecay();
   }, [applyConfidenceDecay]);
+
+  // Handle notification clicks
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let listenerHandle: any;
+
+    LocalNotifications.addListener(
+      'localNotificationActionPerformed',
+      (notification) => {
+        const route = notification.notification.extra?.route;
+        if (route) {
+          navigate(route);
+        }
+      }
+    ).then(handle => {
+      listenerHandle = handle;
+    });
+
+    return () => {
+      if (listenerHandle) {
+        listenerHandle.remove();
+      }
+    };
+  }, [navigate]);
 
   // Hide bottom nav on onboarding, index, landing and offline pages
   const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline';

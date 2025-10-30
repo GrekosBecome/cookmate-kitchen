@@ -8,11 +8,14 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown, Bell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
 import { useState, useEffect } from 'react';
+import { NotificationPermission } from '@/components/NotificationPermission';
+import { notificationService } from '@/lib/notifications';
+import { toast as sonnerToast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,15 +55,46 @@ const Settings = () => {
     updatePreferences({ diet: diet as any });
   };
 
-  const handleNotificationTimeChange = (time: string) => {
+  const handleNotificationTimeChange = async (time: string) => {
     updatePreferences({ notificationTime: time });
+    
+    // Reschedule notifications with new time
+    if (currentPrefs.notificationDays.length > 0) {
+      await notificationService.scheduleNotifications({
+        enabled: true,
+        time,
+        days: currentPrefs.notificationDays
+      });
+    }
   };
 
-  const toggleDay = (day: string) => {
+  const toggleDay = async (day: string) => {
     const newDays = currentPrefs.notificationDays.includes(day)
       ? currentPrefs.notificationDays.filter(d => d !== day)
       : [...currentPrefs.notificationDays, day];
     updatePreferences({ notificationDays: newDays });
+    
+    // Reschedule notifications with new days
+    await notificationService.scheduleNotifications({
+      enabled: newDays.length > 0,
+      time: currentPrefs.notificationTime,
+      days: newDays
+    });
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      await notificationService.testNotification();
+      sonnerToast.success('Test notification sent!', {
+        description: notificationService.isNativePlatform() 
+          ? 'Check your notification center' 
+          : 'Notifications will appear when app is open'
+      });
+    } catch (error) {
+      sonnerToast.error('Failed to send test notification', {
+        description: String(error)
+      });
+    }
   };
 
   const handleServingsChange = (servings: number) => {
@@ -151,6 +185,10 @@ const Settings = () => {
             <CardDescription>Daily recipe suggestions</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <NotificationPermission />
+
+            <Separator />
+
             <div>
               <Label htmlFor="time-select">Time</Label>
               <Select
@@ -183,6 +221,15 @@ const Settings = () => {
                 ))}
               </div>
             </div>
+
+            <Button
+              variant="outline"
+              onClick={handleTestNotification}
+              className="w-full gap-2"
+            >
+              <Bell className="h-4 w-4" />
+              Send Test Notification
+            </Button>
           </CardContent>
         </Card>
 
