@@ -181,7 +181,13 @@ const RecipeDetail = () => {
   const totalTime = recipe.steps.reduce((acc, step) => acc + (step.minutes || 0), 0);
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div 
+      className="min-h-screen bg-background pb-28"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 112px)',
+      }}
+    >
       <div className="container max-w-2xl mx-auto px-4 py-4 space-y-6">
         <Button
           variant="ghost"

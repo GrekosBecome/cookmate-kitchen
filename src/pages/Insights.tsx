@@ -34,7 +34,13 @@ const Insights = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div 
+      className="min-h-screen bg-background pb-24"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+      }}
+    >
       <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -42,7 +48,7 @@ const Insights = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate(-1)}
-            className="gap-2"
+            className="gap-2 min-h-[44px] min-w-[44px]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -52,6 +58,8 @@ const Insights = () => {
             variant="ghost"
             size="sm"
             onClick={handleClear}
+            className="min-h-[44px] min-w-[44px]"
+            aria-label="Clear analytics"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

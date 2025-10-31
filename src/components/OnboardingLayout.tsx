@@ -27,13 +27,20 @@ export const OnboardingLayout = ({
   canProceed = true,
 }: OnboardingLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div 
+      className="min-h-screen bg-background flex flex-col"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         {onBack ? (
           <button
             onClick={onBack}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2 rounded-full hover:bg-muted transition-colors min-h-[44px] min-w-[44px]"
+            aria-label="Go back"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
@@ -43,7 +50,7 @@ export const OnboardingLayout = ({
         <ProgressDots total={totalSteps} current={currentStep} />
         <button
           onClick={onSkip}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 min-h-[44px]"
         >
           {skipLabel}
         </button>
@@ -59,7 +66,7 @@ export const OnboardingLayout = ({
         <Button
           onClick={onNext}
           disabled={!canProceed}
-          className="w-full h-14 text-lg font-semibold rounded-full"
+          className="w-full h-14 text-lg font-semibold rounded-full min-h-[44px]"
           size="lg"
         >
           {nextLabel}
