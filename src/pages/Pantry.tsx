@@ -372,19 +372,6 @@ export default function Pantry() {
       }}
     >
       <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => viewMode === 'manual' ? setViewMode('list') : navigate('/suggestion')}
-            className="gap-2 h-11 min-h-[44px]"
-            aria-label="Back to suggestions"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back</span>
-          </Button>
-        </div>
-
         <header className="text-center space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold">Your Pantry</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
