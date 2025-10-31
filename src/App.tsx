@@ -20,6 +20,9 @@ import RecipeDetail from "./pages/RecipeDetail";
 import NotFound from "./pages/NotFound";
 import Insights from "./pages/Insights";
 import Offline from "./pages/Offline";
+import Privacy from "./pages/Privacy";
+import Install from "./pages/Install";
+import Features from "./pages/Features";
 
 const queryClient = new QueryClient();
 
@@ -57,8 +60,8 @@ function AppContent() {
     };
   }, [navigate]);
 
-  // Hide bottom nav on onboarding, index, landing and offline pages
-  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline';
+  // Hide bottom nav on onboarding, index, landing, offline, privacy, install, and features pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/install' || location.pathname === '/features';
 
   return (
     <>
@@ -73,6 +76,9 @@ function AppContent() {
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/offline" element={<Offline />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/install" element={<Install />} />
+        <Route path="/features" element={<Features />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!hideBottomNav && <BottomNav />}

@@ -17,17 +17,22 @@ export const Header = () => {
   }, []);
 
   const menuItems = [
-    { label: 'Features', href: '#features' },
-    { label: 'Services', href: '#services' },
-    { label: 'About', href: '#about' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Features', href: '/features', isRoute: true },
+    { label: 'Services', href: '#services', isRoute: false },
+    { label: 'Install', href: '/install', isRoute: true },
+    { label: 'Privacy', href: '/privacy', isRoute: true },
   ];
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const handleMenuClick = (href: string, isRoute: boolean) => {
+    if (isRoute) {
+      navigate(href);
       setIsMobileMenuOpen(false);
+    } else {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        setIsMobileMenuOpen(false);
+      }
     }
   };
 
@@ -55,7 +60,7 @@ export const Header = () => {
             {menuItems.map((item) => (
               <button
                 key={item.label}
-                onClick={() => scrollToSection(item.href)}
+                onClick={() => handleMenuClick(item.href, item.isRoute)}
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 {item.label}
@@ -93,7 +98,7 @@ export const Header = () => {
               {menuItems.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => scrollToSection(item.href)}
+                  onClick={() => handleMenuClick(item.href, item.isRoute)}
                   className="text-left py-2 hover:text-primary transition-colors"
                 >
                   {item.label}
