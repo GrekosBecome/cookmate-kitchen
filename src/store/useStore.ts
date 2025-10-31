@@ -60,7 +60,7 @@ interface AppState {
   reset: () => void;
 }
 
-const defaultPreferences: Preferences = {
+export const defaultPreferences: Preferences = {
   diet: 'Regular',
   goals: [],
   mealPreferences: [],
@@ -465,5 +465,3 @@ export const useStore = create<AppState>()(
     }
   )
 );
-
-export { defaultPreferences };

@@ -1,10 +1,11 @@
 import { User, Camera } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useStore } from '@/store/useStore';
+import { useStore, defaultPreferences } from '@/store/useStore';
 import { useRef } from 'react';
 
 export const ProfileHeader = () => {
   const { preferences, updatePreferences } = useStore();
+  const currentPrefs = preferences || defaultPreferences;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,8 +37,8 @@ export const ProfileHeader = () => {
           className="h-16 w-16 cursor-pointer hover:opacity-80 transition-opacity" 
           onClick={() => fileInputRef.current?.click()}
         >
-          {preferences.profileImage ? (
-            <AvatarImage src={preferences.profileImage} alt="Profile" />
+          {currentPrefs.profileImage ? (
+            <AvatarImage src={currentPrefs.profileImage} alt="Profile" />
           ) : (
             <AvatarFallback className="bg-primary text-primary-foreground">
               <User className="h-8 w-8" />
@@ -59,7 +60,7 @@ export const ProfileHeader = () => {
       <div className="flex-1">
         <h2 className="text-xl font-semibold">Hello, Chef!</h2>
         <p className="text-sm text-muted-foreground">Your kitchen, your rules</p>
-        {preferences.profileImage && (
+        {currentPrefs.profileImage && (
           <button
             onClick={handleRemovePhoto}
             className="text-xs text-muted-foreground hover:text-destructive mt-1 transition-colors"
