@@ -65,7 +65,7 @@ export const FloatingButtons = ({ recipeId }: FloatingButtonsProps) => {
                 <img 
                   src={chefIcon} 
                   alt="Chef" 
-                  className="w-full h-full object-cover scale-125"
+                  className="w-full h-full object-cover scale-150"
                 />
               </Button>
             </TooltipTrigger>
