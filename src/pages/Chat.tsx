@@ -338,9 +338,9 @@ Please:
       </div>
 
       {/* Sticky input bar */}
-      <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-60" style={{
+      <div style={{
       paddingBottom: 'calc(env(safe-area-inset-bottom) + 76px)'
-    }}>
+    }} className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-60 my-0">
         <div className="container max-w-2xl px-4 space-y-3 mx-0 py-0">
           <div className="relative animate-fade-in">
             {/* Fade gradients for scroll hint */}
