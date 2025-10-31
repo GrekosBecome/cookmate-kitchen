@@ -305,36 +305,36 @@ Please:
     >
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur-sm">
         <div 
-          className="container max-w-2xl mx-auto px-4 py-3 flex items-center gap-3"
+          className="container max-w-2xl mx-auto px-4 py-2 flex items-center gap-3"
           style={{
-            paddingTop: 'calc(env(safe-area-inset-top) + 12px)',
+            paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
           }}
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/')}
-            className="h-11 w-11 min-h-[44px] min-w-[44px] p-0"
+            className="h-9 w-9 min-h-[40px] min-w-[40px] p-0"
             aria-label="Go back to recipes"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold truncate">Chef Chat 👨‍🍳</h1>
+            <h1 className="text-sm sm:text-base font-bold truncate">Chef Chat 👨‍🍳</h1>
             {recipe ? (
-              <p className="text-xs sm:text-sm text-muted-foreground italic truncate">Talking about: {recipe.title}</p>
+              <p className="text-xs text-muted-foreground italic truncate">Talking about: {recipe.title}</p>
             ) : (
-              <p className="text-xs sm:text-sm text-muted-foreground italic">Your cooking companion</p>
+              <p className="text-xs text-muted-foreground italic">Your cooking companion</p>
             )}
           </div>
         </div>
         
         {/* Recipe Context Chip */}
         {showRecipeContext && (
-          <div className="container max-w-2xl mx-auto px-4 pb-3">
+          <div className="container max-w-2xl mx-auto px-4 pb-2">
             <button
               onClick={() => navigate(`/recipe/${recipeId}`)}
-              className="w-full flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg text-sm hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg text-xs hover:bg-muted transition-colors"
             >
               <span className="flex-1 text-left">
                 <span className="font-medium">Cooking: {recipeTitle}</span>
@@ -346,7 +346,7 @@ Please:
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-2">
         <div className="container max-w-2xl mx-auto space-y-4">
           {restoredFromCache && (
             <div className="text-center animate-fade-in">
