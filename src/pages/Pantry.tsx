@@ -385,15 +385,7 @@ export default function Pantry() {
           </Button>
         </div>
 
-        <header className="text-center space-y-2 relative">
-          <Button
-            size="icon"
-            onClick={() => navigate('/chat')}
-            className="absolute -top-2 right-0 h-12 w-12 rounded-full shadow-md hover:scale-110 active:scale-95 transition-all duration-200"
-            aria-label="Ask the Chef"
-          >
-            <ChefHat className="h-5 w-5" />
-          </Button>
+        <header className="text-center space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold">Your Pantry</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
             {lastSyncAt
