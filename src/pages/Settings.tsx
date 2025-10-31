@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown, Bell } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown, Bell, Utensils, Users, Target, Shield, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
@@ -28,6 +28,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { track } from '@/lib/analytics';
+import { ProfileHeader } from '@/components/settings/ProfileHeader';
+import { PreferenceSummaryCard } from '@/components/settings/PreferenceSummaryCard';
+import { GoalsSection } from '@/components/settings/GoalsSection';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 4 }, (_, i) => {
@@ -40,6 +43,7 @@ const Settings = () => {
   const { toast } = useToast();
   const { preferences, updatePreferences, reset, learning, resetLearning, memory, updateMemory } = useStore();
   const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
@@ -49,6 +53,25 @@ const Settings = () => {
   const topTags = getTopTags(learning, 8);
   const likedTags = topTags.filter(t => t.weight > 0);
   const mutedTags = topTags.filter(t => t.weight < 0);
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const handleToggleGoal = (goalId: string) => {
+    const currentGoals = currentPrefs.cookingGoals || [];
+    const newGoals = currentGoals.includes(goalId)
+      ? currentGoals.filter(g => g !== goalId)
+      : [...currentGoals, goalId];
+    updatePreferences({ cookingGoals: newGoals });
+  };
+
+  const handleToggleAllergy = (allergy: string) => {
+    const newAllergies = currentPrefs.allergies.includes(allergy)
+      ? currentPrefs.allergies.filter(a => a !== allergy)
+      : [...currentPrefs.allergies, allergy];
+    updatePreferences({ allergies: newAllergies });
+  };
 
   const handleDietChange = (diet: string) => {
     track('diet_changed', { diet });
@@ -133,6 +156,8 @@ const Settings = () => {
     });
   };
 
+  const commonAllergies = ['Nuts', 'Dairy', 'Eggs', 'Shellfish', 'Soy', 'Gluten', 'Fish'];
+
   return (
     <div 
       className="min-h-screen bg-background pb-20"
@@ -154,205 +179,325 @@ const Settings = () => {
         </Button>
 
         <header>
-          <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">You</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Your preferences, your way
+            Your kitchen, your rules
           </p>
         </header>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Diet Preference</CardTitle>
-            <CardDescription>Choose your dietary style</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2 flex-wrap">
-              {['Regular', 'Vegetarian', 'Vegan', 'Pescatarian', 'Keto', 'Gluten-free'].map((diet) => (
-                <SelectableChip
-                  key={diet}
-                  label={diet}
-                  selected={currentPrefs.diet === diet}
-                  onToggle={() => handleDietChange(diet)}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileHeader />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Notifications</CardTitle>
-            <CardDescription>Daily recipe suggestions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <NotificationPermission />
+        {/* Summary Cards */}
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+          <PreferenceSummaryCard
+            icon={Utensils}
+            label="Diet"
+            value={currentPrefs.diet}
+            onClick={() => toggleSection('diet')}
+          />
+          <PreferenceSummaryCard
+            icon={Bell}
+            label="Notify"
+            value={`${currentPrefs.notificationDays.length} days`}
+            onClick={() => toggleSection('notifications')}
+          />
+          <PreferenceSummaryCard
+            icon={Users}
+            label="Servings"
+            value={currentPrefs.servings.toString()}
+            onClick={() => toggleSection('servings')}
+          />
+        </div>
 
-            <Separator />
+        {/* Preferences Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Utensils className="h-4 w-4" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide">Preferences</h2>
+          </div>
 
-            <div>
-              <Label htmlFor="time-select">Time</Label>
-              <Select
-                value={currentPrefs.notificationTime}
-                onValueChange={handleNotificationTimeChange}
-              >
-                <SelectTrigger id="time-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {HOURS.map((hour) => (
-                    <SelectItem key={hour} value={hour}>
-                      {hour}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Days</Label>
-              <div className="flex gap-2 flex-wrap mt-2">
-                {DAYS.map((day) => (
-                  <SelectableChip
-                    key={day}
-                    label={day}
-                    selected={currentPrefs.notificationDays.includes(day)}
-                    onToggle={() => toggleDay(day)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={handleTestNotification}
-              className="w-full gap-2"
+          <Card>
+            <button
+              onClick={() => toggleSection('diet')}
+              className="w-full"
             >
-              <Bell className="h-4 w-4" />
-              Send Test Notification
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Servings</CardTitle>
-            <CardDescription>Default number of servings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ServingsStepper
-              value={currentPrefs.servings}
-              onChange={handleServingsChange}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy</CardTitle>
-            <CardDescription>You're in control</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Process photos locally</Label>
-                <p className="text-sm text-muted-foreground">
-                  Keep your kitchen private
-                </p>
-              </div>
-              <Switch
-                checked={currentPrefs.privacyNoStoreImages || false}
-                onCheckedChange={handlePrivacyToggle}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Allow memory learning</Label>
-                <p className="text-sm text-muted-foreground">
-                  Let Chef remember your preferences
-                </p>
-              </div>
-              <Switch
-                checked={memory.memoryLearningEnabled}
-                onCheckedChange={handleMemoryToggle}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="w-full gap-2 text-muted-foreground hover:text-destructive hover:border-destructive">
-                    <Trash2 className="h-4 w-4" />
-                    Start fresh
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Start fresh?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This clears your pantry and settings — but not your good taste. You can always rebuild.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Keep everything</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAllData} className="bg-destructive hover:bg-destructive/90">
-                      Clear all data
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              Learning
-            </CardTitle>
-            <CardDescription>
-              We learn your taste over time — you can reset this anytime.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {likedTags.length > 0 && (
-              <div className="space-y-2">
-                <Label>Liked Tags</Label>
-                <div className="flex flex-wrap gap-2">
-                  {likedTags.map(({ tag, weight }) => (
-                    <Badge key={tag} variant="secondary" className="gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      {tag} (+{weight.toFixed(1)})
-                    </Badge>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div className="text-left">
+                  <CardTitle>Diet Preference</CardTitle>
+                  <CardDescription>Choose your dietary style</CardDescription>
+                </div>
+                <ChevronRight className={`h-5 w-5 transition-transform ${expandedSection === 'diet' ? 'rotate-90' : ''}`} />
+              </CardHeader>
+            </button>
+            {expandedSection === 'diet' && (
+              <CardContent className="pt-0">
+                <div className="flex gap-2 flex-wrap">
+                  {['Regular', 'Vegetarian', 'Vegan', 'Pescatarian', 'Keto', 'Gluten-free'].map((diet) => (
+                    <SelectableChip
+                      key={diet}
+                      label={diet}
+                      selected={currentPrefs.diet === diet}
+                      onToggle={() => handleDietChange(diet)}
+                    />
                   ))}
                 </div>
-              </div>
+              </CardContent>
             )}
+          </Card>
 
-            {mutedTags.length > 0 && (
-              <div className="space-y-2">
-                <Label>Muted Tags</Label>
-                <div className="flex flex-wrap gap-2">
-                  {mutedTags.map(({ tag, weight }) => (
-                    <Badge key={tag} variant="outline" className="gap-1">
-                      <TrendingDown className="h-3 w-3" />
-                      {tag} ({weight.toFixed(1)})
-                    </Badge>
+          <Card>
+            <button
+              onClick={() => toggleSection('allergies')}
+              className="w-full"
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div className="text-left">
+                  <CardTitle>Allergies & Intolerances</CardTitle>
+                  <CardDescription>Help us filter recipes for you</CardDescription>
+                </div>
+                <ChevronRight className={`h-5 w-5 transition-transform ${expandedSection === 'allergies' ? 'rotate-90' : ''}`} />
+              </CardHeader>
+            </button>
+            {expandedSection === 'allergies' && (
+              <CardContent className="pt-0">
+                <div className="flex gap-2 flex-wrap">
+                  {commonAllergies.map((allergy) => (
+                    <SelectableChip
+                      key={allergy}
+                      label={allergy}
+                      selected={currentPrefs.allergies.includes(allergy)}
+                      onToggle={() => handleToggleAllergy(allergy)}
+                    />
                   ))}
                 </div>
-              </div>
+              </CardContent>
             )}
+          </Card>
 
-            {likedTags.length === 0 && mutedTags.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No learning data yet. Keep using the app to personalize your suggestions!
-              </p>
+          <Card>
+            <button
+              onClick={() => toggleSection('goals')}
+              className="w-full"
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div className="text-left">
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Cooking Goals
+                  </CardTitle>
+                  <CardDescription>What matters most to you?</CardDescription>
+                </div>
+                <ChevronRight className={`h-5 w-5 transition-transform ${expandedSection === 'goals' ? 'rotate-90' : ''}`} />
+              </CardHeader>
+            </button>
+            {expandedSection === 'goals' && (
+              <CardContent className="pt-0">
+                <GoalsSection
+                  selectedGoals={currentPrefs.cookingGoals || []}
+                  onToggleGoal={handleToggleGoal}
+                />
+              </CardContent>
             )}
+          </Card>
+
+          <Card>
+            <button
+              onClick={() => toggleSection('notifications')}
+              className="w-full"
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div className="text-left">
+                  <CardTitle>Notifications</CardTitle>
+                  <CardDescription>Daily recipe suggestions</CardDescription>
+                </div>
+                <ChevronRight className={`h-5 w-5 transition-transform ${expandedSection === 'notifications' ? 'rotate-90' : ''}`} />
+              </CardHeader>
+            </button>
+            {expandedSection === 'notifications' && (
+              <CardContent className="space-y-4 pt-0">
+                <NotificationPermission />
+                <Separator />
+                <div>
+                  <Label htmlFor="time-select">Time</Label>
+                  <Select
+                    value={currentPrefs.notificationTime}
+                    onValueChange={handleNotificationTimeChange}
+                  >
+                    <SelectTrigger id="time-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HOURS.map((hour) => (
+                        <SelectItem key={hour} value={hour}>
+                          {hour}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Days</Label>
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {DAYS.map((day) => (
+                      <SelectableChip
+                        key={day}
+                        label={day}
+                        selected={currentPrefs.notificationDays.includes(day)}
+                        onToggle={() => toggleDay(day)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleTestNotification}
+                  className="w-full gap-2"
+                >
+                  <Bell className="h-4 w-4" />
+                  Send Test Notification
+                </Button>
+              </CardContent>
+            )}
+          </Card>
+
+          <Card>
+            <button
+              onClick={() => toggleSection('servings')}
+              className="w-full"
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div className="text-left">
+                  <CardTitle>Servings</CardTitle>
+                  <CardDescription>Default number of servings</CardDescription>
+                </div>
+                <ChevronRight className={`h-5 w-5 transition-transform ${expandedSection === 'servings' ? 'rotate-90' : ''}`} />
+              </CardHeader>
+            </button>
+            {expandedSection === 'servings' && (
+              <CardContent className="pt-0">
+                <ServingsStepper
+                  value={currentPrefs.servings}
+                  onChange={handleServingsChange}
+                />
+              </CardContent>
+            )}
+          </Card>
+        </div>
+
+        {/* Privacy & Data Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Shield className="h-4 w-4" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide">Privacy & Data</h2>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Privacy</CardTitle>
+              <CardDescription>You're in control</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Process photos locally</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Keep your kitchen private
+                  </p>
+                </div>
+                <Switch
+                  checked={currentPrefs.privacyNoStoreImages || false}
+                  onCheckedChange={handlePrivacyToggle}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Allow memory learning</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Let Chef remember your preferences
+                  </p>
+                </div>
+                <Switch
+                  checked={memory.memoryLearningEnabled}
+                  onCheckedChange={handleMemoryToggle}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="w-full gap-2 text-muted-foreground hover:text-destructive hover:border-destructive">
+                      <Trash2 className="h-4 w-4" />
+                      Start fresh
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Start fresh?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This clears your pantry and settings — but not your good taste. You can always rebuild.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep everything</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllData} className="bg-destructive hover:bg-destructive/90">
+                        Clear all data
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Learning
+              </CardTitle>
+              <CardDescription>
+                We learn your taste over time — you can reset this anytime.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {likedTags.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Liked Tags</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {likedTags.map(({ tag, weight }) => (
+                      <Badge key={tag} variant="secondary" className="gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        {tag} (+{weight.toFixed(1)})
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {mutedTags.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Muted Tags</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {mutedTags.map(({ tag, weight }) => (
+                      <Badge key={tag} variant="outline" className="gap-1">
+                        <TrendingDown className="h-3 w-3" />
+                        {tag} ({weight.toFixed(1)})
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {likedTags.length === 0 && mutedTags.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No learning data yet. Keep using the app to personalize your suggestions!
+                </p>
+              )}
 
               <Button
                 variant="outline"
@@ -361,8 +506,9 @@ const Settings = () => {
               >
                 Reset learning
               </Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardContent className="pt-6">

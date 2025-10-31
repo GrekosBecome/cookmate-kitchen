@@ -29,6 +29,7 @@ export interface Preferences {
   notificationDays: string[];
   servings: number;
   privacyNoStoreImages?: boolean;
+  cookingGoals?: string[];
 }
 
 export interface Ingredient {

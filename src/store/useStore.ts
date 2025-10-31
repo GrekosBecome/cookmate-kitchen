@@ -69,6 +69,7 @@ const defaultPreferences: Preferences = {
   notificationTime: '08:00',
   notificationDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
   servings: 2,
+  cookingGoals: [],
 };
 
 const mergePantryItems = (existing: PantryItem[], newItems: PantryItem[]): PantryItem[] => {

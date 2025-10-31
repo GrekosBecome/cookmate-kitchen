@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, ChefHat, MessageCircle, Settings, ShoppingCart } from 'lucide-react';
+import { Home, ChefHat, MessageCircle, User, ShoppingCart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
@@ -15,7 +15,7 @@ export const BottomNav = () => {
     { icon: ShoppingCart, label: 'Pantry', path: '/pantry', badge: pendingShoppingItems },
     { icon: Home, label: 'Recipes', path: '/suggestion' },
     { icon: MessageCircle, label: 'Chef', path: '/chat' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: User, label: 'You', path: '/settings' },
   ];
 
   const isActive = (path: string) => {
