@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { DetectedItem, PantryUnit } from '@/types';
 import { cn } from '@/lib/utils';
+import { getIngredientEmoji } from '@/utils/ingredientEmojis';
 
 interface DetectedItemCardProps {
   item: DetectedItem;
@@ -19,6 +20,7 @@ export const DetectedItemCard = ({ item, onUpdate, onRemove }: DetectedItemCardP
   const [qty, setQty] = useState<number>(1);
   const [unit, setUnit] = useState<PantryUnit>('pcs');
   const [isEdited, setIsEdited] = useState(false);
+  const emoji = getIngredientEmoji(name);
 
   const handleNameChange = (value: string) => {
     setName(value);
@@ -49,6 +51,7 @@ export const DetectedItemCard = ({ item, onUpdate, onRemove }: DetectedItemCardP
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
+            <span className="text-xl">{emoji}</span>
             <Input
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}

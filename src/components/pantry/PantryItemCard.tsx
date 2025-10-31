@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getIngredientEmoji } from '@/utils/ingredientEmojis';
 
 interface PantryItemCardProps {
   item: PantryItem;
@@ -12,6 +13,7 @@ interface PantryItemCardProps {
 
 export const PantryItemCard = ({ item, onToggleUsed, onRemove }: PantryItemCardProps) => {
   const displayQty = item.qty ? `${item.qty}${item.unit || ''}` : '';
+  const emoji = getIngredientEmoji(item.name);
   
   return (
     <div className={cn(
@@ -22,9 +24,10 @@ export const PantryItemCard = ({ item, onToggleUsed, onRemove }: PantryItemCardP
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className={cn(
-              "font-semibold text-base capitalize",
+              "font-semibold text-base capitalize flex items-center gap-2",
               item.used && "line-through"
             )}>
+              <span className="text-xl">{emoji}</span>
               {item.name}
             </h3>
             {displayQty && (

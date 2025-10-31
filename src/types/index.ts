@@ -30,6 +30,7 @@ export interface Preferences {
   servings: number;
   privacyNoStoreImages?: boolean;
   cookingGoals?: string[];
+  profileImage?: string;
 }
 
 export interface Ingredient {
