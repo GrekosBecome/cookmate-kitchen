@@ -40,16 +40,18 @@ export const Step3Notifications = ({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Set your preferences</h1>
-        <p className="text-muted-foreground text-lg">
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl font-extralight tracking-wide gradient-text">
+          Set your preferences
+        </h1>
+        <p className="text-muted-foreground text-lg font-light">
           When would you like recipe suggestions?
         </p>
       </div>
 
       {/* Time */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Notification time</h2>
+        <h2 className="text-xl font-extralight">Notification time</h2>
         <div className="flex flex-wrap gap-3">
           {timeSlots.map((time) => (
             <SelectableChip
@@ -65,7 +67,7 @@ export const Step3Notifications = ({
 
       {/* Days */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Days</h2>
+        <h2 className="text-xl font-extralight">Days</h2>
         <div className="flex flex-wrap gap-3">
           {weekDays.map((day) => (
             <SelectableChip
@@ -81,7 +83,7 @@ export const Step3Notifications = ({
 
       {/* Servings */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Default servings</h2>
+        <h2 className="text-xl font-extralight">Default servings</h2>
         <div className="flex justify-center py-4">
           <ServingsStepper
             value={servings}
@@ -93,7 +95,7 @@ export const Step3Notifications = ({
       </div>
 
       <div className="pt-4 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground font-light">
           Your preferences are stored locally. You control your data.
         </p>
       </div>

@@ -12,11 +12,11 @@ export const SelectableChip = ({ label, selected, onToggle, variant = 'default' 
     <button
       onClick={onToggle}
       className={cn(
-        'rounded-full border-2 font-medium transition-all duration-300 active:scale-95',
+        'rounded-full font-light transition-all duration-500 active:scale-95',
         variant === 'default' ? 'px-6 py-3 text-base' : 'px-5 py-2.5 text-base',
         selected
-          ? 'bg-chip-selected text-chip-text-selected border-chip-selected shadow-md'
-          : 'bg-background text-foreground border-border hover:border-chip-selected/40'
+          ? 'glass-card border-primary/50 shadow-lg shadow-primary/20 text-foreground'
+          : 'glass-card border-border hover:border-primary/30 text-foreground/80'
       )}
     >
       {label}

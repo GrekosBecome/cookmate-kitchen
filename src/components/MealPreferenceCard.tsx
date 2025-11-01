@@ -19,21 +19,21 @@ export const MealPreferenceCard = ({
     <button
       onClick={onToggle}
       className={cn(
-        'relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all duration-300 active:scale-95 min-h-[140px]',
+        'relative flex flex-col items-center justify-center gap-4 p-6 rounded-3xl transition-all duration-500 active:scale-95 min-h-[140px]',
         selected
-          ? 'bg-[hsl(88,60%,75%)] border-[hsl(88,60%,75%)] text-foreground'
-          : 'bg-muted border-muted text-foreground hover:border-[hsl(88,60%,85%)]'
+          ? 'glass-card border-primary/50 shadow-lg shadow-primary/20 pulse-glow'
+          : 'glass-card border-border hover:border-primary/30'
       )}
     >
       {selected && (
-        <div className="absolute top-3 right-3 w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
-          <Check className="h-4 w-4 text-background" strokeWidth={3} />
+        <div className="absolute top-3 right-3 w-7 h-7 holo-ring rounded-full flex items-center justify-center">
+          <Check className="h-4 w-4 text-primary" strokeWidth={3} />
         </div>
       )}
       
-      <Icon className="h-10 w-10" strokeWidth={1.5} />
+      <Icon className="h-12 w-12 text-foreground" strokeWidth={1.5} />
       
-      <span className="font-semibold text-base text-center">
+      <span className="font-light text-base text-center text-foreground">
         {label}
       </span>
     </button>

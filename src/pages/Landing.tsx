@@ -10,27 +10,35 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl floating" />
+        <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-3xl floating" style={{ animationDelay: '2s' }} />
+      </div>
+
       <Header />
-      <HeroSection />
-      <ServicesSection />
-      <StatsSection />
-      <TestimonialsSection />
-      <InstallSection />
+      <div className="relative z-10">
+        <HeroSection />
+        <ServicesSection />
+        <StatsSection />
+        <TestimonialsSection />
+        <InstallSection />
+      </div>
       
       {/* Footer */}
-      <footer id="contact" className="border-t py-12">
+      <footer id="contact" className="border-t border-border relative z-10 py-12 frosted">
         <div className="container max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold mb-3">CookMate</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-extralight text-xl mb-3 gradient-text">CookMate</h3>
+              <p className="text-sm text-muted-foreground font-light">
                 Your Smart Kitchen Companion powered by AI
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-3">Σύνδεσμοι</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="font-extralight text-lg mb-3">Σύνδεσμοι</h3>
+              <ul className="space-y-2 text-sm font-light">
                 <li>
                   <button onClick={() => navigate('/features')} className="text-muted-foreground hover:text-primary transition-colors">
                     Features
@@ -49,13 +57,13 @@ const Landing = () => {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-3">Επικοινωνία</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-extralight text-lg mb-3">Επικοινωνία</h3>
+              <p className="text-sm text-muted-foreground font-light">
                 📧 hello@cookmate.app
               </p>
             </div>
           </div>
-          <div className="text-center text-sm text-muted-foreground pt-8 border-t">
+          <div className="text-center text-sm text-muted-foreground pt-8 border-t border-border font-light">
             <p>© 2025 CookMate. Your Smart Kitchen Companion.</p>
           </div>
         </div>

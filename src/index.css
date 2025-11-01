@@ -8,97 +8,72 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 42 35% 97%;
-    --foreground: 24 24% 10%;
+    /* Futuristic Dark Theme with Glassmorphism */
+    --background: 220 25% 8%;
+    --background-gradient: linear-gradient(135deg, hsl(220, 25%, 8%), hsl(230, 20%, 12%));
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 24 24% 10%;
+    --card: 220 20% 12% / 0.6;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 24 24% 10%;
+    --popover: 220 20% 10% / 0.95;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 154 44% 56%;
+    --primary: 160 65% 55%;
+    --primary-glow: 160 80% 70%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 48% 52%;
+    --secondary: 200 70% 60%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 42 30% 96%;
-    --muted-foreground: 24 10% 45%;
+    --muted: 220 15% 18% / 0.5;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 45 93% 78%;
-    --accent-foreground: 24 24% 10%;
+    --accent: 280 60% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 42 25% 90%;
-    --input: 42 25% 90%;
-    --ring: 154 44% 56%;
+    --border: 0 0% 100% / 0.1;
+    --input: 220 15% 18% / 0.6;
+    --ring: 160 65% 55%;
 
-    --radius: 1rem;
+    --radius: 1.5rem;
     
-    --chip-selected: 154 44% 56%;
-    --chip-unselected: 42 30% 96%;
+    --chip-selected: 160 65% 55%;
+    --chip-unselected: 220 15% 18% / 0.4;
     --chip-text-selected: 0 0% 100%;
-    --chip-text-unselected: 24 24% 10%;
+    --chip-text-unselected: 0 0% 90%;
     
-    --transition-base: 100ms cubic-bezier(0.25, 0.1, 0.25, 1);
-    --transition-smooth: 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
-    --transition-slow: 400ms cubic-bezier(0.25, 0.1, 0.25, 1);
+    /* Glassmorphism Effects */
+    --glass-bg: 220 20% 15% / 0.3;
+    --glass-border: 0 0% 100% / 0.15;
+    --glass-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.37);
+    --glass-blur: blur(12px);
+    
+    /* Holographic Effects */
+    --holo-gradient: linear-gradient(135deg, hsl(160, 65%, 55%), hsl(200, 70%, 60%), hsl(280, 60%, 60%));
+    --holo-shadow: 0 0 40px hsl(160, 80%, 70% / 0.4);
+    
+    --transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 220 20% 10% / 0.8;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 160 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 18% / 0.5;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 160 65% 55%;
   }
 
   .dark {
-    --background: 24 24% 10%;
-    --foreground: 42 40% 98%;
-
-    --card: 24 20% 14%;
-    --card-foreground: 42 40% 98%;
-
-    --popover: 24 20% 14%;
-    --popover-foreground: 42 40% 98%;
-
-    --primary: 154 44% 56%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 142 48% 52%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 24 15% 20%;
-    --muted-foreground: 30 10% 65%;
-
-    --accent: 45 93% 78%;
-    --accent-foreground: 24 24% 10%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 24 15% 24%;
-    --input: 24 15% 24%;
-    --ring: 154 44% 56%;
-    
-    --chip-selected: 154 44% 56%;
-    --chip-unselected: 24 15% 20%;
-    --chip-text-selected: 0 0% 100%;
-    --chip-text-unselected: 42 40% 98%;
-    
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Same as root - app is dark by default */
+    --background: 220 25% 8%;
+    --foreground: 0 0% 95%;
   }
 }
 
@@ -108,11 +83,20 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: hsl(var(--background));
+    background-image: var(--background-gradient);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3 {
+    font-weight: 200;
+    letter-spacing: 0.02em;
   }
 
   /* Safe area insets for iOS */
@@ -146,5 +130,82 @@ All colors MUST be HSL.
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--radius);
+  }
+  
+  /* Holographic Effect */
+  .holo-ring {
+    border: 2px solid transparent;
+    background: var(--holo-gradient) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    box-shadow: var(--holo-shadow);
+  }
+  
+  /* Glass Button */
+  .glass-button {
+    @apply glass-card;
+    transition: all var(--transition-smooth);
+  }
+  
+  .glass-button:hover {
+    background: hsl(var(--glass-bg));
+    border-color: hsl(var(--primary) / 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgb(0 0 0 / 0.5);
+  }
+  
+  /* Blur Background */
+  .blur-bg {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  /* Frosted Glass */
+  .frosted {
+    background: hsl(220 20% 15% / 0.2);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+  }
+  
+  /* Premium Gradient Text */
+  .gradient-text {
+    background: var(--holo-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Floating Animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .floating {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Pulse Glow */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(160 80% 70% / 0.3); }
+    50% { box-shadow: 0 0 40px hsl(160 80% 70% / 0.6); }
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 }

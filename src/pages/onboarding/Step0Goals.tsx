@@ -8,16 +8,35 @@ export const Step0Goals = ({
   selectedGoals,
   onToggleGoal
 }: Step0GoalsProps) => {
-  return <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">What are your goals with CookMate?</h1>
-        <p className="text-muted-foreground text-lg">Let as know what's important to you?</p>
+  return (
+    <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl font-extralight tracking-wide gradient-text">
+          What are your goals with CookMate?
+        </h1>
+        <p className="text-muted-foreground text-lg font-light">
+          Let us know what's important to you
+        </p>
       </div>
 
-      <div className="space-y-3 pt-4">
-        {goalOptions.map(goal => <button key={goal} onClick={() => onToggleGoal(goal)} className={`w-full p-4 rounded-2xl text-left font-semibold text-base transition-all duration-300 active:scale-98 ${selectedGoals.includes(goal) ? 'bg-[hsl(88,60%,75%)] text-foreground' : 'bg-muted text-foreground hover:bg-muted/80'}`}>
+      <div className="space-y-4 pt-6">
+        {goalOptions.map(goal => (
+          <button
+            key={goal}
+            onClick={() => onToggleGoal(goal)}
+            className={`
+              w-full p-5 rounded-3xl text-left font-light text-lg
+              transition-all duration-500 active:scale-98
+              ${selectedGoals.includes(goal)
+                ? 'glass-card border-primary/40 shadow-lg shadow-primary/20 pulse-glow'
+                : 'glass-card border-border hover:border-primary/20 hover:shadow-lg'
+              }
+            `}
+          >
             {goal}
-          </button>)}
+          </button>
+        ))}
       </div>
-    </div>;
+    </div>
+  );
 };

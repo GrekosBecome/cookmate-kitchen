@@ -51,16 +51,18 @@ export const Step2Restrictions = ({
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Any allergies or dislikes?</h1>
-        <p className="text-muted-foreground text-lg">
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl font-extralight tracking-wide gradient-text">
+          Any allergies or dislikes?
+        </h1>
+        <p className="text-muted-foreground text-lg font-light">
           We'll make sure to avoid these ingredients
         </p>
       </div>
 
       {/* Allergies */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Allergies</h2>
+        <h2 className="text-2xl font-extralight">Allergies</h2>
         <div className="flex flex-wrap gap-2.5">
           {commonAllergies.map((allergy) => (
             <SelectableChip
@@ -76,7 +78,7 @@ export const Step2Restrictions = ({
 
       {/* Dislikes */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Dislikes</h2>
+        <h2 className="text-2xl font-extralight">Dislikes</h2>
         <div className="space-y-3">
           <Input
             placeholder="Type an ingredient you dislike..."
@@ -84,7 +86,7 @@ export const Step2Restrictions = ({
             onChange={(e) => setDislikeInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addDislike()}
             maxLength={50}
-            className="h-14 text-base rounded-full border-2 px-6 bg-background"
+            className="h-14 text-base rounded-full border-2 px-6 glass-card font-light"
           />
           {dislikes.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -92,7 +94,7 @@ export const Step2Restrictions = ({
                 <button
                   key={dislike}
                   onClick={() => removeDislike(dislike)}
-                  className="px-4 py-2 bg-muted rounded-full text-sm font-medium flex items-center gap-2 hover:bg-muted/80 transition-colors"
+                  className="px-4 py-2 glass-card rounded-full text-sm font-light flex items-center gap-2 hover:border-primary/20 transition-all"
                 >
                   {dislike}
                   <X className="h-4 w-4" />

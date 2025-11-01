@@ -28,18 +28,24 @@ export const OnboardingLayout = ({
 }: OnboardingLayoutProps) => {
   return (
     <div 
-      className="min-h-screen bg-background flex flex-col"
+      className="min-h-screen flex flex-col relative overflow-hidden"
       style={{
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl floating" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl floating" style={{ animationDelay: '1s' }} />
+      </div>
+
       {/* Header */}
-      <div className="p-4 flex items-center justify-between">
+      <div className="p-4 flex items-center justify-between relative z-10 frosted">
         {onBack ? (
           <button
             onClick={onBack}
-            className="p-2 rounded-full hover:bg-muted transition-colors min-h-[44px] min-w-[44px]"
+            className="p-2 rounded-full hover:bg-glass-bg transition-all min-h-[44px] min-w-[44px]"
             aria-label="Go back"
           >
             <ArrowLeft className="h-6 w-6" />
@@ -50,23 +56,23 @@ export const OnboardingLayout = ({
         <ProgressDots total={totalSteps} current={currentStep} />
         <button
           onClick={onSkip}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 min-h-[44px]"
+          className="text-sm font-light text-muted-foreground hover:text-foreground transition-colors px-3 py-2 min-h-[44px]"
         >
           {skipLabel}
         </button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-8 overflow-auto">
+      <div className="flex-1 px-6 py-8 overflow-auto relative z-10">
         {children}
       </div>
 
       {/* Footer */}
-      <div className="p-6 pt-4 border-t bg-card">
+      <div className="p-6 pt-4 frosted backdrop-blur-xl relative z-10">
         <Button
           onClick={onNext}
           disabled={!canProceed}
-          className="w-full h-14 text-lg font-semibold rounded-full min-h-[44px]"
+          className="w-full h-14 text-lg font-light rounded-full min-h-[44px] glass-button border-primary/30"
           size="lg"
         >
           {nextLabel}

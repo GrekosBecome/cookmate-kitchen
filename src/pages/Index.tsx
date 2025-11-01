@@ -19,10 +19,14 @@ const Index = () => {
   }, [hasCompletedOnboarding, pantryItems.length, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-        <p className="text-muted-foreground">Loading CookMate...</p>
+    <div className="flex min-h-screen items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl floating" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl floating" style={{ animationDelay: '1.5s' }} />
+      </div>
+      <div className="text-center space-y-4 relative z-10">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto pulse-glow" />
+        <p className="text-muted-foreground font-light">Loading CookMate...</p>
       </div>
     </div>
   );

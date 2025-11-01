@@ -17,15 +17,17 @@ const mealOptions = [
 
 export const Step1Diet = ({ selectedPreferences, onTogglePreference }: Step1DietProps) => {
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">What kind of meals do you like?</h1>
-        <p className="text-muted-foreground text-lg">
-          We'll recommend meals you're more likely to enjoy.
+    <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl font-extralight tracking-wide gradient-text">
+          What kind of meals do you like?
+        </h1>
+        <p className="text-muted-foreground text-lg font-light">
+          We'll recommend meals you're more likely to enjoy
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pt-4">
+      <div className="grid grid-cols-2 gap-4 pt-6">
         {mealOptions.map((option) => (
           <MealPreferenceCard
             key={option.id}
@@ -37,7 +39,7 @@ export const Step1Diet = ({ selectedPreferences, onTogglePreference }: Step1Diet
         ))}
       </div>
 
-      <p className="text-sm text-muted-foreground text-center pt-2">
+      <p className="text-sm text-muted-foreground text-center pt-4 font-light">
         We'll show you your preferred recipes first, but you'll have access to the full menu every week.
       </p>
     </div>
