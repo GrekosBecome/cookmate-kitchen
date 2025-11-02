@@ -80,7 +80,7 @@ export const GourmetRecipeCard = ({ recipe, onAnother, showActions = true }: Gou
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="gap-1 bg-primary/10 text-primary border-primary/20">
                 <Sparkles className="h-3 w-3" />
-                AI Gourmet
+                Gourmet
               </Badge>
               {recipe.cuisine && (
                 <Badge variant="outline" className="gap-1">

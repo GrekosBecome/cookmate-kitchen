@@ -4,8 +4,8 @@ import { MessageSquare, Camera, Sparkles, TrendingUp } from 'lucide-react';
 const features = [
   {
     icon: MessageSquare,
-    title: 'AI Chef Chat',
-    description: 'Talk to your personal AI chef. Get cooking tips, substitutions, and recipe modifications instantly.',
+    title: 'Chef Chat',
+    description: 'Talk to your personal chef. Get cooking tips, substitutions, and recipe modifications instantly.',
   },
   {
     icon: Camera,

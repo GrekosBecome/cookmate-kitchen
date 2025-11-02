@@ -12,7 +12,7 @@ const testimonials = [
     name: 'James L.',
     avatar: '👨‍💼',
     rating: 5,
-    text: 'The AI chef is like having a professional in my kitchen.',
+    text: 'The chef is like having a professional in my kitchen.',
   },
   {
     name: 'Maria K.',

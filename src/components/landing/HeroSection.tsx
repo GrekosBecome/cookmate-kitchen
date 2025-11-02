@@ -23,7 +23,7 @@ export const HeroSection = () => {
           <div className="space-y-8 animate-fade-in">
             <div className="space-y-6">
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
-                Your AI Kitchen
+                Your Kitchen
                 <span className="block text-primary">Companion</span>
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground">
@@ -70,7 +70,7 @@ export const HeroSection = () => {
                 <ChefHat className="w-32 h-32 text-primary mb-4" />
                 <p className="text-lg font-semibold">Smart Cooking Assistant</p>
                 <p className="text-sm text-muted-foreground text-center mt-2">
-                  AI-powered recipes tailored to your pantry
+                  Smart recipes tailored to your pantry
                 </p>
               </div>
             </div>

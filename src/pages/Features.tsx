@@ -11,7 +11,7 @@ const Features = () => {
     {
       icon: Camera,
       title: 'Smart Pantry Management',
-      description: 'Βγάλτε φωτογραφία τα συστατικά σας και το AI τα εντοπίζει αυτόματα',
+      description: 'Βγάλτε φωτογραφία τα συστατικά σας και τα εντοπίζει αυτόματα',
       highlights: [
         '📸 Instant photo detection',
         '🏷️ Emoji categorization',
@@ -46,7 +46,7 @@ const Features = () => {
     },
     {
       icon: MessageCircle,
-      title: 'AI Kitchen Assistant',
+      title: 'Kitchen Assistant',
       description: 'Ρωτήστε οτιδήποτε για μαγειρική και λάβετε άμεσες απαντήσεις',
       highlights: [
         '💬 Natural conversations',
@@ -106,7 +106,7 @@ const Features = () => {
     },
     {
       title: '👨‍🍳 Learn New Skills',
-      desc: 'Εξελιχθείτε από αρχάριος σε μάγειρας με AI καθοδήγηση'
+      desc: 'Εξελιχθείτε από αρχάριος σε μάγειρας με έξυπνη καθοδήγηση'
     }
   ];
 
@@ -257,7 +257,7 @@ const Features = () => {
             Έτοιμοι να Αλλάξετε τον Τρόπο που Μαγειρεύετε;
           </h2>
           <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-            Ξεκινήστε το μαγειρικό σας ταξίδι με AI σήμερα. Δωρεάν, χωρίς εγγραφή, χωρίς συνδρομές.
+            Ξεκινήστε το μαγειρικό σας ταξίδι σήμερα. Δωρεάν, χωρίς εγγραφή, χωρίς συνδρομές.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button size="lg" onClick={() => navigate('/onboarding')}>
@@ -277,7 +277,7 @@ const Features = () => {
             <div>
               <h3 className="font-semibold mb-3">CookMate</h3>
               <p className="text-sm text-muted-foreground">
-                Your Smart Kitchen Companion powered by AI
+                Your Smart Kitchen Companion
               </p>
             </div>
             <div>

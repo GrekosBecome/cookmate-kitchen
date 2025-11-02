@@ -154,14 +154,14 @@ const Suggestion = () => {
           setAiError('Too many requests. Please try again in a moment.');
           track('ai_generation_failed', { reason: 'rate_limit' });
         } else if (data.error === 'payment_required') {
-          setAiError('AI credits exhausted. Please add credits to continue.');
+          setAiError('Credits exhausted. Please add credits to continue.');
           track('ai_generation_failed', { reason: 'payment_required' });
         } else {
           throw new Error(data.message || 'Failed to generate recipes');
         }
         
         toast({
-          title: "AI generation failed",
+          title: "Generation failed",
           description: data.message,
           variant: "destructive"
         });
@@ -188,7 +188,7 @@ const Suggestion = () => {
       track('ai_generation_failed', { reason: 'error' });
       
       toast({
-        title: "Couldn't generate AI recipes",
+        title: "Couldn't generate recipes",
         description: "Showing our classic suggestions instead.",
         variant: "destructive"
       });
@@ -327,10 +327,10 @@ const Suggestion = () => {
                 <Sparkles className="h-6 w-6 mt-0.5 flex-shrink-0 text-primary animate-pulse" />
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm sm:text-base flex items-center gap-2">
-                    Ready for Gourmet AI?
+                    Ready for Gourmet Recipes?
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    {shoppingState.queue.length} ingredients ready — let AI create restaurant-quality recipes
+                    {shoppingState.queue.length} ingredients ready — create restaurant-quality recipes
                   </p>
                 </div>
                 <Button 
@@ -388,7 +388,7 @@ const Suggestion = () => {
                 <div>
                   <h3 className="font-semibold text-lg">Crafting gourmet recipes...</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Our AI chef is creating something special
+                    Our chef is creating something special
                   </p>
                 </div>
               </CardContent>
@@ -431,7 +431,7 @@ const Suggestion = () => {
               className="gap-1"
             >
               <Sparkles className="h-3 w-3" />
-              Try AI Gourmet
+              Try Gourmet
             </Button>
           </div>
         )}

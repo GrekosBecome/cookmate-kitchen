@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 const services = [
   {
     icon: MessageSquare,
-    title: 'AI Chef Chat',
-    description: 'Talk to your personal AI chef anytime',
+    title: 'Chef Chat',
+    description: 'Talk to your personal chef anytime',
     details: [
       'Get instant cooking tips and advice',
       'Recipe substitutions on demand',
@@ -20,7 +20,7 @@ const services = [
     description: 'Automatic ingredient detection',
     details: [
       'Scan with your camera',
-      'AI-powered recognition',
+      'Smart recognition',
       'Automatic inventory tracking',
       'Expiration reminders',
     ],

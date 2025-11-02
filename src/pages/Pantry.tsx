@@ -313,7 +313,7 @@ export default function Pantry() {
         if (data.error === 'rate_limit') {
           toast.error('Too many requests. Please try again in a moment.');
         } else if (data.error === 'payment_required') {
-          toast.error('AI credits exhausted. Please add credits to continue.');
+          toast.error('Credits exhausted. Please add credits to continue.');
         } else {
           throw new Error(data.message || 'Failed to generate recipes');
         }

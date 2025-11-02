@@ -33,7 +33,7 @@ const Landing = () => {
             <div>
               <h3 className="font-extralight text-xl mb-3 gradient-text">CookMate</h3>
               <p className="text-sm text-muted-foreground font-light">
-                Your Smart Kitchen Companion powered by AI
+                Your Smart Kitchen Companion
               </p>
             </div>
             <div>
