@@ -45,7 +45,7 @@ export const PantryItemCard = ({ item, onToggleUsed, onRemove }: PantryItemCardP
             )}
             {item.confidence && (
               <Badge variant="secondary" className="text-xs">
-                {Math.round(item.confidence * 100)}%
+                {Math.round(item.confidence > 1 ? item.confidence : item.confidence * 100)}%
               </Badge>
             )}
           </div>
