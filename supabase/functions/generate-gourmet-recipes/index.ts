@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SYSTEM_PROMPT = `You are a Michelin-level chef specializing in gourmet yet practical recipes.
+const GOURMET_SYSTEM_PROMPT = `You are a Michelin-level chef specializing in gourmet yet practical recipes.
 
 Your role:
 - Create sophisticated restaurant-quality recipes using provided ingredients
@@ -21,13 +21,29 @@ Guidelines:
 - Include precise measurements and timing
 - Add wine/beverage pairing suggestions when appropriate`;
 
+const EVERYDAY_SYSTEM_PROMPT = `You are a practical home chef creating simple, delicious everyday recipes.
+
+Your role:
+- Create approachable recipes using available pantry ingredients
+- Focus on quick, family-friendly meals
+- Recipes should be forgiving and adaptable
+- Respect all dietary restrictions and allergies
+- Keep techniques simple and accessible
+
+Guidelines:
+- Use ingredients from the pantry list as much as possible
+- Suggest common household staples (salt, pepper, oil, butter, eggs)
+- Each recipe should take 15-30 minutes
+- Include simple step-by-step instructions
+- Focus on flavor and practicality over presentation`;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { shoppingItems, pantryItems, preferences } = await req.json();
+    const { shoppingItems, pantryItems, preferences, mode = 'gourmet' } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -46,7 +62,11 @@ serve(async (req) => {
     const allergies = preferences?.allergies?.join(', ') || 'none';
     const dislikes = preferences?.dislikes?.join(', ') || 'none';
 
-    const userPrompt = `Create 2-3 gourmet recipes using these ingredients:
+    const isGourmet = mode === 'gourmet';
+    const systemPrompt = isGourmet ? GOURMET_SYSTEM_PROMPT : EVERYDAY_SYSTEM_PROMPT;
+    
+    const userPrompt = isGourmet 
+      ? `Create 2-3 gourmet recipes using these ingredients:
 
 Shopping List (primary ingredients): ${shoppingList}
 Available in Pantry: ${pantryList}
@@ -55,9 +75,19 @@ Dietary Preference: ${dietInfo}
 Allergies to avoid: ${allergies}
 Dislikes to avoid: ${dislikes}
 
-Generate creative, restaurant-quality recipes that showcase these ingredients.`;
+Generate creative, restaurant-quality recipes that showcase these ingredients.`
+      : `Create 2-3 simple everyday recipes using these pantry ingredients:
 
-    console.log('Calling Lovable AI for gourmet recipes...');
+Available Ingredients: ${pantryList}
+Additional items available: ${shoppingList}
+
+Dietary Preference: ${dietInfo}
+Allergies to avoid: ${allergies}
+Dislikes to avoid: ${dislikes}
+
+Generate practical, quick recipes that work with what's available.`;
+
+    console.log(`Calling Lovable AI for ${mode} recipes...`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -68,7 +98,7 @@ Generate creative, restaurant-quality recipes that showcase these ingredients.`;
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         tools: [
@@ -166,14 +196,14 @@ Generate creative, restaurant-quality recipes that showcase these ingredients.`;
     
     // Transform to app Recipe format
     const recipes = recipesData.recipes.map((r: any, idx: number) => ({
-      id: `ai-gourmet-${Date.now()}-${idx}`,
+      id: `ai-${mode}-${Date.now()}-${idx}`,
       title: r.title,
       description: r.description,
       timeMin: r.timeMin,
       kcal: r.kcal,
       difficulty: r.difficulty,
       cuisine: r.cuisine,
-      tags: ['ai-generated', 'gourmet', r.cuisine.toLowerCase()],
+      tags: ['ai-generated', mode === 'gourmet' ? 'gourmet' : 'everyday', r.cuisine.toLowerCase()],
       needs: r.ingredients.slice(0, 5).map((i: any) => i.name.toLowerCase()),
       ingredients: r.ingredients.map((i: any) => ({
         name: i.name,
@@ -187,7 +217,7 @@ Generate creative, restaurant-quality recipes that showcase these ingredients.`;
       aiGenerated: true
     }));
 
-    console.log(`Generated ${recipes.length} gourmet recipes`);
+    console.log(`Generated ${recipes.length} ${mode} recipes`);
 
     return new Response(
       JSON.stringify({ recipes }), 

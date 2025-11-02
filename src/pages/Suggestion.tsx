@@ -95,6 +95,14 @@ const Suggestion = () => {
 
   const generateSuggestions = () => {
     const newSuggestions = getSuggestions(preferences, pantryItems, 2, learning);
+    
+    // AI fallback: If no matches found and we have enough items, use AI
+    if (newSuggestions.length === 0 && pantryItems.length >= 3) {
+      console.log('No static matches found, falling back to AI everyday recipes...');
+      generateAIRecipes();
+      return;
+    }
+    
     setSuggestions(newSuggestions);
     setCurrentIndex(0);
     setSpinCount(0);
@@ -127,7 +135,8 @@ const Suggestion = () => {
         body: {
           shoppingItems: shoppingState.queue,
           pantryItems: pantryItems.slice(0, 10),
-          preferences
+          preferences,
+          mode: shoppingState.queue.length >= 3 ? 'gourmet' : 'everyday'
         }
       });
 
