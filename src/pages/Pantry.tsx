@@ -460,37 +460,27 @@ export default function Pantry() {
           </TabsList>
         </Tabs>
 
-        {/* AI Recipe Generator */}
+        {/* What to Cook Button */}
         {activeItems.length >= 2 && viewMode === 'list' && (
-          <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-lg p-4 border border-primary/20 animate-fade-in">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-base mb-1">
-                  🤖 AI Recipe Suggestions
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Let AI create recipes with your {activeItems.length} ingredients
-                </p>
-              </div>
-              <Button
-                onClick={handleGenerateAIFromPantry}
-                disabled={isGeneratingFromPantry}
-                size="lg"
-                className="h-12 px-6 font-semibold"
-              >
-                {isGeneratingFromPantry ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Τι να μαγειρέψω;
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="flex justify-center">
+            <Button
+              onClick={handleGenerateAIFromPantry}
+              disabled={isGeneratingFromPantry}
+              size="sm"
+              className="font-medium"
+            >
+              {isGeneratingFromPantry ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  What to cook?
+                </>
+              )}
+            </Button>
           </div>
         )}
 
