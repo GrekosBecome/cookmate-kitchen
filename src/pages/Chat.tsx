@@ -282,7 +282,7 @@ Please:
           <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="h-9 w-9 min-h-[40px] min-w-[40px] p-0" aria-label="Go back to recipes">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <img src={chefAvatar} alt="Chef" className="w-9 h-9 rounded-full object-cover" />
+          <img src={chefAvatar} alt="Chef" className="w-9 h-9 rounded-full object-cover scale-[1.7]" />
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-bold truncate">Chef Chat</h1>
             {recipe ? <p className="text-xs text-muted-foreground italic truncate">Talking about: {recipe.title}</p> : <p className="text-xs text-muted-foreground italic">Your cooking companion</p>}
