@@ -313,7 +313,7 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
           </div>}
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-2 pb-48">
+      <div className="flex-1 overflow-y-auto px-4 py-2 pb-32">
         <div className="container max-w-2xl mx-auto space-y-4">
           {restoredFromCache && <div className="text-center animate-fade-in">
               <p className="text-xs text-muted-foreground">Restored your chat from a few minutes ago ⏳</p>
@@ -351,8 +351,10 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
         </div>
       </div>
 
-      {/* Sticky input bar - positioned above bottom navigation */}
-      <div className="fixed bottom-[76px] left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-50 py-3">
+      {/* Sticky input bar */}
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-50 py-3" style={{
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)'
+      }}>
         <div className="container max-w-2xl mx-auto px-4 space-y-3">
           <div className="relative animate-fade-in">
             {/* Fade gradients for scroll hint */}

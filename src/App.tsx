@@ -60,8 +60,8 @@ function AppContent() {
     };
   }, [navigate]);
 
-  // Hide bottom nav on onboarding, index, landing, offline, privacy, install, and features pages
-  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/install' || location.pathname === '/features';
+  // Hide bottom nav on onboarding, index, landing, offline, privacy, install, features, and chat pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/install' || location.pathname === '/features' || location.pathname === '/chat';
 
   return (
     <>
