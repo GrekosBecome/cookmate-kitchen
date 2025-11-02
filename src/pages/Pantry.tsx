@@ -9,13 +9,14 @@ import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { AddOptionsSheet } from '@/components/pantry/AddOptionsSheet';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle, Plus } from 'lucide-react';
+import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle, Plus, Sparkles, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visionDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
 import { track } from '@/lib/analytics';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ export default function Pantry() {
     markShoppingItemBought,
     removeShoppingItem,
     setTodaysPick,
+    preferences,
   } = useStore();
   
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -51,6 +53,7 @@ export default function Pantry() {
   const [editedItems, setEditedItems] = useState<Map<string, { name: string; qty: number; unit: PantryUnit }>>(new Map());
   const [isDetecting, setIsDetecting] = useState(false);
   const [showBorderlineDialog, setShowBorderlineDialog] = useState(false);
+  const [isGeneratingFromPantry, setIsGeneratingFromPantry] = useState(false);
   const [borderlineCoverage, setBorderlineCoverage] = useState(0);
   const [showAddOptions, setShowAddOptions] = useState(false);
   const [autoAction, setAutoAction] = useState<'camera' | 'gallery' | null>(null);
@@ -286,6 +289,57 @@ export default function Pantry() {
     toast.success('Removed from shopping list');
   };
 
+  const handleGenerateAIFromPantry = async () => {
+    if (activeItems.length < 2) {
+      toast.error('Need at least 2 ingredients to generate recipes');
+      return;
+    }
+
+    setIsGeneratingFromPantry(true);
+    track('ai_from_pantry_requested', { itemCount: activeItems.length });
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-gourmet-recipes', {
+        body: {
+          shoppingItems: [],
+          pantryItems: activeItems.slice(0, 10),
+          preferences,
+          mode: 'everyday'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        if (data.error === 'rate_limit') {
+          toast.error('Too many requests. Please try again in a moment.');
+        } else if (data.error === 'payment_required') {
+          toast.error('AI credits exhausted. Please add credits to continue.');
+        } else {
+          throw new Error(data.message || 'Failed to generate recipes');
+        }
+        track('ai_from_pantry_failed', { reason: data.error });
+        return;
+      }
+
+      if (data?.recipes && data.recipes.length > 0) {
+        navigate('/suggestion?ai=pantry', { 
+          state: { aiRecipes: data.recipes } 
+        });
+        
+        track('ai_from_pantry_success', { recipeCount: data.recipes.length });
+        
+        toast.success(`✨ ${data.recipes.length} recipes created from your pantry!`);
+      }
+    } catch (error) {
+      console.error('AI generation error:', error);
+      toast.error('Failed to generate recipes. Please try again later.');
+      track('ai_from_pantry_failed', { error: error instanceof Error ? error.message : 'unknown' });
+    } finally {
+      setIsGeneratingFromPantry(false);
+    }
+  };
+
   if (viewMode === 'detect') {
     return (
       <div 
@@ -406,6 +460,40 @@ export default function Pantry() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* AI Recipe Generator */}
+        {activeItems.length >= 2 && viewMode === 'list' && (
+          <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-lg p-4 border border-primary/20 animate-fade-in">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <h3 className="font-semibold text-base mb-1">
+                  🤖 AI Recipe Suggestions
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Let AI create recipes with your {activeItems.length} ingredients
+                </p>
+              </div>
+              <Button
+                onClick={handleGenerateAIFromPantry}
+                disabled={isGeneratingFromPantry}
+                size="lg"
+                className="h-12 px-6 font-semibold"
+              >
+                {isGeneratingFromPantry ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    Τι να μαγειρέψω;
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {showStaleWarning && (
           <Alert>

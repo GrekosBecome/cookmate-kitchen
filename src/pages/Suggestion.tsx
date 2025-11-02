@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { getSuggestions } from '@/utils/suggestionEngine';
 import { Recipe } from '@/types';
@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Suggestion = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { 
     preferences, 
@@ -57,6 +58,20 @@ const Suggestion = () => {
   useEffect(() => {
     track('opened_screen', { screen: 'suggestion' });
     
+    // Check if coming from Pantry AI generation
+    const locationState = location.state as { aiRecipes?: Recipe[] };
+    if (locationState?.aiRecipes) {
+      setAIGeneratedRecipes(locationState.aiRecipes);
+      setSuggestions(locationState.aiRecipes);
+      setCurrentIndex(0);
+      setUseAI(true);
+      setSpinCount(0);
+      
+      // Clear the state to prevent re-rendering
+      window.history.replaceState({}, document.title);
+      return;
+    }
+    
     // Recompute learning on app start
     recomputeLearning();
 
@@ -75,7 +90,7 @@ const Suggestion = () => {
       setSuggestions(cached);
       setCurrentIndex(todaysPick.indexShown);
     }
-  }, []);
+  }, [location.state]);
 
   useEffect(() => {
     // Log viewed signal when suggestions change
