@@ -133,14 +133,6 @@ const Suggestion = () => {
   };
 
   const generateAIRecipes = async () => {
-    if (!canUseAI) {
-      toast({
-        title: "Need more ingredients",
-        description: "Add at least 3 items to your shopping list for AI suggestions.",
-      });
-      return;
-    }
-
     setIsGenerating(true);
     setAiError(null);
     track('ai_generation_requested', { itemCount: shoppingState.queue.length });
