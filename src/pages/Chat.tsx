@@ -81,16 +81,10 @@ const Chat = () => {
       const have = haveParam ? haveParam.split(',').filter(Boolean) : [];
       const need = needParam ? needParam.split(',').filter(Boolean) : [];
       const servings = preferences?.servings || 2;
-      const initialMsg = `I'm about to cook **${recipeTitle}** for ${servings} servings.
+      const initialMsg = `Give me the complete recipe for **${recipeTitle}** with step-by-step instructions for ${servings} servings.
 
-I already have: ${have.length > 0 ? have.join(', ') : '—'}.
-I'm missing: ${need.length > 0 ? need.join(', ') : '—'}.
-
-Please:
-1) Confirm the steps with exact quantities for my servings,
-2) Suggest up to 2 substitutions for each missing item,
-3) Call out any allergen risks from my preferences,
-4) Offer a time-saving tip.`;
+I have: ${have.length > 0 ? have.join(', ') : 'nothing yet'}.
+I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
 
       // Initialize with both assistant welcome and user message
       const initialMessages: Message[] = [{
