@@ -1,36 +1,185 @@
-export function getIngredientEmoji(name: string): string {
-  const lowerName = name.toLowerCase();
-
+// Comprehensive emoji mapping for specific food items
+const ITEM_EMOJI_MAP: Record<string, string> = {
   // Dairy & Eggs
-  if (/(egg|milk|cheese|yogurt|butter|cream|dairy)/i.test(lowerName)) return '🥚';
+  'milk': '🥛',
+  'cheese': '🧀',
+  'egg': '🥚',
+  'eggs': '🥚',
+  'yogurt': '🍶',
+  'butter': '🧈',
+  'cream': '🍦',
   
   // Vegetables
-  if (/(tomato|lettuce|broccoli|carrot|pepper|onion|garlic|potato|cucumber|spinach|cabbage|celery|zucchini|eggplant|mushroom|avocado)/i.test(lowerName)) return '🍅';
+  'tomato': '🍅',
+  'tomatoes': '🍅',
+  'lettuce': '🥬',
+  'broccoli': '🥦',
+  'carrot': '🥕',
+  'carrots': '🥕',
+  'pepper': '🌶️',
+  'peppers': '🌶️',
+  'bell pepper': '🫑',
+  'onion': '🧅',
+  'onions': '🧅',
+  'garlic': '🧄',
+  'potato': '🥔',
+  'potatoes': '🥔',
+  'cucumber': '🥒',
+  'mushroom': '🍄',
+  'mushrooms': '🍄',
+  'corn': '🌽',
+  'spinach': '🥬',
+  'cabbage': '🥬',
   
   // Fruits
-  if (/(apple|banana|orange|berry|grape|melon|strawberry|blueberry|lemon|lime|pear|peach|plum|mango|pineapple)/i.test(lowerName)) return '🍎';
+  'apple': '🍎',
+  'apples': '🍎',
+  'banana': '🍌',
+  'bananas': '🍌',
+  'orange': '🍊',
+  'oranges': '🍊',
+  'lemon': '🍋',
+  'lemons': '🍋',
+  'strawberry': '🍓',
+  'strawberries': '🍓',
+  'blueberry': '🫐',
+  'blueberries': '🫐',
+  'grapes': '🍇',
+  'watermelon': '🍉',
+  'kiwi': '🥝',
+  'pineapple': '🍍',
+  'avocado': '🥑',
+  'lime': '🍋',
+  'pear': '🍐',
+  'peach': '🍑',
+  'mango': '🥭',
   
   // Meat & Poultry
-  if (/(chicken|beef|pork|lamb|turkey|meat|steak|bacon|ham|sausage)/i.test(lowerName)) return '🥩';
+  'chicken': '🍗',
+  'beef': '🥩',
+  'pork': '🍖',
+  'lamb': '🍖',
+  'turkey': '🦃',
+  'sausage': '🌭',
+  'ham': '🍖',
+  'bacon': '🥓',
+  'meatballs': '🍢',
+  'steak': '🥩',
+  'meat': '🥩',
   
   // Seafood
-  if (/(fish|salmon|tuna|shrimp|crab|seafood|cod|tilapia|lobster)/i.test(lowerName)) return '🐟';
+  'fish': '🐟',
+  'salmon': '🍣',
+  'tuna': '🐠',
+  'shrimp': '🍤',
+  'crab': '🦀',
+  'lobster': '🦞',
+  'octopus': '🐙',
+  'mussels': '🦪',
+  'cod': '🐟',
+  'tilapia': '🐟',
   
   // Grains & Bread
-  if (/(bread|pasta|rice|flour|oat|cereal|grain|noodle|spaghetti|macaroni)/i.test(lowerName)) return '🍞';
-  
-  // Condiments & Spices
-  if (/(salt|pepper|spice|herb|sauce|oil|vinegar|mustard|ketchup|mayo|basil|oregano|thyme|cinnamon|cumin|paprika)/i.test(lowerName)) return '🧂';
-  
-  // Snacks & Sweets
-  if (/(cookie|chip|candy|chocolate|snack|cake|brownie|muffin)/i.test(lowerName)) return '🍪';
-  
-  // Beverages
-  if (/(water|juice|soda|coffee|tea|drink|beverage|beer|wine)/i.test(lowerName)) return '🥤';
+  'bread': '🍞',
+  'pasta': '🍝',
+  'rice': '🍚',
+  'flour': '🌾',
+  'oats': '🥣',
+  'cereal': '🥣',
+  'croissant': '🥐',
+  'pancakes': '🥞',
+  'waffles': '🧇',
+  'noodle': '🍜',
+  'noodles': '🍜',
+  'spaghetti': '🍝',
+  'macaroni': '🍝',
   
   // Canned & Packaged
+  'beans': '🥫',
+  'soup': '🍲',
+  'pickles': '🥒',
+  'canned': '🥫',
+  
+  // Condiments & Spices
+  'salt': '🧂',
+  'herbs': '🌿',
+  'basil': '🌿',
+  'oregano': '🌿',
+  'thyme': '🌿',
+  'oil': '🫒',
+  'olive oil': '🫒',
+  'vinegar': '🍶',
+  'sauce': '🍯',
+  'ketchup': '🍅',
+  'mustard': '🌭',
+  'mayonnaise': '🍶',
+  'mayo': '🍶',
+  'soy sauce': '🥢',
+  
+  // Snacks & Sweets
+  'cookie': '🍪',
+  'cookies': '🍪',
+  'chips': '🍟',
+  'candy': '🍬',
+  'chocolate': '🍫',
+  'ice cream': '🍨',
+  'cake': '🍰',
+  'donut': '🍩',
+  'donuts': '🍩',
+  'muffin': '🧁',
+  'popcorn': '🍿',
+  
+  // Beverages
+  'water': '💧',
+  'coffee': '☕️',
+  'tea': '🍵',
+  'juice': '🧃',
+  'soda': '🥤',
+  'wine': '🍷',
+  'beer': '🍺',
+  'cocktail': '🍸',
+  'smoothie': '🥤',
+  
+  // Greek translations
+  'γάλα': '🥛',
+  'τυρί': '🧀',
+  'αυγό': '🥚',
+  'αυγά': '🥚',
+  'ψωμί': '🍞',
+  'ντομάτα': '🍅',
+  'κρεμμύδι': '🧅',
+  'σκόρδο': '🧄',
+  'πατάτα': '🥔',
+  'κοτόπουλο': '🍗',
+  'ψάρι': '🐟',
+};
+
+export function getIngredientEmoji(name: string): string {
+  const lowerName = name.toLowerCase().trim();
+  
+  // First tier: Check for exact matches
+  if (ITEM_EMOJI_MAP[lowerName]) {
+    return ITEM_EMOJI_MAP[lowerName];
+  }
+  
+  // Second tier: Check if any key is contained in the name
+  for (const [key, emoji] of Object.entries(ITEM_EMOJI_MAP)) {
+    if (lowerName.includes(key)) {
+      return emoji;
+    }
+  }
+  
+  // Third tier: Fallback to category matching
+  if (/dairy/i.test(lowerName)) return '🥚';
+  if (/vegetable|veggie|celery|zucchini|eggplant/i.test(lowerName)) return '🥬';
+  if (/fruit|berry|melon|plum/i.test(lowerName)) return '🍎';
+  if (/seafood/i.test(lowerName)) return '🐟';
+  if (/grain/i.test(lowerName)) return '🍞';
+  if (/spice|herb|cinnamon|cumin|paprika/i.test(lowerName)) return '🌿';
+  if (/snack|brownie/i.test(lowerName)) return '🍪';
+  if (/drink|beverage/i.test(lowerName)) return '🥤';
   if (/(can|jar|box|package|tin)/i.test(lowerName)) return '🥫';
   
-  // Default
+  // Default fallback
   return '🥫';
 }
