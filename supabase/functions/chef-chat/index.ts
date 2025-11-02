@@ -91,13 +91,13 @@ serve(async (req) => {
     console.log('Pantry items:', pantry.length);
     console.log('Cart items:', cart.length);
     
-    const apiKey = Deno.env.get('LOVABLE_API_KEY');
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!apiKey) {
-      console.log('No Lovable AI key configured, returning fallback message');
+      console.log('No OpenAI API key configured, returning fallback message');
       return new Response(
         JSON.stringify({
-          content: "I'm your offline Chef 🤖. Lovable AI is not configured.",
+          content: "I'm your offline Chef 🤖. OpenAI API is not configured.",
           isMock: true,
         }),
         { 
@@ -216,26 +216,26 @@ serve(async (req) => {
       },
     ];
 
-    console.log('Calling Lovable AI with tools...');
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    console.log('Calling OpenAI with tools...');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gpt-4o',
         messages: fullMessages,
         tools,
         tool_choice: 'auto',
-        temperature: 0.6,
+        temperature: 0.7,
         max_tokens: 2000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status, errorText);
       
       // Handle rate limits and payment errors
       if (response.status === 429) {
@@ -256,7 +256,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({
             error: 'Payment required',
-            content: "Your Lovable AI credits have run out. Please add credits in Settings → Workspace → Usage. 💳",
+            content: "Your OpenAI API credits have run out. Please check your OpenAI account. 💳",
             isMock: true,
           }),
           { 
@@ -268,7 +268,7 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify({
-          error: 'Failed to get response from Lovable AI',
+          error: 'Failed to get response from OpenAI',
           content: "Sorry, I'm having trouble connecting right now. Try again? 🤔",
           isMock: true,
         }),
@@ -282,7 +282,7 @@ serve(async (req) => {
     const data = await response.json();
     const message = data.choices[0]?.message;
     
-    console.log('Lovable AI response:', {
+    console.log('OpenAI response:', {
       hasMessage: !!message,
       contentLength: message?.content?.length,
       contentPreview: message?.content?.substring(0, 200),
@@ -371,38 +371,38 @@ serve(async (req) => {
         };
       });
       
-      // Send tool results back to Lovable AI for final response
-      console.log('Sending tool results back to Lovable AI...');
+      // Send tool results back to OpenAI for final response
+      console.log('Sending tool results back to OpenAI...');
       const followUpMessages = [
         ...fullMessages,
         message, // Original assistant message with tool_calls
         ...toolMessages, // Tool results
       ];
       
-      const followUpResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const followUpResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'gpt-4o',
           messages: followUpMessages,
-          temperature: 0.6,
+          temperature: 0.7,
           max_tokens: 2000,
         }),
       });
       
       if (!followUpResponse.ok) {
         const errorText = await followUpResponse.text();
-        console.error('Lovable AI follow-up error:', followUpResponse.status, errorText);
+        console.error('OpenAI follow-up error:', followUpResponse.status, errorText);
         throw new Error('Failed to get follow-up response');
       }
       
       const followUpData = await followUpResponse.json();
       const finalContent = followUpData.choices[0]?.message?.content || 'Sorry, I had trouble processing that.';
       
-      console.log('Lovable AI final response received');
+      console.log('OpenAI final response received');
       
       return new Response(
         JSON.stringify({ content: finalContent, isMock: false }),
