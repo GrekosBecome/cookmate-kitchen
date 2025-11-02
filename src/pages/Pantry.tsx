@@ -568,6 +568,9 @@ export default function Pantry() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Floating Chef Button */}
+      <FloatingButtons />
     </div>
   );
 }

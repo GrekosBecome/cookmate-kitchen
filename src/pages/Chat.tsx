@@ -207,7 +207,15 @@ Please:
     };
   }, [messages, input, recipeId, searchParams]);
   const hasShoppingItems = shoppingState.queue.filter(i => !i.bought).length > 0;
-  const quickActions = recipe ? ['Suggest ingredient swap', `Scale to ${preferences.servings === 4 ? 2 : 4} servings`, 'Shorten cook time', 'Show a similar recipe'] : ['Use my pantry', 'Scale to 4 servings', 'Suggest swaps', ...(hasShoppingItems ? ['What should I buy?'] : []), 'Quick meal ideas'];
+  const hasPantryItems = pantryItems.length > 0;
+  const quickActions = recipe 
+    ? ['Suggest ingredient swap', `Scale to ${preferences.servings === 4 ? 2 : 4} servings`, 'Shorten cook time', 'Show a similar recipe'] 
+    : [
+        ...(hasPantryItems ? ['What can I cook with my pantry?'] : []),
+        'Quick meal ideas',
+        'Suggest swaps',
+        ...(hasShoppingItems ? ['What should I buy?'] : [])
+      ];
   const handleSend = async (messageText?: string) => {
     const textToSend = messageText || input.trim();
     if (!textToSend || isLoading) return;
