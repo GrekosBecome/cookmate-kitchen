@@ -28,7 +28,6 @@ const RecipeDetail = () => {
   
   const recipe = RECIPE_CATALOG.find(r => r.id === id);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
-  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const [hasMarkedUsed, setHasMarkedUsed] = useState(false);
   
   // Track page view
@@ -59,16 +58,6 @@ const RecipeDetail = () => {
       newSet.add(index);
     }
     setCheckedIngredients(newSet);
-  };
-
-  const toggleStep = (index: number) => {
-    const newSet = new Set(checkedSteps);
-    if (newSet.has(index)) {
-      newSet.delete(index);
-    } else {
-      newSet.add(index);
-    }
-    setCheckedSteps(newSet);
   };
 
   const handleStartCooking = () => {
@@ -178,8 +167,6 @@ const RecipeDetail = () => {
     }, 2000);
   };
 
-  const totalTime = recipe.steps.reduce((acc, step) => acc + (step.minutes || 0), 0);
-
   return (
     <div 
       className="min-h-screen bg-background pb-28"
@@ -245,41 +232,6 @@ const RecipeDetail = () => {
                     </span>
                   )}
                 </label>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card id="steps-section">
-          <CardHeader>
-            <CardTitle>Steps</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Estimated time: {totalTime} minutes
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {recipe.steps.map((step, index) => (
-              <div key={step.order}>
-                <div className="flex gap-3">
-                  <Checkbox
-                    checked={checkedSteps.has(index)}
-                    onCheckedChange={() => toggleStep(index)}
-                  />
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="font-semibold">Step {step.order}</span>
-                      {step.minutes && (
-                        <Badge variant="outline" className="text-xs">
-                          {step.minutes}m
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm">{step.text}</p>
-                  </div>
-                </div>
-                {index < recipe.steps.length - 1 && (
-                  <Separator className="mt-4" />
-                )}
               </div>
             ))}
           </CardContent>
