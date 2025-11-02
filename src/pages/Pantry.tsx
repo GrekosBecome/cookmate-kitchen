@@ -11,7 +11,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle, Plus, Sparkles, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FloatingButtons } from '@/components/FloatingButtons';
 import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visionDetection';
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
@@ -656,9 +655,6 @@ export default function Pantry() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Floating Chef Button */}
-      <FloatingButtons />
     </div>
   );
 }
