@@ -197,7 +197,13 @@ export const buildContextMessage = (
   ).join(', ');
   
   let context = `Pantry: ${pantryList || 'Empty'}\n`;
-  context += `Preferences: { diet: "${preferences.diet}", allergies: [${preferences.allergies.join(', ')}], dislikes: [${preferences.dislikes.join(', ')}], servingsDefault: ${preferences.servings} }\n`;
+  
+  // Handle null/undefined preferences safely
+  const diet = preferences?.diet || 'No specific diet';
+  const allergies = preferences?.allergies || [];
+  const dislikes = preferences?.dislikes || [];
+  const servings = preferences?.servings || 2;
+  context += `Preferences: { diet: "${diet}", allergies: [${allergies.join(', ')}], dislikes: [${dislikes.join(', ')}], servingsDefault: ${servings} }\n`;
   
   if (recipe) {
     const keyIngredients = recipe.needs.slice(0, 5).join(', ');
