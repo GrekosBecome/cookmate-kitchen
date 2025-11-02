@@ -294,6 +294,15 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
         <div className="container max-w-2xl mx-auto px-4 py-2 flex items-center gap-3" style={{
         paddingTop: 'calc(env(safe-area-inset-top) + 8px)'
       }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/suggestion')}
+            className="h-8 w-8 flex-shrink-0"
+            aria-label="Back to recipes"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <img src={chefAvatar} alt="Chef" className="w-7 h-7 rounded-full object-cover" />
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-bold truncate">Chef Chat</h1>
