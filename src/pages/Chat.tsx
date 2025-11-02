@@ -55,6 +55,8 @@ const Chat = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [navigate]);
   useEffect(() => {
+    let isActive = true; // Flag to prevent duplicate calls
+    
     track('opened_screen', {
       screen: 'chat',
       recipeId
@@ -99,6 +101,8 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       // Auto-fetch Chef's response without adding user message again
       setIsLoading(true);
       setTimeout(async () => {
+        if (!isActive) return; // Prevent execution if component unmounted
+        
         try {
           const response = await getLLMResponse({
             messages: initialMessages,
@@ -111,7 +115,7 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
             })),
             shoppingState
           });
-          if (response.content) {
+          if (response.content && isActive) {
             setMessages(prev => [...prev, {
               role: 'assistant',
               content: response.content!,
@@ -120,12 +124,16 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
           }
         } catch (error) {
           console.error('Error getting response:', error);
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: 'Sorry, I had trouble processing that. Could you try again? 🤔'
-          }]);
+          if (isActive) {
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: 'Sorry, I had trouble processing that. Could you try again? 🤔'
+            }]);
+          }
         } finally {
-          setIsLoading(false);
+          if (isActive) {
+            setIsLoading(false);
+          }
         }
       }, 100);
     } else if (recipe) {
@@ -160,6 +168,10 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
     updateMemory({
       lastChatDate: new Date().toISOString()
     });
+    
+    return () => {
+      isActive = false; // Cleanup to prevent duplicate calls
+    };
   }, [recipeId]);
 
   // Auto-save session on changes
