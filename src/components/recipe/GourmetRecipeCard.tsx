@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Flame, Sparkles, ChefHat, Wine, UtensilsCrossed } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useStore } from '@/store/useStore';
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,13 +31,44 @@ const difficultyStars = {
 
 export const GourmetRecipeCard = ({ recipe, onAnother, showActions = true }: GourmetRecipeCardProps) => {
   const navigate = useNavigate();
+  const { pantryItems } = useStore();
   const [isAnimating, setIsAnimating] = useState(false);
   const [showPlating, setShowPlating] = useState(false);
 
   const handleCookThis = () => {
     setIsAnimating(true);
+    
+    // Calculate what user has vs needs based on pantry
+    const pantryNames = pantryItems.map(p => p.name.toLowerCase());
+    
+    const have = recipe.ingredients
+      .filter(ing => !ing.optional)
+      .filter(ing => {
+        const ingName = ing.name.toLowerCase();
+        return pantryNames.some(p => 
+          p.includes(ingName) || ingName.includes(p)
+        );
+      })
+      .map(ing => ing.name);
+    
+    const need = recipe.ingredients
+      .filter(ing => !ing.optional)
+      .filter(ing => {
+        const ingName = ing.name.toLowerCase();
+        return !pantryNames.some(p => 
+          p.includes(ingName) || ingName.includes(p)
+        );
+      })
+      .map(ing => ing.name);
+    
+    // Navigate to chat with pre-seeded context
     setTimeout(() => {
-      navigate(`/recipe/${recipe.id}`);
+      const params = new URLSearchParams({
+        recipeTitle: recipe.title,
+        have: have.join(','),
+        need: need.join(','),
+      });
+      navigate(`/chat?${params.toString()}`);
     }, 400);
   };
 
