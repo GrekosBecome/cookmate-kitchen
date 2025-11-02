@@ -77,7 +77,7 @@ const Chat = () => {
       // Pre-seeded from "Let's cook" button
       const have = haveParam ? haveParam.split(',').filter(Boolean) : [];
       const need = needParam ? needParam.split(',').filter(Boolean) : [];
-      const servings = preferences.servings || 2;
+      const servings = preferences?.servings || 2;
       const initialMsg = `I'm about to cook **${recipeTitle}** for ${servings} servings.
 
 I already have: ${have.length > 0 ? have.join(', ') : '—'}.
