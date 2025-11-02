@@ -42,6 +42,7 @@ export default function Pantry() {
     shoppingState,
     markShoppingItemBought,
     removeShoppingItem,
+    setTodaysPick,
   } = useStore();
   
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -203,11 +204,12 @@ export default function Pantry() {
     });
 
     addPantryItems(itemsToSave);
+    setTodaysPick(null);
     track('pantry_scan', { itemsCount: itemsToSave.length });
     toast.success(`Added ${itemsToSave.length} items to pantry`, {
       duration: 6000,
       action: {
-        label: 'View Recipes 🍳',
+        label: 'View Recipes',
         onClick: () => navigate('/suggestion'),
       },
     });
@@ -230,10 +232,11 @@ export default function Pantry() {
       used: false,
     };
     addPantryItem(item);
-    toast.success(`Added ${name} 🍎`, {
+    setTodaysPick(null);
+    toast.success(`Added ${name}`, {
       duration: 6000,
       action: {
-        label: 'View Recipes 🍳',
+        label: 'View Recipes',
         onClick: () => navigate('/suggestion'),
       },
     });
