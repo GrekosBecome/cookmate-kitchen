@@ -60,9 +60,12 @@ const Chat = () => {
       recipeId
     });
 
-    // Try to restore from cache first
+    // Try to restore from cache first, but only if recipe context hasn't changed
     const cached = loadChef();
-    if (cached && cached.messages.length > 0) {
+    const currentRecipeTitle = searchParams.get('recipeTitle');
+    const cachedRecipeTitle = cached?.ctx?.recipeTitle;
+    
+    if (cached && cached.messages.length > 0 && currentRecipeTitle === cachedRecipeTitle) {
       setMessages(cached.messages);
       setInput(cached.draft || '');
       setRestoredFromCache(true);
@@ -287,7 +290,7 @@ Please:
         <div className="container max-w-2xl mx-auto px-4 py-2 flex items-center gap-3" style={{
         paddingTop: 'calc(env(safe-area-inset-top) + 8px)'
       }}>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="h-9 w-9 min-h-[40px] min-w-[40px] p-0" aria-label="Go back to recipes">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/recipes')} className="h-9 w-9 min-h-[40px] min-w-[40px] p-0" aria-label="Go back to recipes">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <img src={chefAvatar} alt="Chef" className="w-7 h-7 rounded-full object-cover" />
@@ -347,11 +350,9 @@ Please:
         </div>
       </div>
 
-      {/* Sticky input bar */}
-      <div style={{
-      paddingBottom: 'calc(env(safe-area-inset-bottom) + 76px)'
-    }} className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm z-60 my-0 py-[11px]">
-        <div className="container max-w-2xl space-y-3 mx-0 px-0 py-0">
+      {/* Sticky input bar - positioned above bottom navigation */}
+      <div className="fixed bottom-[76px] left-0 right-0 border-t bg-background/95 backdrop-blur-sm z-50 py-3">
+        <div className="container max-w-2xl mx-auto px-4 space-y-3">
           <div className="relative animate-fade-in">
             {/* Fade gradients for scroll hint */}
             <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
