@@ -288,7 +288,13 @@ const Suggestion = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div 
+      className="min-h-screen bg-background"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+      }}
+    >
       <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         <header className="text-center space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold">{getGreeting()} 🍳</h1>
