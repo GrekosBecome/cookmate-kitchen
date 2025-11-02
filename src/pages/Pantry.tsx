@@ -204,7 +204,13 @@ export default function Pantry() {
 
     addPantryItems(itemsToSave);
     track('pantry_scan', { itemsCount: itemsToSave.length });
-    toast.success(`Added ${itemsToSave.length} items to pantry`);
+    toast.success(`Added ${itemsToSave.length} items to pantry`, {
+      duration: 6000,
+      action: {
+        label: 'View Recipes 🍳',
+        onClick: () => navigate('/suggestion'),
+      },
+    });
     
     // Reset detection state
     setViewMode('list');
@@ -224,7 +230,13 @@ export default function Pantry() {
       used: false,
     };
     addPantryItem(item);
-    toast.success(`Added ${name} 🍎`);
+    toast.success(`Added ${name} 🍎`, {
+      duration: 6000,
+      action: {
+        label: 'View Recipes 🍳',
+        onClick: () => navigate('/suggestion'),
+      },
+    });
   };
 
   const handleToggleUsed = (id: string) => {
