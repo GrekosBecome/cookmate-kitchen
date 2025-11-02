@@ -43,11 +43,11 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Handle back navigation to home (recipes page)
+  // Handle back navigation to recipes page
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       e.preventDefault();
-      navigate('/', {
+      navigate('/recipes', {
         replace: true
       });
     };
