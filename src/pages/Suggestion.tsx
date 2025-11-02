@@ -430,31 +430,17 @@ const Suggestion = () => {
         </div>
 
         {/* Mode Toggle */}
-        {suggestions.length > 0 && !isGenerating && (
+        {suggestions.length > 0 && !isGenerating && !useAI && canUseAI && (
           <div className="flex justify-center gap-2 animate-fade-in">
-            {useAI && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  generateSuggestions();
-                  setUseAI(false);
-                }}
-              >
-                See classic recipes
-              </Button>
-            )}
-            {!useAI && canUseAI && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={generateAIRecipes}
-                className="gap-1"
-              >
-                <Sparkles className="h-3 w-3" />
-                Try AI Gourmet
-              </Button>
-            )}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={generateAIRecipes}
+              className="gap-1"
+            >
+              <Sparkles className="h-3 w-3" />
+              Try AI Gourmet
+            </Button>
           </div>
         )}
 
