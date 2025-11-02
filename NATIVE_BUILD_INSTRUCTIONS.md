@@ -2,6 +2,36 @@
 
 Το CookMate είναι τώρα έτοιμο για native build με πλήρη υποστήριξη notifications!
 
+## ⚠️ ΣΗΜΑΝΤΙΚΟ: Development vs Production Config
+
+**Δύο config files υπάρχουν:**
+- `capacitor.config.ts` - **PRODUCTION** config (χωρίς server.url, για App Store submission)
+- `capacitor.config.dev.ts` - **DEVELOPMENT** config (με server.url για hot reload testing)
+
+### 🔧 Development Workflow (Testing με hot reload):
+```bash
+npm run build
+npx cap sync --config capacitor.config.dev.ts
+npx cap open ios  # ή android
+```
+Το app θα φορτώνει απευθείας από το Lovable preview URL με instant updates!
+
+### 🚀 Production Workflow (App Store submission):
+```bash
+npm run build
+npx cap sync  # Uses capacitor.config.ts (χωρίς server.url)
+npx cap open ios
+```
+Στο Xcode: Product → Archive → Distribute App
+
+**App Store Checklist:**
+- ✅ Δεν υπάρχει `server.url` στο production config
+- ✅ Δεν υπάρχει `allowNavigation` με wildcard
+- ✅ Το app λειτουργεί offline (Airplane Mode)
+- ✅ Δεν εμφανίζονται dev menus / debug banners
+- ✅ Web assets είναι bundled στο app (ios/App/App/public/)
+- ✅ Notifications δουλεύουν χωρίς dev server
+
 ## ✅ Τι έχει ολοκληρωθεί
 
 - ✅ Capacitor configuration (capacitor.config.ts)
@@ -159,27 +189,26 @@ npx cap open android
 
 ## 🔄 Development Workflow
 
-### Κάνοντας αλλαγές:
+### Development Mode (με hot reload):
 
 1. Κάνε changes στο Lovable
 2. Push to GitHub (auto-sync)
 3. Local: `git pull`
 4. `npm run build`
-5. `npx cap sync`
-6. Refresh την εφαρμογή στο device
+5. `npx cap sync --config capacitor.config.dev.ts`
+6. `npx cap open ios` (ή android)
+7. Η native app θα φορτώνει από Lovable preview με instant updates!
 
-### Hot Reload (για γρήγορο development):
+### Production Build (για App Store):
 
-Το `capacitor.config.ts` έχει ήδη configured:
-```typescript
-server: {
-  url: 'https://5b916d50-4661-4c65-933e-1881660781d8.lovableproject.com?forceHideBadge=true',
-  cleartext: true
-}
-```
-
-Αυτό σημαίνει ότι η native app θα φορτώνει απευθείας από το Lovable preview! 
-Κάνε αλλαγές στο Lovable → refresh το app → instant updates!
+1. Βεβαιώσου ότι όλες οι αλλαγές είναι committed
+2. `git pull` (για τελευταίες αλλαγές)
+3. `npm install`
+4. `npm run build`
+5. `npx cap sync` (uses production config χωρίς server.url)
+6. `npx cap open ios`
+7. Στο Xcode: Product → Archive
+8. Distribute App → App Store Connect
 
 ## 🐛 Troubleshooting
 
