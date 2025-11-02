@@ -86,8 +86,8 @@ export function scoreRecipes(
       score += 1;
     }
 
-    // Only include recipes with ≥70% pantry match
-    if (pantryMatchPercent < 70) {
+    // Only include recipes with ≥50% pantry match
+    if (pantryMatchPercent < 50) {
       score = 0;
     }
 
