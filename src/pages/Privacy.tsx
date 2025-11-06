@@ -9,62 +9,62 @@ const Privacy = () => {
   const sections = [
     {
       icon: Shield,
-      title: "Προστασία των Δεδομένων σας",
-      content: `Στο CookMate, η προστασία της ιδιωτικότητάς σας είναι η πρώτη μας προτεραιότητα. Όλα τα δεδομένα σας αποθηκεύονται τοπικά στη συσκευή σας και δεν μεταφέρονται ποτέ σε εξωτερικούς servers.`
+      title: "Data Protection",
+      content: `At CookMate, protecting your privacy is our top priority. All your data is stored locally on your device and is never transferred to external servers.`
     },
     {
       icon: Database,
-      title: "Ποια Δεδομένα Συλλέγουμε",
+      title: "What Data We Collect",
       content: `
-        • Προτιμήσεις διατροφής (διατροφική επιλογή, αλλεργίες, στόχοι)
-        • Αποθήκη τροφίμων και φωτογραφίες (αποθηκεύονται τοπικά)
-        • Ιστορικό συνταγών και αλληλεπιδράσεις
-        • Ρυθμίσεις ειδοποιήσεων
+        • Dietary preferences (diet type, allergies, goals)
+        • Pantry items and photos (stored locally)
+        • Recipe history and interactions
+        • Notification settings
         
-        ⚡ ΣΗΜΑΝΤΙΚΟ: Όλα αυτά αποθηκεύονται ΜΟΝΟ στη συσκευή σας. Δεν στέλνουμε τίποτα σε servers.
+        ⚡ IMPORTANT: All of this is stored ONLY on your device. We don't send anything to servers.
       `
     },
     {
       icon: Lock,
-      title: "Πώς Χρησιμοποιούμε τα Δεδομένα σας",
+      title: "How We Use Your Data",
       content: `
-        Χρησιμοποιούμε τα δεδομένα σας αποκλειστικά για:
+        We use your data exclusively for:
         
-        • Εξατομικευμένες προτάσεις συνταγών
-        • Βελτίωση της λειτουργικότητας της εφαρμογής
-        • Τοπική μηχανική μάθηση (machine learning στη συσκευή σας)
-        • Καλύτερη εμπειρία χρήσης
+        • Personalized recipe recommendations
+        • Improving app functionality
+        • Local machine learning (on your device)
+        • Better user experience
         
-        ❌ ΔΕΝ παρακολουθούμε
-        ❌ ΔΕΝ πουλάμε δεδομένα
-        ❌ ΔΕΝ χρησιμοποιούμε τρίτα μέρη (trackers)
-        ❌ ΔΕΝ στέλνουμε διαφημίσεις
+        ❌ We DON'T track
+        ❌ We DON'T sell data
+        ❌ We DON'T use third-party trackers
+        ❌ We DON'T send ads
       `
     },
     {
       icon: Eye,
-      title: "Αποθήκευση & Ασφάλεια",
+      title: "Storage & Security",
       content: `
-        • Τοπική αποθήκευση (localStorage του browser)
-        • Χωρίς cloud backups (εκτός αν επιλέξετε)
-        • Κρυπτογράφηση συσκευής (iOS/Android native)
-        • Χωρίς server-side αποθήκευση
+        • Local storage (browser localStorage)
+        • No cloud backups (unless you choose)
+        • Device encryption (iOS/Android native)
+        • No server-side storage
         
-        Τα δεδομένα σας προστατεύονται από το λειτουργικό σύστημα της συσκευής σας και παραμένουν πάντα υπό τον έλεγχό σας.
+        Your data is protected by your device's operating system and always remains under your control.
       `
     },
     {
       icon: Trash2,
-      title: "Τα Δικαιώματά σας (GDPR)",
+      title: "Your Rights (GDPR)",
       content: `
-        Έχετε πλήρη έλεγχο των δεδομένων σας:
+        You have full control over your data:
         
-        ✅ Δικαίωμα πρόσβασης - Δείτε όλα τα δεδομένα σας στις Ρυθμίσεις
-        ✅ Δικαίωμα διαγραφής - Διαγράψτε τα δεδομένα από τις Ρυθμίσεις ή την εφαρμογή
-        ✅ Δικαίωμα εξαγωγής - Εξάγετε τα δεδομένα σας σε JSON format
-        ✅ Δικαίωμα φορητότητας - Μεταφέρετε τα δεδομένα σας σε άλλη συσκευή
+        ✅ Right to access - View all your data in Settings
+        ✅ Right to deletion - Delete data from Settings or the app
+        ✅ Right to export - Export your data in JSON format
+        ✅ Right to portability - Transfer your data to another device
         
-        Επειδή όλα είναι τοπικά, έχετε πλήρη έλεγχο χωρίς να χρειάζεται να μας ρωτήσετε.
+        Since everything is local, you have complete control without needing to ask us.
       `
     }
   ];
@@ -80,7 +80,7 @@ const Privacy = () => {
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Πίσω
+            Back
           </Button>
         </div>
       </header>
@@ -93,13 +93,13 @@ const Privacy = () => {
             <Shield className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            Πολιτική Απορρήτου
+            Privacy Policy
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Η ιδιωτικότητά σας είναι η πρώτη μας προτεραιότητα. Διαβάστε πώς προστατεύουμε τα δεδομένά σας.
+            Your privacy is our top priority. Learn how we protect your data.
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Τελευταία ενημέρωση: 31 Οκτωβρίου 2025
+            Last updated: October 31, 2025
           </p>
         </div>
 
@@ -110,9 +110,9 @@ const Privacy = () => {
             <div>
               <h3 className="font-semibold text-lg mb-2">🔒 Privacy-First by Design</h3>
               <p className="text-muted-foreground">
-                Το CookMate σχεδιάστηκε από την αρχή να σεβαστεί την ιδιωτικότητά σας. 
-                <strong className="text-foreground"> Όλα τα δεδομένα σας αποθηκεύονται ΜΟΝΟ στη συσκευή σας</strong> και 
-                δεν μεταφέρονται ποτέ σε εξωτερικούς servers ή τρίτα μέρη.
+                CookMate was designed from the ground up to respect your privacy. 
+                <strong className="text-foreground"> All your data is stored ONLY on your device</strong> and 
+                is never transferred to external servers or third parties.
               </p>
             </div>
           </div>
@@ -142,44 +142,44 @@ const Privacy = () => {
 
         {/* Third-Party Services */}
         <Card className="p-6 mt-8">
-          <h2 className="text-xl font-semibold mb-4">Υπηρεσίες Τρίτων</h2>
+          <h2 className="text-xl font-semibold mb-4">Third-Party Services</h2>
           <div className="space-y-3 text-muted-foreground">
             <p>
-              <strong className="text-foreground">Capacitor:</strong> Χρησιμοποιείται για native λειτουργίες (κάμερα, ειδοποιήσεις). 
-              Δεν συλλέγει δεδομένα.
+              <strong className="text-foreground">Capacitor:</strong> Used for native features (camera, notifications). 
+              Does not collect data.
             </p>
             <p>
-              <strong className="text-foreground">Local Notifications:</strong> Οι ειδοποιήσεις διαχειρίζονται τοπικά από τη συσκευή σας. 
-              Δεν στέλνουμε push notifications από servers.
+              <strong className="text-foreground">Local Notifications:</strong> Notifications are managed locally by your device. 
+              We don't send push notifications from servers.
             </p>
             <p className="font-semibold text-foreground">
-              ✅ Χωρίς Google Analytics
+              ✅ No Google Analytics
               <br />
-              ✅ Χωρίς Facebook Pixel
+              ✅ No Facebook Pixel
               <br />
-              ✅ Χωρίς διαφημιστικά trackers
+              ✅ No advertising trackers
               <br />
-              ✅ Χωρίς τρίτα cookies
+              ✅ No third-party cookies
             </p>
           </div>
         </Card>
 
         {/* Children's Privacy */}
         <Card className="p-6 mt-8">
-          <h2 className="text-xl font-semibold mb-4">Προστασία Ανηλίκων</h2>
+          <h2 className="text-xl font-semibold mb-4">Children's Privacy</h2>
           <p className="text-muted-foreground">
-            Η εφαρμογή είναι κατάλληλη για όλες τις ηλικίες. Δεν συλλέγουμε προσωπικά δεδομένα από παιδιά 
-            ή οποιονδήποτε άλλο χρήστη, καθώς όλα τα δεδομένα παραμένουν τοπικά στη συσκευή.
+            The app is suitable for all ages. We do not collect personal data from children 
+            or any other users, as all data remains local on the device.
           </p>
         </Card>
 
         {/* Changes to Policy */}
         <Card className="p-6 mt-8">
-          <h2 className="text-xl font-semibold mb-4">Αλλαγές στην Πολιτική Απορρήτου</h2>
+          <h2 className="text-xl font-semibold mb-4">Changes to Privacy Policy</h2>
           <p className="text-muted-foreground">
-            Ενδέχεται να ενημερώσουμε την πολιτική απορρήτου περιστασιακά. Θα σας ενημερώσουμε για 
-            οποιεσδήποτε σημαντικές αλλαγές μέσω της εφαρμογής. Η ημερομηνία "Τελευταία ενημέρωση" 
-            στην κορυφή αυτής της σελίδας δείχνει πότε έγινε η τελευταία τροποποίηση.
+            We may update our privacy policy occasionally. We will notify you of 
+            any significant changes through the app. The "Last updated" date 
+            at the top of this page shows when the last modification was made.
           </p>
         </Card>
 
@@ -188,15 +188,15 @@ const Privacy = () => {
           <div className="flex items-start gap-4">
             <Mail className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h2 className="text-xl font-semibold mb-3">Επικοινωνία</h2>
+              <h2 className="text-xl font-semibold mb-3">Contact</h2>
               <p className="text-muted-foreground mb-4">
-                Έχετε ερωτήσεις σχετικά με την πολιτική απορρήτου μας; Επικοινωνήστε μαζί μας:
+                Have questions about our privacy policy? Contact us:
               </p>
               <p className="font-medium">
-                📧 Email: privacy@cookmate.app
+                📧 Email: thinkbooklab@gmail.com
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                Απαντάμε συνήθως εντός 48 ωρών
+                We typically respond within 48 hours
               </p>
             </div>
           </div>
@@ -205,14 +205,14 @@ const Privacy = () => {
         {/* CTA */}
         <div className="text-center mt-12 pt-8 border-t">
           <h3 className="text-xl font-semibold mb-4">
-            Έτοιμοι να ξεκινήσετε με γνώμονα την ιδιωτικότητα;
+            Ready to start with privacy in mind?
           </h3>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button size="lg" onClick={() => navigate('/onboarding')}>
-              Ξεκινήστε Τώρα
+              Get Started
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate('/install')}>
-              Εγκατάσταση Εφαρμογής
+              Install App
             </Button>
           </div>
         </div>
@@ -222,7 +222,7 @@ const Privacy = () => {
       <footer className="border-t py-8 mt-12">
         <div className="container max-w-4xl mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>© 2025 CookMate. Your Smart Kitchen Companion.</p>
-          <p className="mt-2">Όλα τα δικαιώματα διατηρούνται.</p>
+          <p className="mt-2">All rights reserved.</p>
         </div>
       </footer>
     </div>
