@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown, Bell, Utensils, Users, Target, Shield, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
@@ -509,6 +509,19 @@ const Settings = () => {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardContent className="pt-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/support')}
+              className="w-full gap-2 h-11 min-h-[44px]"
+            >
+              <HelpCircle className="h-5 w-5" />
+              Support & Help
+            </Button>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardContent className="pt-6">
