@@ -52,7 +52,7 @@ export const Header = () => {
             <div className="bg-primary/10 p-2 rounded-lg">
               <ChefHat className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-xl font-bold">CookMate</span>
+            <span className="text-xl font-bold">Kitchen Mate</span>
           </div>
 
           {/* Desktop Menu */}

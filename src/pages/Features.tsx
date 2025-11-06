@@ -142,7 +142,7 @@ const Features = () => {
             Your Smart Kitchen Companion
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-3xl mx-auto mb-8">
-            Ανακαλύψτε πώς το CookMate μετατρέπει το μαγείρεμα σε μια απλή, έξυπνη και διασκεδαστική εμπειρία
+            Ανακαλύψτε πώς το Kitchen Mate μετατρέπει το μαγείρεμα σε μια απλή, έξυπνη και διασκεδαστική εμπειρία
           </p>
           
           {/* Stats */}
@@ -275,7 +275,7 @@ const Features = () => {
         <div className="container max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold mb-3">CookMate</h3>
+              <h3 className="font-semibold mb-3">Kitchen Mate</h3>
               <p className="text-sm text-muted-foreground">
                 Your Smart Kitchen Companion
               </p>
@@ -313,7 +313,7 @@ const Features = () => {
             </div>
           </div>
           <div className="text-center text-sm text-muted-foreground pt-8 border-t">
-            <p>© 2025 CookMate. All rights reserved.</p>
+            <p>© 2025 Kitchen Mate. All rights reserved.</p>
           </div>
         </div>
       </footer>

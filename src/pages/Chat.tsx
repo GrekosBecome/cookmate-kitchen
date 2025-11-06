@@ -138,7 +138,7 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       }, 100);
     } else if (recipe) {
       // Default recipe context
-      let greeting = `Hello! I'm your CookMate Chef 👨‍🍳. You're now talking about: **${recipe.title}**`;
+      let greeting = `Hello! I'm your Kitchen Mate Chef 👨‍🍳. You're now talking about: **${recipe.title}**`;
       if (memory.lastRecipeName && memory.lastRecipeName !== recipe.title) {
         greeting = `Hey, remember ${memory.lastRecipeName}? Here's something new: **${recipe.title}** 👨‍🍳`;
       }
@@ -151,7 +151,7 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       }]);
     } else {
       // No recipe context
-      let greeting = "Hello! I'm your CookMate Chef 👨‍🍳. Want to talk about today's recipe or substitutions?";
+      let greeting = "Hello! I'm your Kitchen Mate Chef 👨‍🍳. Want to talk about today's recipe or substitutions?";
       if (memory.lastChatDate) {
         const daysSinceChat = Math.floor((Date.now() - new Date(memory.lastChatDate).getTime()) / (1000 * 60 * 60 * 24));
         if (daysSinceChat < 2) {

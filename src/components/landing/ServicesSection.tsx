@@ -62,7 +62,7 @@ export const ServicesSection = () => {
             <span className="block text-primary">cook smarter</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            From ingredients to masterpiece, CookMate guides you every step of the way.
+            From ingredients to masterpiece, Kitchen Mate guides you every step of the way.
           </p>
         </div>
 

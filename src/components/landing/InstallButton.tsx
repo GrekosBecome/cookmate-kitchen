@@ -79,7 +79,7 @@ export const InstallButton = () => {
       className="gap-2 text-lg px-8"
     >
       <Download className="w-5 h-5" />
-      Install CookMate
+      Install Kitchen Mate
     </Button>
   );
 };

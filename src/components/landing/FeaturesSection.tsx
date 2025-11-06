@@ -10,7 +10,7 @@ const features = [
   {
     icon: Camera,
     title: 'Smart Pantry',
-    description: 'Scan ingredients with your camera. CookMate automatically detects and tracks what you have.',
+    description: 'Scan ingredients with your camera. Kitchen Mate automatically detects and tracks what you have.',
   },
   {
     icon: Sparkles,
@@ -34,7 +34,7 @@ export const FeaturesSection = () => {
             <span className="block text-primary">cook smarter</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            From ingredients to masterpiece, CookMate guides you every step of the way.
+            From ingredients to masterpiece, Kitchen Mate guides you every step of the way.
           </p>
         </div>
 

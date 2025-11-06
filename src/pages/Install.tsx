@@ -60,7 +60,7 @@ const Install = () => {
             <Download className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            Εγκαταστήστε το CookMate
+            Εγκαταστήστε το Kitchen Mate
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Εγκαταστήστε την εφαρμογή στη συσκευή σας για την καλύτερη εμπειρία
@@ -154,7 +154,7 @@ const Install = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Πατήστε "Add"</h4>
                       <p className="text-muted-foreground text-sm">
-                        Το CookMate θα εμφανιστεί στην αρχική οθόνη σας!
+                        Το Kitchen Mate θα εμφανιστεί στην αρχική οθόνη σας!
                       </p>
                     </div>
                   </div>
@@ -232,7 +232,7 @@ const Install = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Επιβεβαιώστε την εγκατάσταση</h4>
                       <p className="text-muted-foreground text-sm">
-                        Το CookMate θα εμφανιστεί στο app drawer σας!
+                        Το Kitchen Mate θα εμφανιστεί στο app drawer σας!
                       </p>
                     </div>
                   </div>
@@ -298,7 +298,7 @@ const Install = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Ανοίξτε από το desktop</h4>
                       <p className="text-muted-foreground text-sm">
-                        Το CookMate θα ανοίγει σαν ξεχωριστή εφαρμογή χωρίς tabs του browser!
+                        Το Kitchen Mate θα ανοίγει σαν ξεχωριστή εφαρμογή χωρίς tabs του browser!
                       </p>
                     </div>
                   </div>
@@ -312,7 +312,7 @@ const Install = () => {
                         Συντόμευση πληκτρολογίου
                       </p>
                       <p className="text-purple-800 dark:text-purple-200">
-                        <strong>Chrome:</strong> Μενού (⋮) → Install CookMate
+                        <strong>Chrome:</strong> Μενού (⋮) → Install Kitchen Mate
                         <br />
                         <strong>Edge:</strong> Μενού (...) → Apps → Install this site as an app
                       </p>
@@ -327,7 +327,7 @@ const Install = () => {
         {/* Benefits */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-center mb-8">
-            Γιατί να εγκαταστήσετε το CookMate;
+            Γιατί να εγκαταστήσετε το Kitchen Mate;
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
             {benefits.map((benefit, index) => (
@@ -347,7 +347,7 @@ const Install = () => {
             <AccordionItem value="space">
               <AccordionTrigger>Πόσο χώρο καταλαμβάνει;</AccordionTrigger>
               <AccordionContent>
-                Το CookMate καταλαμβάνει μόνο ~5MB χώρο στη συσκευή σας. Είναι πολύ ελαφρύ και δεν θα επηρεάσει 
+                Το Kitchen Mate καταλαμβάνει μόνο ~5MB χώρο στη συσκευή σας. Είναι πολύ ελαφρύ και δεν θα επηρεάσει 
                 την απόδοση της συσκευής σας.
               </AccordionContent>
             </AccordionItem>
@@ -365,7 +365,7 @@ const Install = () => {
             <AccordionItem value="account">
               <AccordionTrigger>Χρειάζομαι λογαριασμό;</AccordionTrigger>
               <AccordionContent>
-                Όχι! Το CookMate λειτουργεί εντελώς χωρίς εγγραφή. Όλα τα δεδομένα σας αποθηκεύονται τοπικά 
+                Όχι! Το Kitchen Mate λειτουργεί εντελώς χωρίς εγγραφή. Όλα τα δεδομένα σας αποθηκεύονται τοπικά 
                 στη συσκευή σας, οπότε δεν χρειάζεστε account.
               </AccordionContent>
             </AccordionItem>
@@ -373,7 +373,7 @@ const Install = () => {
             <AccordionItem value="offline">
               <AccordionTrigger>Λειτουργεί χωρίς internet;</AccordionTrigger>
               <AccordionContent>
-                Ναι! Μόλις εγκατασταθεί, το CookMate λειτουργεί 100% offline. Μπορείτε να προσθέσετε συστατικά, 
+                Ναι! Μόλις εγκατασταθεί, το Kitchen Mate λειτουργεί 100% offline. Μπορείτε να προσθέσετε συστατικά, 
                 να δείτε συνταγές, και να χρησιμοποιήσετε όλες τις βασικές λειτουργίες χωρίς σύνδεση.
               </AccordionContent>
             </AccordionItem>
@@ -381,7 +381,7 @@ const Install = () => {
             <AccordionItem value="updates">
               <AccordionTrigger>Πώς ενημερώνεται η εφαρμογή;</AccordionTrigger>
               <AccordionContent>
-                Το CookMate ενημερώνεται αυτόματα στο background. Όταν υπάρχει νέα έκδοση, θα δείτε μια ειδοποίηση 
+                Το Kitchen Mate ενημερώνεται αυτόματα στο background. Όταν υπάρχει νέα έκδοση, θα δείτε μια ειδοποίηση 
                 να σας ρωτάει αν θέλετε να ενημερώσετε. Είναι απλό και γρήγορο!
               </AccordionContent>
             </AccordionItem>
@@ -389,7 +389,7 @@ const Install = () => {
             <AccordionItem value="cost">
               <AccordionTrigger>Κοστίζει κάτι;</AccordionTrigger>
               <AccordionContent>
-                Όχι! Το CookMate είναι 100% δωρεάν, χωρίς διαφημίσεις, χωρίς in-app purchases, και χωρίς 
+                Όχι! Το Kitchen Mate είναι 100% δωρεάν, χωρίς διαφημίσεις, χωρίς in-app purchases, και χωρίς 
                 συνδρομές. Δωρεάν για πάντα! 🎉
               </AccordionContent>
             </AccordionItem>
@@ -402,7 +402,7 @@ const Install = () => {
             Έτοιμοι να ξεκινήσετε;
           </h3>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Εγκαταστήστε το CookMate τώρα και απολαύστε την καλύτερη εμπειρία μαγειρικής 
+            Εγκαταστήστε το Kitchen Mate τώρα και απολαύστε την καλύτερη εμπειρία μαγειρικής 
             με τεχνητή νοημοσύνη!
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
@@ -419,7 +419,7 @@ const Install = () => {
       {/* Footer */}
       <footer className="border-t py-8 mt-12">
         <div className="container max-w-4xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2025 CookMate. Your Smart Kitchen Companion.</p>
+          <p>© 2025 Kitchen Mate. Your Smart Kitchen Companion.</p>
         </div>
       </footer>
     </div>

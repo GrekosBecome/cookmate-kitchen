@@ -26,7 +26,7 @@ const Index = () => {
       </div>
       <div className="text-center space-y-4 relative z-10">
         <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto pulse-glow" />
-        <p className="text-muted-foreground font-light">Loading CookMate...</p>
+        <p className="text-muted-foreground font-light">Loading Kitchen Mate...</p>
       </div>
     </div>
   );

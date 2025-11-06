@@ -73,7 +73,7 @@ export const NotificationPermission = () => {
               {permissionState === 'granted' 
                 ? 'You\'ll receive daily recipe suggestions at your chosen time'
                 : permissionState === 'denied'
-                ? 'Go to Settings > CookMate > Notifications to enable'
+                ? 'Go to Settings > Kitchen Mate > Notifications to enable'
                 : 'Get personalized recipe ideas based on your pantry'}
             </CardDescription>
           </div>

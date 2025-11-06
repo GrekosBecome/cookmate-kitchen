@@ -15,7 +15,7 @@ export const InstallSection = () => {
                 Ready to cook smarter?
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Install CookMate now and start your culinary journey. Works perfectly on any device.
+                Install Kitchen Mate now and start your culinary journey. Works perfectly on any device.
               </p>
             </div>
 

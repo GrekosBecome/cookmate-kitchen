@@ -6,7 +6,7 @@ const testimonials = [
     name: 'Sarah M.',
     avatar: '👩‍🍳',
     rating: 5,
-    text: 'CookMate transformed how I cook. No more food waste!',
+    text: 'Kitchen Mate transformed how I cook. No more food waste!',
   },
   {
     name: 'James L.',
@@ -39,7 +39,7 @@ export const TestimonialsSection = () => {
             <span className="block text-primary">everywhere</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of satisfied users who cook smarter with CookMate.
+            Join thousands of satisfied users who cook smarter with Kitchen Mate.
           </p>
         </div>
 

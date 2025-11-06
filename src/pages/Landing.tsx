@@ -31,7 +31,7 @@ const Landing = () => {
         <div className="container max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="font-extralight text-xl mb-3 gradient-text">CookMate</h3>
+              <h3 className="font-extralight text-xl mb-3 gradient-text">Kitchen Mate</h3>
               <p className="text-sm text-muted-foreground font-light">
                 Your Smart Kitchen Companion
               </p>
@@ -64,7 +64,7 @@ const Landing = () => {
             </div>
           </div>
           <div className="text-center text-sm text-muted-foreground pt-8 border-t border-border font-light">
-            <p>© 2025 CookMate. Your Smart Kitchen Companion.</p>
+            <p>© 2025 Kitchen Mate. Your Smart Kitchen Companion.</p>
           </div>
         </div>
       </footer>

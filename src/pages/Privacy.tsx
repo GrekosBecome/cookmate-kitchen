@@ -10,7 +10,7 @@ const Privacy = () => {
     {
       icon: Shield,
       title: "Data Protection",
-      content: `At CookMate, protecting your privacy is our top priority. All your data is stored locally on your device and is never transferred to external servers.`
+      content: `At Kitchen Mate, protecting your privacy is our top priority. All your data is stored locally on your device and is never transferred to external servers.`
     },
     {
       icon: Database,
@@ -110,7 +110,7 @@ const Privacy = () => {
             <div>
               <h3 className="font-semibold text-lg mb-2">🔒 Privacy-First by Design</h3>
               <p className="text-muted-foreground">
-                CookMate was designed from the ground up to respect your privacy. 
+                Kitchen Mate was designed from the ground up to respect your privacy. 
                 <strong className="text-foreground"> All your data is stored ONLY on your device</strong> and 
                 is never transferred to external servers or third parties.
               </p>
@@ -221,7 +221,7 @@ const Privacy = () => {
       {/* Footer */}
       <footer className="border-t py-8 mt-12">
         <div className="container max-w-4xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2025 CookMate. Your Smart Kitchen Companion.</p>
+          <p>© 2025 Kitchen Mate. Your Smart Kitchen Companion.</p>
           <p className="mt-2">All rights reserved.</p>
         </div>
       </footer>

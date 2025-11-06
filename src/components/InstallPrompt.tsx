@@ -102,7 +102,7 @@ export const InstallPrompt = () => {
             <Download className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 pr-6">
-            <h3 className="font-semibold text-sm mb-1">Install CookMate</h3>
+            <h3 className="font-semibold text-sm mb-1">Install Kitchen Mate</h3>
             <p className="text-xs text-muted-foreground mb-3">
               Install our app for a better experience, offline access, and faster loading.
             </p>

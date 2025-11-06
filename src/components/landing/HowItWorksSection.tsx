@@ -4,12 +4,12 @@ const steps = [
   {
     icon: Download,
     title: 'Install the App',
-    description: 'Add CookMate to your home screen. No App Store, no hassle.',
+    description: 'Add Kitchen Mate to your home screen. No App Store, no hassle.',
   },
   {
     icon: Camera,
     title: 'Add Your Pantry',
-    description: 'Scan ingredients or add them manually. CookMate remembers everything.',
+    description: 'Scan ingredients or add them manually. Kitchen Mate remembers everything.',
   },
   {
     icon: ChefHat,
