@@ -11,7 +11,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 
 interface RecipeHistorySheetProps {
@@ -200,49 +199,61 @@ export const RecipeHistorySheet = ({
             </div>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | "favorites")} className="mt-2 w-full">
-          <TabsList className="grid w-full grid-cols-2 h-11">
-            <TabsTrigger value="all">
-              All ({viewedRecipes.length})
-            </TabsTrigger>
-            <TabsTrigger value="favorites">
-              Favorites ({favoriteRecipes.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="mt-2 w-full">
+            <div className="grid grid-cols-2 gap-2 p-1 glass-card rounded-full">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  activeTab === "all"
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                All ({viewedRecipes.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("favorites")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  activeTab === "favorites"
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Favorites ({favoriteRecipes.length})
+              </button>
+            </div>
 
-          <TabsContent value="all" className="mt-4">
-            <ScrollArea className="h-[calc(100vh-220px)]">
-              {viewedRecipes.length === 0 ? (
-                <div className="text-center py-12">
-                  <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No recipes viewed yet</p>
-                </div>
-              ) : (
-                <div className="space-y-2 pr-2">
-                  {viewedRecipes.map((viewed) => renderRecipeCard(viewed))}
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="favorites" className="mt-4">
-            <ScrollArea className="h-[calc(100vh-220px)]">
-              {favoriteRecipes.length === 0 ? (
-                <div className="text-center py-12">
-                  <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No favorite recipes yet</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Tap the heart icon to save your favorites
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2 pr-2">
-                  {favoriteRecipes.map((viewed) => renderRecipeCard(viewed))}
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+            {activeTab === "all" ? (
+              <ScrollArea className="h-[calc(100vh-220px)] mt-4">
+                {viewedRecipes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No recipes viewed yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 pr-2">
+                    {viewedRecipes.map((viewed) => renderRecipeCard(viewed))}
+                  </div>
+                )}
+              </ScrollArea>
+            ) : (
+              <ScrollArea className="h-[calc(100vh-220px)] mt-4">
+                {favoriteRecipes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No favorite recipes yet</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Tap the heart icon to save your favorites
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 pr-2">
+                    {favoriteRecipes.map((viewed) => renderRecipeCard(viewed))}
+                  </div>
+                )}
+              </ScrollArea>
+            )}
+          </div>
         )}
       </SheetContent>
     </Sheet>
