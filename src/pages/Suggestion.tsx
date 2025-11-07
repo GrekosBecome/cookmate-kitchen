@@ -505,8 +505,8 @@ const Suggestion = () => {
     paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)'
   }}>
       <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex-1 text-center space-y-2">
+        <header className="relative">
+          <div className="text-center space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">{getGreeting()}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               {getContextMessage()}
@@ -518,7 +518,7 @@ const Suggestion = () => {
             variant="ghost"
             size="icon"
             onClick={() => setShowHistory(true)}
-            className="relative flex-shrink-0"
+            className="absolute top-0 right-0"
           >
             <Clock className="h-5 w-5" />
             {viewedRecipes.length > 0 && (
