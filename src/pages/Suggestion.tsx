@@ -8,12 +8,13 @@ import { GourmetRecipeCard } from '@/components/recipe/GourmetRecipeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Sparkles, Loader2, Clock, X } from 'lucide-react';
+import { AlertCircle, Sparkles, Loader2, Clock, X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { track } from '@/lib/analytics';
 import { supabase } from '@/integrations/supabase/client';
 import { RecipeHistorySheet } from '@/components/recipe/RecipeHistorySheet';
+import { AddOptionsSheet } from '@/components/pantry/AddOptionsSheet';
 import { Badge } from '@/components/ui/badge';
 const Suggestion = () => {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ const Suggestion = () => {
   const [aiError, setAiError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [dismissedShoppingAlert, setDismissedShoppingAlert] = useState(false);
+  const [showAddOptions, setShowAddOptions] = useState(false);
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
@@ -607,8 +609,13 @@ const Suggestion = () => {
               <p className="text-sm sm:text-base text-muted-foreground">
                 Your fridge is empty — let's fill it up 🥦
               </p>
-              <Button onClick={handleSimpleEggs} variant="outline" className="h-11">
-                Start simple: Scrambled eggs
+              <Button 
+                onClick={() => setShowAddOptions(true)} 
+                size="lg"
+                className="h-14 rounded-full text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
+              >
+                <Plus className="h-6 w-6 mr-2" />
+                Add Ingredients
               </Button>
             </div>}
         </div>
@@ -638,6 +645,24 @@ const Suggestion = () => {
             title: "History cleared",
             description: "All viewed recipes have been removed"
           });
+        }}
+      />
+
+      {/* Add Options Sheet */}
+      <AddOptionsSheet
+        open={showAddOptions}
+        onOpenChange={setShowAddOptions}
+        onCameraClick={() => {
+          setShowAddOptions(false);
+          navigate('/pantry');
+        }}
+        onPhotosClick={() => {
+          setShowAddOptions(false);
+          navigate('/pantry');
+        }}
+        onManualClick={() => {
+          setShowAddOptions(false);
+          navigate('/pantry');
         }}
       />
 
