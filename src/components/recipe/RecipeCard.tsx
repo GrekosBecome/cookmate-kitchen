@@ -9,14 +9,12 @@ import { useState } from 'react';
 interface RecipeCardProps {
   recipe: Recipe;
   onAnother?: () => void;
-  onSkip?: () => void;
   showActions?: boolean;
   learning?: LearningState;
 }
 export const RecipeCard = ({
   recipe,
   onAnother,
-  onSkip,
   showActions = true,
   learning
 }: RecipeCardProps) => {
@@ -69,14 +67,9 @@ export const RecipeCard = ({
             <Button onClick={handleCookThis} className="w-full" size="lg">
               Cook this
             </Button>
-            <div className="flex gap-2">
-              {onAnother && <Button onClick={onAnother} variant="ghost" className="flex-1">
-                  Another idea
-                </Button>}
-              {onSkip && <Button onClick={onSkip} variant="ghost" className="flex-1">
-                  Skip
-                </Button>}
-            </div>
+            {onAnother && <Button onClick={onAnother} variant="ghost" className="w-full">
+                Another idea
+              </Button>}
           </div>}
       </CardContent>
     </Card>;

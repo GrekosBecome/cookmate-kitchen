@@ -495,7 +495,7 @@ const Suggestion = () => {
               </CardContent>
             </Card> : currentRecipe ? <div className="animate-fade-in">
               {useAI ? <GourmetRecipeCard recipe={currentRecipe} onAnother={handleAnother} /> : <div className="space-y-2">
-                  <RecipeCard recipe={currentRecipe} onAnother={handleAnother} onSkip={handleSkip} learning={learning} />
+                  <RecipeCard recipe={currentRecipe} onAnother={handleAnother} learning={learning} />
                 </div>}
             </div> : <div className="text-center space-y-4 py-8 animate-fade-in">
               <p className="text-sm sm:text-base text-muted-foreground">
