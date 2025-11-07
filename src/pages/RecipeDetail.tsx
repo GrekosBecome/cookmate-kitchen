@@ -31,7 +31,6 @@ const RecipeDetail = () => {
   const recipe = RECIPE_CATALOG.find(r => r.id === id) || 
                  aiGeneratedRecipes.find((r: Recipe) => r.id === id) as Recipe | undefined;
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
-  const [hasMarkedUsed, setHasMarkedUsed] = useState(false);
   
   // Track page view
   useState(() => {
@@ -65,31 +64,8 @@ const RecipeDetail = () => {
 
   const handleStartCooking = () => {
     track('clicked_cta', { action: 'start_cooking', recipeId: recipe.id });
-    addRecentAction('start_cooking', { recipeId: recipe.id });
-    
-    // Compute have and need arrays based on checked state
-    const have = recipe.ingredients
-      .filter((ing, idx) => checkedIngredients.has(idx) && !ing.optional)
-      .map(ing => ing.name);
-    
-    const need = recipe.ingredients
-      .filter((ing, idx) => !checkedIngredients.has(idx) && !ing.optional)
-      .map(ing => ing.name);
-    
-    // Navigate to chat with recipe context
-    const params = new URLSearchParams({
-      recipeId: recipe.id,
-      recipeTitle: recipe.title,
-      have: have.join(','),
-      need: need.join(','),
-      timeMin: recipe.timeMin?.toString() || '',
-    });
-    
-    navigate(`/chat?${params.toString()}`);
-  };
-
-  const handleMarkUsed = () => {
     track('recipe_completed', { recipeId: recipe.id });
+    addRecentAction('start_cooking', { recipeId: recipe.id });
     addRecentAction('recipe_completed', { recipeId: recipe.id });
     
     const now = new Date().toISOString();
@@ -119,12 +95,8 @@ const RecipeDetail = () => {
     recordUsageEvent(usageEvent);
     updatePantryConfidenceAfterRecipe(recipe.id, recipe.title, recipe.ingredients);
 
-    // Consume pantry items (mark as used)
-    const ingredientNames = recipe.ingredients
-      .filter((ing) => !ing.optional)
-      .map((ing) => ing.pantryName || ing.name);
-
-    consumePantryForRecipe(ingredientNames);
+    // Consume pantry items with proper quantity reduction
+    consumePantryForRecipe(recipe.ingredients.filter((ing) => !ing.optional));
 
     // Add learning signal
     addSignal({
@@ -134,8 +106,6 @@ const RecipeDetail = () => {
       tags: recipe.tags,
       needs: recipe.needs,
     });
-
-    setHasMarkedUsed(true);
 
     // Check if new shopping items were added
     const newLowItems = shoppingState.queue.filter(
@@ -150,25 +120,35 @@ const RecipeDetail = () => {
           label: 'View',
           onClick: () => navigate('/pantry?tab=shopping'),
         },
-        duration: 10000,
+        duration: 6000,
       });
     } else {
-      toast.success('Pantry updated! 🎉 — Confidence levels adjusted', {
-        action: {
-          label: 'Undo',
-          onClick: () => {
-            undoLastUsageEvent();
-            toast.success('Changes undone');
-          },
-        },
-        duration: 10000,
+      toast.success('Pantry updated! 🎉', {
+        duration: 3000,
       });
     }
-
-    setTimeout(() => {
-      navigate('/suggestion');
-    }, 2000);
+    
+    // Compute have and need arrays based on checked state
+    const have = recipe.ingredients
+      .filter((ing, idx) => checkedIngredients.has(idx) && !ing.optional)
+      .map(ing => ing.name);
+    
+    const need = recipe.ingredients
+      .filter((ing, idx) => !checkedIngredients.has(idx) && !ing.optional)
+      .map(ing => ing.name);
+    
+    // Navigate to chat with recipe context
+    const params = new URLSearchParams({
+      recipeId: recipe.id,
+      recipeTitle: recipe.title,
+      have: have.join(','),
+      need: need.join(','),
+      timeMin: recipe.timeMin?.toString() || '',
+    });
+    
+    navigate(`/chat?${params.toString()}`);
   };
+
 
   return (
     <div 
@@ -273,33 +253,13 @@ const RecipeDetail = () => {
         }}
       >
         <div className="container max-w-2xl mx-auto p-4">
-          {!hasMarkedUsed ? (
-            <div className="flex gap-3">
-              <Button
-                onClick={handleStartCooking}
-                variant="outline"
-                className="flex-1 h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
-                aria-label="Start cooking"
-              >
-                Let's cook
-              </Button>
-              <Button
-                onClick={handleMarkUsed}
-                className="flex-1 h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
-                aria-label="Mark as used"
-              >
-                Mark as used
-              </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={() => navigate('/suggestion')}
-              className="w-full h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
-              aria-label="What's next"
-            >
-              What's next?
-            </Button>
-          )}
+          <Button
+            onClick={handleStartCooking}
+            className="w-full h-12 sm:h-14 min-h-[44px] text-sm sm:text-base font-semibold"
+            aria-label="Let's cook"
+          >
+            Let's cook
+          </Button>
         </div>
       </div>
 

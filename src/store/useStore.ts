@@ -43,7 +43,7 @@ interface AppState {
   addSignal: (signal: Signal) => void;
   recomputeLearning: () => void;
   resetLearning: () => void;
-  consumePantryForRecipe: (ingredientNames: string[]) => number;
+  consumePantryForRecipe: (ingredients: Ingredient[]) => number;
   recordUsageEvent: (event: UsageEvent) => void;
   applyConfidenceDecay: () => void;
   regenerateShoppingQueue: () => void;
@@ -178,18 +178,41 @@ export const useStore = create<AppState>()(
           learning: undefined,
           signals: [],
         }),
-      consumePantryForRecipe: (ingredientNames: string[]) => {
+      consumePantryForRecipe: (ingredients: Ingredient[]) => {
         let consumedCount = 0;
         set((state) => {
           const updatedItems = state.pantryItems.map((item) => {
-            const matchesIngredient = ingredientNames.some(name =>
-              item.name.toLowerCase().includes(name.toLowerCase()) ||
-              name.toLowerCase().includes(item.name.toLowerCase())
-            );
+            // Find matching ingredient from recipe
+            const matchingIngredient = ingredients.find(ing => {
+              const pantryName = ing.pantryName || ing.name;
+              return item.name.toLowerCase().includes(pantryName.toLowerCase()) ||
+                     pantryName.toLowerCase().includes(item.name.toLowerCase());
+            });
             
-            if (matchesIngredient && !item.used) {
+            if (matchingIngredient && !item.used) {
               consumedCount++;
-              return { ...item, used: true };
+              
+              // Calculate quantity reduction
+              const recipeQty = matchingIngredient.qty || 0;
+              const recipeUnit = matchingIngredient.unit?.toLowerCase();
+              const pantryQty = item.qty || 0;
+              const pantryUnit = item.unit?.toLowerCase();
+              
+              // If we have quantity info for both, reduce proportionally
+              if (recipeQty > 0 && pantryQty > 0 && recipeUnit === pantryUnit) {
+                const newQty = Math.max(0, pantryQty - recipeQty);
+                
+                // If quantity reaches 0, mark as used
+                if (newQty === 0) {
+                  return { ...item, qty: 0, used: true, lastUsed: new Date().toISOString() };
+                }
+                
+                // Otherwise just reduce quantity
+                return { ...item, qty: newQty, lastUsed: new Date().toISOString() };
+              }
+              
+              // If no quantity match, just mark as used (fallback to old behavior)
+              return { ...item, used: true, lastUsed: new Date().toISOString() };
             }
             return item;
           });
