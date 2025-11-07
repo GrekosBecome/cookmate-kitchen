@@ -503,11 +503,6 @@ const Suggestion = () => {
                     onSkip={handleSkip}
                     learning={learning}
                   />
-                  {currentRecipe.aiGenerated && (
-                    <p className="text-center text-xs text-muted-foreground">
-                      ✨ AI-crafted recipe
-                    </p>
-                  )}
                 </div>
               )}
             </div>

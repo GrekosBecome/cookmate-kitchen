@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { RECIPE_CATALOG } from '@/data/recipes';
+import { Recipe } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,9 +25,11 @@ const RecipeDetail = () => {
     shoppingState,
     updateMemory,
     addRecentAction,
+    aiGeneratedRecipes,
   } = useStore();
   
-  const recipe = RECIPE_CATALOG.find(r => r.id === id);
+  const recipe = RECIPE_CATALOG.find(r => r.id === id) || 
+                 aiGeneratedRecipes.find((r: Recipe) => r.id === id) as Recipe | undefined;
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [hasMarkedUsed, setHasMarkedUsed] = useState(false);
   
