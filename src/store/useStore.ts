@@ -46,7 +46,7 @@ interface AppState {
   removePantryItem: (id: string) => void;
   togglePantryItemUsed: (id: string) => void;
   setHasCompletedOnboarding: (value: boolean) => void;
-  setTodaysPick: (pick: SuggestionPick) => void;
+  setTodaysPick: (pick: SuggestionPick | null) => void;
   addSignal: (signal: Signal) => void;
   recomputeLearning: () => void;
   resetLearning: () => void;

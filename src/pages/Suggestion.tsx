@@ -101,6 +101,14 @@ const Suggestion = () => {
     // Recompute learning on app start
     recomputeLearning();
 
+    // If pantry is empty, clear cache and show empty state
+    if (pantryItems.length === 0) {
+      setTodaysPick(null);
+      setSuggestions([]);
+      setCurrentIndex(0);
+      return;
+    }
+
     // Priority 1: Check if we have today's pick saved
     if (todaysPick && todaysPick.date === today) {
       // Restore only last viewed recipe from cache
@@ -135,7 +143,7 @@ const Suggestion = () => {
     
     // Priority 3: Generate new suggestions
     generateSuggestions();
-  }, [location.state]);
+  }, [location.state, pantryItems.length]);
   useEffect(() => {
     // Log viewed signal when suggestions change
     if (suggestions.length > 0 && currentIndex >= 0) {
