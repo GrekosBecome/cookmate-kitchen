@@ -198,9 +198,12 @@ const Suggestion = () => {
       }
 
       if (data?.recipes && data.recipes.length > 0) {
-        // Add the new recipe to suggestions
+        // Add the new recipe to local suggestions
         setSuggestions(prev => [...prev, ...data.recipes]);
         setCurrentIndex(suggestions.length); // Jump to the new recipe
+        
+        // Store in global state so RecipeDetail can find it
+        setAIGeneratedRecipes([...aiGeneratedRecipes, ...data.recipes]);
         
         track('improvise_recipe_success', { starIngredients: starNames });
         
