@@ -100,20 +100,8 @@ const Suggestion = () => {
     // Recompute learning on app start
     recomputeLearning();
 
-    // Hybrid approach: Check for cached AI recipes first (< 24h old)
-    if (hasRecentAI && aiGeneratedRecipes.length > 0) {
-      // Show ONLY first AI recipe (rest available via "Another")
-      const firstRecipe = aiGeneratedRecipes[0];
-      if (firstRecipe) {
-        setSuggestions([firstRecipe]);
-        setUseAI(false); // Still classic mode UI, just AI-powered
-        setCurrentIndex(0);
-        console.log('✨ Using cached AI recipes');
-      }
-    } else if (!todaysPick || todaysPick.date !== today) {
-      // First visit or new day: Show static instantly + background fetch AI
-      generateSuggestions();
-    } else {
+    // Priority 1: Check if we have today's pick saved
+    if (todaysPick && todaysPick.date === today) {
       // Restore only last viewed recipe from cache
       console.log('📍 RESTORE: todaysPick =', todaysPick);
       if (todaysPick.suggestions && todaysPick.suggestions.length > 0) {
@@ -126,16 +114,26 @@ const Suggestion = () => {
           setCurrentIndex(0);
           setUseAI(todaysPick.mode === 'ai' || todaysPick.mode === 'improvised');
           console.log('📍 RESTORE: Set suggestions to ONLY lastViewed');
-        } else {
-          console.log('📍 RESTORE: No lastViewed, generating new');
-          generateSuggestions();
+          return; // Exit early
         }
-      } else {
-        // Fallback: regenerate if no cached suggestions
-        console.log('📍 RESTORE: No cached suggestions, generating new');
-        generateSuggestions();
       }
     }
+    
+    // Priority 2: Check for cached AI recipes (< 24h old)
+    if (hasRecentAI && aiGeneratedRecipes.length > 0) {
+      // Show ONLY first AI recipe (rest available via "Another")
+      const firstRecipe = aiGeneratedRecipes[0];
+      if (firstRecipe) {
+        setSuggestions([firstRecipe]);
+        setUseAI(false); // Still classic mode UI, just AI-powered
+        setCurrentIndex(0);
+        console.log('✨ Using cached AI recipes');
+        return;
+      }
+    }
+    
+    // Priority 3: Generate new suggestions
+    generateSuggestions();
   }, [location.state]);
   useEffect(() => {
     // Log viewed signal when suggestions change
