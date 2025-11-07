@@ -8,7 +8,6 @@ import { ShoppingListView } from '@/components/pantry/ShoppingListView';
 import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { AddOptionsSheet } from '@/components/pantry/AddOptionsSheet';
 import { EditPantryItemDialog } from '@/components/pantry/EditPantryItemDialog';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle, Plus, Sparkles, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -467,16 +466,32 @@ export default function Pantry() {
           </p>
         </header>
 
-        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-11">
-            <TabsTrigger value="list" className="text-sm sm:text-base">
-              Pantry ({activeItems.length})
-            </TabsTrigger>
-            <TabsTrigger value="shopping" className="text-sm sm:text-base">
-              Shopping ({shoppingState.queue.filter(i => !i.bought).length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex justify-center">
+          <div className="inline-flex w-full max-w-md">
+            <div className="grid grid-cols-2 gap-2 p-1 glass-card rounded-full w-full">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Pantry ({activeItems.length})
+              </button>
+              <button
+                onClick={() => setViewMode('shopping')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  viewMode === 'shopping'
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Shopping ({shoppingState.queue.filter(i => !i.bought).length})
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* What to Cook Button */}
         {activeItems.length >= 2 && viewMode === 'list' && (
