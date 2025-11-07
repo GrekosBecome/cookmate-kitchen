@@ -210,28 +210,39 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
     };
   }, [recipeId, continueChat]);
 
-  // Save to permanent storage when leaving or when conversation has meaningful content
+  // Save to permanent storage whenever messages change (if meaningful conversation)
   useEffect(() => {
-    const saveToPermanentStorage = () => {
-      // Only save if we have at least 3 messages (greeting + user + assistant response)
-      if (messages.length >= 3 && !continueChat) {
-        const recipeTitle = searchParams.get('recipeTitle');
-        const chatMessages: ChatMessage[] = messages.map(m => ({
-          role: m.role,
-          content: m.content,
-          allergenWarning: m.allergenWarning,
-          timestamp: m.timestamp || new Date().toISOString()
-        }));
-        
-        const id = saveChatConversation({
-          recipeId: recipeId || undefined,
-          recipeTitle: recipeTitle || undefined,
-          messages: chatMessages
-        });
-        setCurrentChatId(id);
-        clearChef(); // Clear session cache after saving
-      } else if (currentChatId && messages.length >= 3) {
-        // Update existing conversation
+    // Only save if we have at least 3 messages (greeting + user + assistant response)
+    if (messages.length < 3) return;
+
+    const recipeTitle = searchParams.get('recipeTitle');
+    const chatMessages: ChatMessage[] = messages.map(m => ({
+      role: m.role,
+      content: m.content,
+      allergenWarning: m.allergenWarning,
+      timestamp: m.timestamp || new Date().toISOString()
+    }));
+
+    if (!currentChatId && !continueChat) {
+      // Create new conversation
+      const id = saveChatConversation({
+        recipeId: recipeId || undefined,
+        recipeTitle: recipeTitle || undefined,
+        messages: chatMessages
+      });
+      setCurrentChatId(id);
+      console.log('💾 Created new chat conversation:', id);
+    } else if (currentChatId) {
+      // Update existing conversation
+      updateChatConversation(currentChatId, chatMessages);
+      console.log('💾 Updated chat conversation:', currentChatId);
+    }
+  }, [messages]);
+
+  // Backup: Save on page unload/visibility change
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (messages.length >= 3 && currentChatId) {
         const chatMessages: ChatMessage[] = messages.map(m => ({
           role: m.role,
           content: m.content,
@@ -239,14 +250,31 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
           timestamp: m.timestamp || new Date().toISOString()
         }));
         updateChatConversation(currentChatId, chatMessages);
+        console.log('💾 Saved on beforeunload');
       }
     };
 
-    // Save on unmount
-    return () => {
-      saveToPermanentStorage();
+    const handleVisibilityChange = () => {
+      if (document.hidden && messages.length >= 3 && currentChatId) {
+        const chatMessages: ChatMessage[] = messages.map(m => ({
+          role: m.role,
+          content: m.content,
+          allergenWarning: m.allergenWarning,
+          timestamp: m.timestamp || new Date().toISOString()
+        }));
+        updateChatConversation(currentChatId, chatMessages);
+        console.log('💾 Saved on visibility change');
+      }
     };
-  }, [messages, recipeId, searchParams, currentChatId, continueChat]);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [messages, currentChatId]);
 
   // Auto-save session on changes
   useEffect(() => {
