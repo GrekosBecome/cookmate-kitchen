@@ -73,9 +73,7 @@ export const RecipeCard = ({
               {onAnother && <Button onClick={onAnother} variant="ghost" className="flex-1">
                   Another idea
                 </Button>}
-              {onSkip && <Button onClick={onSkip} variant="ghost" className="flex-1">
-                  Skip
-                </Button>}
+              {onSkip}
             </div>
           </div>}
       </CardContent>
