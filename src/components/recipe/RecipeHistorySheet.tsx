@@ -1,5 +1,4 @@
 import { Clock, Eye, Trash2, Heart } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { ViewedRecipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,56 +38,52 @@ export const RecipeHistorySheet = ({
   const displayedRecipes = activeTab === "favorites" ? favoriteRecipes : viewedRecipes;
 
   const renderRecipeCard = (viewed: ViewedRecipe) => (
-    <Card key={viewed.id} className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex gap-3">
+    <Card key={viewed.id} className="overflow-hidden hover:bg-accent/5 transition-colors">
+      <CardContent className="p-3">
+        <div className="flex items-start gap-2">
           {/* Recipe Info */}
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold truncate">
+            <h4 className="font-medium text-sm truncate">
               {viewed.recipe.title}
             </h4>
-            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>{viewed.recipe.timeMin} min</span>
+              <span>{viewed.recipe.timeMin}m</span>
               <span>•</span>
-              <Badge variant="secondary" className="text-xs capitalize">
+              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 capitalize">
                 {viewed.mode}
               </Badge>
-              <span>•</span>
-              <span>
-                {formatDistanceToNow(new Date(viewed.viewedAt), { 
-                  addSuffix: true 
-                })}
-              </span>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-1">
+          {/* Compact Actions */}
+          <div className="flex gap-0.5">
             <Button
-              size="sm"
+              size="icon"
               variant="ghost"
               onClick={() => onToggleFavorite(viewed.id)}
-              className={viewed.isFavorite ? "text-red-500 hover:text-red-600" : ""}
+              className={`h-8 w-8 ${viewed.isFavorite ? "text-red-500 hover:text-red-600" : ""}`}
             >
-              <Heart className={`h-4 w-4 ${viewed.isFavorite ? "fill-current" : ""}`} />
+              <Heart className={`h-3.5 w-3.5 ${viewed.isFavorite ? "fill-current" : ""}`} />
             </Button>
             <Button
-              size="sm"
+              size="icon"
               variant="ghost"
               onClick={() => {
                 onViewRecipe(viewed.recipe);
                 onOpenChange(false);
               }}
+              className="h-8 w-8"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3.5 w-3.5" />
             </Button>
             <Button
-              size="sm"
+              size="icon"
               variant="ghost"
               onClick={() => onDeleteRecipe(viewed.id)}
+              className="h-8 w-8"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
@@ -101,9 +96,9 @@ export const RecipeHistorySheet = ({
       <SheetContent side="right" className="w-full sm:max-w-lg">
         <SheetHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Clock className="h-5 w-5" />
-              <SheetTitle>Recipe History</SheetTitle>
+              <SheetTitle className="text-lg">Recipe History</SheetTitle>
             </div>
             {viewedRecipes.length > 0 && (
               <Button
@@ -116,7 +111,7 @@ export const RecipeHistorySheet = ({
               </Button>
             )}
           </div>
-          <SheetDescription>
+          <SheetDescription className="text-xs">
             {viewedRecipes.length} {viewedRecipes.length === 1 ? 'recipe' : 'recipes'} viewed
             {favoriteRecipes.length > 0 && ` • ${favoriteRecipes.length} favorite${favoriteRecipes.length === 1 ? '' : 's'}`}
           </SheetDescription>
@@ -133,14 +128,14 @@ export const RecipeHistorySheet = ({
           </TabsList>
 
           <TabsContent value="all" className="mt-4">
-            <ScrollArea className="h-[calc(100vh-200px)]">
+            <ScrollArea className="h-[calc(100vh-220px)]">
               {viewedRecipes.length === 0 ? (
                 <div className="text-center py-12">
                   <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No recipes viewed yet</p>
                 </div>
               ) : (
-                <div className="space-y-3 pr-4">
+                <div className="space-y-2 pr-2">
                   {viewedRecipes.map((viewed) => renderRecipeCard(viewed))}
                 </div>
               )}
@@ -148,7 +143,7 @@ export const RecipeHistorySheet = ({
           </TabsContent>
 
           <TabsContent value="favorites" className="mt-4">
-            <ScrollArea className="h-[calc(100vh-200px)]">
+            <ScrollArea className="h-[calc(100vh-220px)]">
               {favoriteRecipes.length === 0 ? (
                 <div className="text-center py-12">
                   <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -158,7 +153,7 @@ export const RecipeHistorySheet = ({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3 pr-4">
+                <div className="space-y-2 pr-2">
                   {favoriteRecipes.map((viewed) => renderRecipeCard(viewed))}
                 </div>
               )}

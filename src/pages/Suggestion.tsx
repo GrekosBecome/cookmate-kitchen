@@ -105,11 +105,17 @@ const Suggestion = () => {
       // First visit or new day: Show static instantly + background fetch AI
       generateSuggestions();
     } else {
-      // Restore full state from cache
+      // Restore only last viewed recipe from cache
       if (todaysPick.suggestions && todaysPick.suggestions.length > 0) {
-        setSuggestions(todaysPick.suggestions);
-        setCurrentIndex(todaysPick.indexShown || 0);
-        setUseAI(todaysPick.mode === 'ai' || todaysPick.mode === 'improvised');
+        const lastViewed = todaysPick.suggestions[todaysPick.indexShown || 0];
+        
+        if (lastViewed) {
+          setSuggestions([lastViewed]);
+          setCurrentIndex(0);
+          setUseAI(todaysPick.mode === 'ai' || todaysPick.mode === 'improvised');
+        } else {
+          generateSuggestions();
+        }
       } else {
         // Fallback: regenerate if no cached suggestions
         generateSuggestions();
@@ -132,6 +138,15 @@ const Suggestion = () => {
         // Auto-save to history
         const mode = useAI ? 'ai' : isImprovising ? 'improvised' : 'classic';
         addViewedRecipe(current, mode);
+        
+        // Update todaysPick to keep ONLY current recipe
+        setTodaysPick({
+          date: today,
+          recipeIds: [current.id],
+          indexShown: 0,
+          mode: mode,
+          suggestions: [current]
+        });
       }
     }
   }, [suggestions, currentIndex, useAI, isImprovising]);
@@ -362,14 +377,17 @@ const Suggestion = () => {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       
-      // Update cache with new index
-      setTodaysPick({
-        date: today,
-        recipeIds: suggestions.map(r => r.id),
-        indexShown: newIndex,
-        mode: useAI ? 'ai' : 'classic',
-        suggestions: suggestions
-      });
+      // Update cache to keep ONLY the new suggestion
+      const newSuggestion = suggestions[newIndex];
+      if (newSuggestion) {
+        setTodaysPick({
+          date: today,
+          recipeIds: [newSuggestion.id],
+          indexShown: 0,
+          mode: useAI ? 'ai' : 'classic',
+          suggestions: [newSuggestion]
+        });
+      }
     } else {
       // End of suggestions - TIME TO IMPROVISE! 🎨
       if (pantryItems.length >= 2) {
