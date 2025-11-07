@@ -113,3 +113,10 @@ export interface ShoppingState {
   queue: ShoppingItem[];
   lastGenerated?: string;
 }
+
+export interface ViewedRecipe {
+  id: string;
+  recipe: Recipe;
+  viewedAt: string;
+  mode: 'classic' | 'ai' | 'improvised';
+}

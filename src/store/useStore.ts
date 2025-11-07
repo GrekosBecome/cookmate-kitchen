@@ -10,6 +10,8 @@ import {
   ShoppingState,
   ShoppingItem,
   Ingredient,
+  ViewedRecipe,
+  Recipe,
 } from '@/types';
 import { UserMemory, defaultMemory } from '@/types/memory';
 import { recordSignal as recordSignalLib, recomputeLearning as recomputeLearningLib } from '@/lib/learning';
@@ -30,6 +32,7 @@ interface AppState {
   operations: Array<{ id: string; type: string; timestamp: string; data: any }>;
   aiGeneratedRecipes: any[];
   lastAIGeneration?: string;
+  viewedRecipes: ViewedRecipe[];
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   updateMemory: (memory: Partial<UserMemory>) => void;
@@ -58,6 +61,9 @@ interface AppState {
   undoLastOperation: () => { success: boolean; message: string };
   setAIGeneratedRecipes: (recipes: any[]) => void;
   clearAIGeneratedRecipes: () => void;
+  addViewedRecipe: (recipe: Recipe, mode: 'classic' | 'ai' | 'improvised') => void;
+  removeViewedRecipe: (id: string) => void;
+  clearViewedRecipes: () => void;
   reset: () => void;
 }
 
@@ -159,6 +165,7 @@ export const useStore = create<AppState>()(
       operations: [],
       aiGeneratedRecipes: [],
       lastAIGeneration: undefined,
+      viewedRecipes: [],
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -559,6 +566,25 @@ export const useStore = create<AppState>()(
           aiGeneratedRecipes: [],
           lastAIGeneration: undefined
         }),
+      addViewedRecipe: (recipe, mode) => 
+        set((state) => {
+          const viewed: ViewedRecipe = {
+            id: `${recipe.id}-${Date.now()}`,
+            recipe,
+            viewedAt: new Date().toISOString(),
+            mode
+          };
+          
+          // Keep only last 50 recipes for performance
+          const updated = [viewed, ...state.viewedRecipes].slice(0, 50);
+          
+          return { viewedRecipes: updated };
+        }),
+      removeViewedRecipe: (id) => 
+        set((state) => ({
+          viewedRecipes: state.viewedRecipes.filter(v => v.id !== id)
+        })),
+      clearViewedRecipes: () => set({ viewedRecipes: [] }),
       reset: () =>
         set({
           preferences: null,
@@ -574,6 +600,7 @@ export const useStore = create<AppState>()(
           operations: [],
           aiGeneratedRecipes: [],
           lastAIGeneration: undefined,
+          viewedRecipes: [],
         }),
     }),
     {

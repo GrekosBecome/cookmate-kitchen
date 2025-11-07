@@ -8,11 +8,13 @@ import { GourmetRecipeCard } from '@/components/recipe/GourmetRecipeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { AlertCircle, Sparkles, Loader2, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { track } from '@/lib/analytics';
 import { supabase } from '@/integrations/supabase/client';
+import { RecipeHistorySheet } from '@/components/recipe/RecipeHistorySheet';
+import { Badge } from '@/components/ui/badge';
 const Suggestion = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +37,11 @@ const Suggestion = () => {
     aiGeneratedRecipes,
     setAIGeneratedRecipes,
     clearAIGeneratedRecipes,
-    lastAIGeneration
+    lastAIGeneration,
+    viewedRecipes,
+    addViewedRecipe,
+    removeViewedRecipe,
+    clearViewedRecipes
   } = useStore();
   const [suggestions, setSuggestions] = useState<Recipe[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,6 +50,7 @@ const Suggestion = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isImprovising, setIsImprovising] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
@@ -120,9 +127,13 @@ const Suggestion = () => {
           tags: current.tags,
           needs: current.needs
         });
+        
+        // Auto-save to history
+        const mode = useAI ? 'ai' : isImprovising ? 'improvised' : 'classic';
+        addViewedRecipe(current, mode);
       }
     }
-  }, [suggestions, currentIndex]);
+  }, [suggestions, currentIndex, useAI, isImprovising]);
   const generateSuggestions = () => {
     const newSuggestions = getSuggestions(preferences, pantryItems, 2, learning);
 
@@ -403,6 +414,30 @@ const Suggestion = () => {
       navigate('/chat');
     }
   };
+  
+  const handleViewRecipeFromHistory = (recipe: Recipe) => {
+    // Load only this recipe from history
+    setSuggestions([recipe]);
+    setCurrentIndex(0);
+    setUseAI(recipe.aiGenerated || false);
+    setIsImprovising(false);
+    setShowHistory(false);
+    
+    // Update today's pick
+    setTodaysPick({
+      date: today,
+      recipeIds: [recipe.id],
+      indexShown: 0,
+      mode: recipe.aiGenerated ? 'ai' : 'classic',
+      suggestions: [recipe]
+    });
+    
+    toast({
+      title: "Recipe loaded",
+      description: `Viewing ${recipe.title} again`
+    });
+  };
+  
   const currentRecipe = suggestions[currentIndex];
   const pendingItems = shoppingState.queue.filter(i => !i.bought);
 
@@ -427,11 +462,28 @@ const Suggestion = () => {
     paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)'
   }}>
       <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <header className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">{getGreeting()}Afternoon cravings </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {getContextMessage()}
-          </p>
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex-1 text-center space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">{getGreeting()}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {getContextMessage()}
+            </p>
+          </div>
+          
+          {/* History Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowHistory(true)}
+            className="relative flex-shrink-0"
+          >
+            <Clock className="h-5 w-5" />
+            {viewedRecipes.length > 0 && (
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                {viewedRecipes.length}
+              </Badge>
+            )}
+          </Button>
         </header>
 
         {/* AI Gourmet Mode CTA */}
@@ -517,6 +569,22 @@ const Suggestion = () => {
 
         {spinCount > 0 && !useAI}
       </div>
+
+      {/* Recipe History Sheet */}
+      <RecipeHistorySheet
+        open={showHistory}
+        onOpenChange={setShowHistory}
+        viewedRecipes={viewedRecipes}
+        onViewRecipe={handleViewRecipeFromHistory}
+        onDeleteRecipe={removeViewedRecipe}
+        onClearAll={() => {
+          clearViewedRecipes();
+          toast({ 
+            title: "History cleared",
+            description: "All viewed recipes have been removed"
+          });
+        }}
+      />
 
       <FloatingButtons recipeId={currentRecipe?.id} />
     </div>;
