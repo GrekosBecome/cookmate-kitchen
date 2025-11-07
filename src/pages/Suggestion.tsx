@@ -601,11 +601,7 @@ const Suggestion = () => {
                   </p>
                 </div>
               </CardContent>
-            </Card> : currentRecipe ? <div className="animate-fade-in">
-              {useAI ? <GourmetRecipeCard recipe={currentRecipe} onAnother={handleAnother} /> : <div className="space-y-2">
-                  <RecipeCard recipe={currentRecipe} onAnother={handleAnother} learning={learning} />
-                </div>}
-            </div> : <div className="text-center space-y-4 py-8 animate-fade-in">
+            </Card> : pantryItems.length === 0 ? <div className="text-center space-y-4 py-8 animate-fade-in">
               <p className="text-sm sm:text-base text-muted-foreground">
                 Your fridge is empty — let's fill it up 🥦
               </p>
@@ -617,6 +613,14 @@ const Suggestion = () => {
                 <Plus className="h-6 w-6 mr-2" />
                 Add Ingredients
               </Button>
+            </div> : currentRecipe ? <div className="animate-fade-in">
+              {useAI ? <GourmetRecipeCard recipe={currentRecipe} onAnother={handleAnother} /> : <div className="space-y-2">
+                  <RecipeCard recipe={currentRecipe} onAnother={handleAnother} learning={learning} />
+                </div>}
+            </div> : <div className="text-center space-y-4 py-8 animate-fade-in">
+              <p className="text-sm sm:text-base text-muted-foreground">
+                No suggestions available
+              </p>
             </div>}
         </div>
 
