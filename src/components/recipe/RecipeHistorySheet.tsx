@@ -40,7 +40,7 @@ export const RecipeHistorySheet = ({
   const renderRecipeCard = (viewed: ViewedRecipe) => (
     <Card key={viewed.id} className="overflow-hidden hover:bg-accent/5 transition-colors">
       <CardContent className="p-3">
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-3">
           {/* Recipe Info */}
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm truncate">
@@ -57,14 +57,15 @@ export const RecipeHistorySheet = ({
           </div>
 
           {/* Compact Actions */}
-          <div className="flex gap-0.5">
+          <div className="flex gap-1 shrink-0">
             <Button
               size="icon"
               variant="ghost"
               onClick={() => onToggleFavorite(viewed.id)}
               className={`h-8 w-8 ${viewed.isFavorite ? "text-red-500 hover:text-red-600" : ""}`}
+              aria-label="Toggle favorite"
             >
-              <Heart className={`h-3.5 w-3.5 ${viewed.isFavorite ? "fill-current" : ""}`} />
+              <Heart className={`h-4 w-4 ${viewed.isFavorite ? "fill-current" : ""}`} />
             </Button>
             <Button
               size="icon"
@@ -74,16 +75,18 @@ export const RecipeHistorySheet = ({
                 onOpenChange(false);
               }}
               className="h-8 w-8"
+              aria-label="View recipe"
             >
-              <Eye className="h-3.5 w-3.5" />
+              <Eye className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
               variant="ghost"
               onClick={() => onDeleteRecipe(viewed.id)}
               className="h-8 w-8"
+              aria-label="Delete recipe"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -95,7 +98,7 @@ export const RecipeHistorySheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg">
         <SheetHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pr-12">
             <div className="flex items-center gap-1.5">
               <Clock className="h-5 w-5" />
               <SheetTitle className="text-lg">Recipe History</SheetTitle>
@@ -103,11 +106,12 @@ export const RecipeHistorySheet = ({
             {viewedRecipes.length > 0 && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
+                className="h-8 w-8"
                 onClick={onClearAll}
+                aria-label="Clear all recipes"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear All
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>
