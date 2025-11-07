@@ -336,7 +336,7 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
               
               <Card className={message.role === 'user' ? 'ml-auto max-w-[85%] bg-primary text-primary-foreground' : 'mr-auto max-w-[85%] bg-accent/30'}>
                 <CardContent className="p-4">
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <p className="text-base whitespace-pre-wrap leading-loose">{message.content}</p>
                 </CardContent>
               </Card>
             </div>)}
