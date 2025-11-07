@@ -121,3 +121,19 @@ export interface ViewedRecipe {
   mode: 'classic' | 'ai' | 'improvised';
   isFavorite?: boolean;
 }
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  allergenWarning?: string;
+  timestamp: string;
+}
+
+export interface ChatConversation {
+  id: string;
+  recipeId?: string;
+  recipeTitle?: string;
+  messages: ChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+}

@@ -3,23 +3,28 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
+import { Send, ArrowLeft, AlertCircle, Loader2, MessageSquareText } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RECIPE_CATALOG } from '@/data/recipes';
 import { useStore } from '@/store/useStore';
-import { getLLMResponse, ChatMessage } from '@/utils/llmAdapter';
-import { Signal } from '@/types';
+import { getLLMResponse, ChatMessage as LLMChatMessage } from '@/utils/llmAdapter';
+import { Signal, ChatMessage } from '@/types';
 import { track } from '@/lib/analytics';
-import { saveChef, loadChef } from '@/lib/sessionChat';
+import { saveChef, loadChef, clearChef } from '@/lib/sessionChat';
 import chefAvatar from '@/assets/chef-avatar-new.png';
-interface Message extends ChatMessage {
+import ChatHistorySheet from '@/components/recipe/ChatHistorySheet';
+
+interface Message extends LLMChatMessage {
   allergenWarning?: string;
+  timestamp?: string;
 }
 const Chat = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const recipeId = searchParams.get('recipeId');
   const recipe = recipeId ? RECIPE_CATALOG.find(r => r.id === recipeId) : null;
+  const continueChat = searchParams.get('continueChat');
+  
   const {
     pantryItems,
     preferences,
@@ -27,12 +32,18 @@ const Chat = () => {
     shoppingState,
     memory,
     updateMemory,
-    addRecentAction
+    addRecentAction,
+    saveChatConversation,
+    updateChatConversation,
+    chatHistory
   } = useStore();
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [restoredFromCache, setRestoredFromCache] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [historySheetOpen, setHistorySheetOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -62,13 +73,32 @@ const Chat = () => {
       recipeId
     });
 
-    // Try to restore from cache first, but only if recipe context hasn't changed
+    // Check if we're continuing an existing chat
+    if (continueChat) {
+      const conversation = chatHistory.find(c => c.id === continueChat);
+      if (conversation) {
+        const messagesWithTimestamp = conversation.messages.map(m => ({
+          ...m,
+          timestamp: m.timestamp || new Date().toISOString()
+        }));
+        setMessages(messagesWithTimestamp);
+        setCurrentChatId(conversation.id);
+        setRestoredFromCache(true);
+        return;
+      }
+    }
+
+    // Try to restore from session cache first, but only if recipe context hasn't changed
     const cached = loadChef();
     const currentRecipeTitle = searchParams.get('recipeTitle');
     const cachedRecipeTitle = cached?.ctx?.recipeTitle;
     
     if (cached && cached.messages.length > 0 && currentRecipeTitle === cachedRecipeTitle) {
-      setMessages(cached.messages);
+      const messagesWithTimestamp = cached.messages.map(m => ({
+        ...m,
+        timestamp: m.timestamp || new Date().toISOString()
+      }));
+      setMessages(messagesWithTimestamp);
       setInput(cached.draft || '');
       setRestoredFromCache(true);
       return;
@@ -91,10 +121,12 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       // Initialize with both assistant welcome and user message
       const initialMessages: Message[] = [{
         role: "assistant",
-        content: "👨‍🍳 Welcome! I'm your personal cooking assistant. I can help you with recipes, substitutions, scaling, and cooking tips."
+        content: "👨‍🍳 Welcome! I'm your personal cooking assistant. I can help you with recipes, substitutions, scaling, and cooking tips.",
+        timestamp: new Date().toISOString()
       }, {
         role: "user",
-        content: initialMsg
+        content: initialMsg,
+        timestamp: new Date().toISOString()
       }];
       setMessages(initialMessages);
 
@@ -119,7 +151,8 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
             setMessages(prev => [...prev, {
               role: 'assistant',
               content: response.content!,
-              allergenWarning: response.allergenWarning
+              allergenWarning: response.allergenWarning,
+              timestamp: new Date().toISOString()
             }]);
           }
         } catch (error) {
@@ -144,10 +177,12 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       }
       setMessages([{
         role: 'assistant',
-        content: greeting
+        content: greeting,
+        timestamp: new Date().toISOString()
       }, {
         role: 'assistant',
-        content: `I can help you adjust this recipe or replace ingredients you don't have. This recipe takes ${recipe.timeMin} minutes and includes ingredients like ${recipe.needs.slice(0, 3).join(', ')}. What would you like to know?`
+        content: `I can help you adjust this recipe or replace ingredients you don't have. This recipe takes ${recipe.timeMin} minutes and includes ingredients like ${recipe.needs.slice(0, 3).join(', ')}. What would you like to know?`,
+        timestamp: new Date().toISOString()
       }]);
     } else {
       // No recipe context
@@ -160,7 +195,8 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       }
       setMessages([{
         role: 'assistant',
-        content: greeting
+        content: greeting,
+        timestamp: new Date().toISOString()
       }]);
     }
 
@@ -172,7 +208,45 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
     return () => {
       isActive = false; // Cleanup to prevent duplicate calls
     };
-  }, [recipeId]);
+  }, [recipeId, continueChat]);
+
+  // Save to permanent storage when leaving or when conversation has meaningful content
+  useEffect(() => {
+    const saveToPermanentStorage = () => {
+      // Only save if we have at least 3 messages (greeting + user + assistant response)
+      if (messages.length >= 3 && !continueChat) {
+        const recipeTitle = searchParams.get('recipeTitle');
+        const chatMessages: ChatMessage[] = messages.map(m => ({
+          role: m.role,
+          content: m.content,
+          allergenWarning: m.allergenWarning,
+          timestamp: m.timestamp || new Date().toISOString()
+        }));
+        
+        const id = saveChatConversation({
+          recipeId: recipeId || undefined,
+          recipeTitle: recipeTitle || undefined,
+          messages: chatMessages
+        });
+        setCurrentChatId(id);
+        clearChef(); // Clear session cache after saving
+      } else if (currentChatId && messages.length >= 3) {
+        // Update existing conversation
+        const chatMessages: ChatMessage[] = messages.map(m => ({
+          role: m.role,
+          content: m.content,
+          allergenWarning: m.allergenWarning,
+          timestamp: m.timestamp || new Date().toISOString()
+        }));
+        updateChatConversation(currentChatId, chatMessages);
+      }
+    };
+
+    // Save on unmount
+    return () => {
+      saveToPermanentStorage();
+    };
+  }, [messages, recipeId, searchParams, currentChatId, continueChat]);
 
   // Auto-save session on changes
   useEffect(() => {
@@ -240,7 +314,8 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
     // Add user message
     setMessages(prev => [...prev, {
       role: 'user',
-      content: textToSend
+      content: textToSend,
+      timestamp: new Date().toISOString()
     }]);
     try {
       const response = await getLLMResponse({
@@ -263,14 +338,16 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: response.content!,
-          allergenWarning: response.allergenWarning
+          allergenWarning: response.allergenWarning,
+          timestamp: new Date().toISOString()
         }]);
       }
     } catch (error) {
       console.error('Error getting response:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I had trouble processing that. Could you try again? 🤔'
+        content: 'Sorry, I had trouble processing that. Could you try again? 🤔',
+        timestamp: new Date().toISOString()
       }]);
     } finally {
       setIsLoading(false);
@@ -289,7 +366,10 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
   const showRecipeContext = recipeTitle && (haveParam !== null || needParam !== null);
   const haveCount = haveParam ? haveParam.split(',').filter(Boolean).length : 0;
   const needCount = needParam ? needParam.split(',').filter(Boolean).length : 0;
-  return <div className="min-h-screen bg-background flex flex-col">
+  
+  return (
+    <>
+      <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur-sm">
         <div className="container max-w-2xl mx-auto px-4 py-2 flex items-center gap-3" style={{
         paddingTop: 'calc(env(safe-area-inset-top) + 8px)'
@@ -308,6 +388,15 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
             <h1 className="text-sm sm:text-base font-bold truncate">Chef Chat</h1>
             {recipe ? <p className="text-xs text-muted-foreground italic truncate">Talking about: {recipe.title}</p> : <p className="text-xs text-muted-foreground italic">Your cooking companion</p>}
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setHistorySheetOpen(true)}
+            className="h-8 w-8 flex-shrink-0"
+            aria-label="Chat history"
+          >
+            <MessageSquareText className="h-4 w-4" />
+          </Button>
         </div>
         
         {/* Recipe Context Chip */}
@@ -393,6 +482,14 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
           </div>
         </div>
       </div>
-    </div>;
+      </div>
+      
+      <ChatHistorySheet 
+        open={historySheetOpen}
+        onOpenChange={setHistorySheetOpen}
+      />
+    </>
+  );
 };
+
 export default Chat;

@@ -12,6 +12,8 @@ import {
   Ingredient,
   ViewedRecipe,
   Recipe,
+  ChatConversation,
+  ChatMessage,
 } from '@/types';
 import { UserMemory, defaultMemory } from '@/types/memory';
 import { recordSignal as recordSignalLib, recomputeLearning as recomputeLearningLib } from '@/lib/learning';
@@ -33,6 +35,7 @@ interface AppState {
   aiGeneratedRecipes: any[];
   lastAIGeneration?: string;
   viewedRecipes: ViewedRecipe[];
+  chatHistory: ChatConversation[];
   setPreferences: (preferences: Preferences) => void;
   updatePreferences: (preferences: Partial<Preferences>) => void;
   updateMemory: (memory: Partial<UserMemory>) => void;
@@ -65,6 +68,10 @@ interface AppState {
   removeViewedRecipe: (id: string) => void;
   clearViewedRecipes: () => void;
   toggleViewedRecipeFavorite: (id: string) => void;
+  saveChatConversation: (conversation: Omit<ChatConversation, 'id' | 'createdAt' | 'updatedAt'>) => string;
+  updateChatConversation: (id: string, messages: ChatMessage[]) => void;
+  deleteChatConversation: (id: string) => void;
+  clearChatHistory: () => void;
   reset: () => void;
 }
 
@@ -167,6 +174,7 @@ export const useStore = create<AppState>()(
       aiGeneratedRecipes: [],
       lastAIGeneration: undefined,
       viewedRecipes: [],
+      chatHistory: [],
       setPreferences: (preferences) => set({ preferences, hasCompletedOnboarding: true }),
       updatePreferences: (newPreferences) =>
         set((state) => ({
@@ -608,6 +616,37 @@ export const useStore = create<AppState>()(
             v.id === id ? { ...v, isFavorite: !v.isFavorite } : v
           )
         })),
+      saveChatConversation: (conversation) => {
+        const id = `chat-${Date.now()}`;
+        const now = new Date().toISOString();
+        const newConversation: ChatConversation = {
+          ...conversation,
+          id,
+          createdAt: now,
+          updatedAt: now,
+        };
+        
+        set((state) => {
+          // Keep only last 50 conversations
+          const updated = [newConversation, ...state.chatHistory].slice(0, 50);
+          return { chatHistory: updated };
+        });
+        
+        return id;
+      },
+      updateChatConversation: (id, messages) =>
+        set((state) => ({
+          chatHistory: state.chatHistory.map(conv =>
+            conv.id === id
+              ? { ...conv, messages, updatedAt: new Date().toISOString() }
+              : conv
+          )
+        })),
+      deleteChatConversation: (id) =>
+        set((state) => ({
+          chatHistory: state.chatHistory.filter(conv => conv.id !== id)
+        })),
+      clearChatHistory: () => set({ chatHistory: [] }),
       reset: () =>
         set({
           preferences: null,
@@ -624,6 +663,7 @@ export const useStore = create<AppState>()(
           aiGeneratedRecipes: [],
           lastAIGeneration: undefined,
           viewedRecipes: [],
+          chatHistory: [],
         }),
     }),
     {

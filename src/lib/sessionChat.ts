@@ -3,7 +3,7 @@ const TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 export type ChefCache = {
   ts: number;
-  messages: Array<{ role: "user" | "assistant" | "system"; content: string; allergenWarning?: string }>;
+  messages: Array<{ role: "user" | "assistant" | "system"; content: string; allergenWarning?: string; timestamp?: string }>;
   draft?: string;
   ctx?: {
     recipeId?: string;
