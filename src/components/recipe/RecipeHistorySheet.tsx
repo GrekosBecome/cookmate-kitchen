@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -111,13 +111,13 @@ export const RecipeHistorySheet = ({
   );
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right">
-        <SheetHeader className="pt-2">
-          <div className="flex items-center justify-between pr-12">
+    <Drawer open={open} onOpenChange={onOpenChange} snapPoints={[0.4, 0.7, 0.95]} fadeFromIndex={1}>
+      <DrawerContent className="max-h-[95vh]">
+        <DrawerHeader className="pt-2">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Clock className="h-5 w-5" />
-              <SheetTitle className="text-lg">Recipe History</SheetTitle>
+              <DrawerTitle className="text-lg">Recipe History</DrawerTitle>
             </div>
             {viewedRecipes.length > 0 && (
               <Button
@@ -131,11 +131,11 @@ export const RecipeHistorySheet = ({
               </Button>
             )}
           </div>
-          <SheetDescription className="text-xs">
+          <DrawerDescription className="text-xs">
             {viewedRecipes.length} {viewedRecipes.length === 1 ? 'recipe' : 'recipes'} viewed
             {favoriteRecipes.length > 0 && ` • ${favoriteRecipes.length} favorite${favoriteRecipes.length === 1 ? '' : 's'}`}
-          </SheetDescription>
-        </SheetHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
         {expandedRecipe ? (
           <div className="mt-4">
@@ -288,7 +288,7 @@ export const RecipeHistorySheet = ({
             )}
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 };
