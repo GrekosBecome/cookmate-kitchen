@@ -173,6 +173,51 @@ class NotificationService {
   isNativePlatform(): boolean {
     return this.isNative;
   }
+
+  async sendLowStockAlert(itemName: string, confidence: number): Promise<void> {
+    try {
+      if (!this.isNative) {
+        // For web, we'll rely on toast notifications
+        console.log(`Low stock alert for ${itemName} (${Math.round(confidence)}%)`);
+        track('low_stock_alert_web', { itemName, confidence });
+        return;
+      }
+
+      const hasPermission = await this.checkPermission();
+      if (!hasPermission) {
+        console.log('No notification permission for low stock alert');
+        return;
+      }
+
+      // Generate unique ID based on item name
+      const id = Math.abs(itemName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 100000;
+
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: id,
+          title: '🛒 Low Stock Alert',
+          body: `Your ${itemName} is running low (${Math.round(confidence)}%). Time to add it to your shopping list!`,
+          schedule: {
+            at: new Date(Date.now() + 2000) // 2 seconds from now
+          },
+          actionTypeId: 'LOW_STOCK',
+          extra: {
+            route: '/pantry?tab=shopping',
+            itemName: itemName
+          }
+        }]
+      });
+
+      track('low_stock_alert_sent', { 
+        itemName, 
+        confidence,
+        platform: 'native' 
+      });
+    } catch (error) {
+      console.error('Error sending low stock alert:', error);
+      track('low_stock_alert_error', { error: String(error) });
+    }
+  }
 }
 
 export const notificationService = new NotificationService();

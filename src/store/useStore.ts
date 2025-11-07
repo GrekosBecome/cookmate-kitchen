@@ -14,6 +14,7 @@ import {
 import { UserMemory, defaultMemory } from '@/types/memory';
 import { recordSignal as recordSignalLib, recomputeLearning as recomputeLearningLib } from '@/lib/learning';
 import { updateConfidenceAfterCooking, applyTimeDecay, recalculateShoppingQueue } from '@/lib/shopping';
+import { notificationService } from '@/lib/notifications';
 
 interface AppState {
   preferences: Preferences | null;
@@ -293,13 +294,22 @@ export const useStore = create<AppState>()(
                 return null; // Will be filtered out
               } else {
                 // Still have enough - update quantity and confidence
-                return {
+                const updatedItem = {
                   ...item,
                   qty: newQty,
                   originalQty: originalQty,
                   confidence: Math.round(newConfidence),
                   lastUsed: now,
                 };
+                
+                // Send notification if confidence drops below 25% (early warning)
+                if (newConfidence < 25 && (item.confidence || 100) >= 25) {
+                  notificationService.sendLowStockAlert(item.name, newConfidence).catch(err => {
+                    console.error('Failed to send low stock notification:', err);
+                  });
+                }
+                
+                return updatedItem;
               }
             })
             .filter((item): item is PantryItem => item !== null);

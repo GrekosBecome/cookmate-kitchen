@@ -2,7 +2,7 @@ import { PantryItem } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatQuantity } from '@/lib/utils';
 import { getIngredientEmoji } from '@/utils/ingredientEmojis';
 
 interface PantryItemCardProps {
@@ -13,7 +13,7 @@ interface PantryItemCardProps {
 }
 
 export const PantryItemCard = ({ item, onToggleUsed, onRemove, onEdit }: PantryItemCardProps) => {
-  const displayQty = item.qty ? `${item.qty}${item.unit || ''}` : '';
+  const displayQty = item.qty ? `${formatQuantity(item.qty)}${item.unit || ''}` : '';
   const emoji = getIngredientEmoji(item.name);
   
   return (
