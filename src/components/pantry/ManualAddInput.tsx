@@ -7,12 +7,13 @@ import { PantryUnit } from '@/types';
 
 interface ManualAddInputProps {
   onAdd: (name: string, qty: number, unit: PantryUnit) => void;
+  initialExpanded?: boolean;
 }
 
 const UNITS: PantryUnit[] = ['pcs', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup'];
 
-export const ManualAddInput = ({ onAdd }: ManualAddInputProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+export const ManualAddInput = ({ onAdd, initialExpanded = false }: ManualAddInputProps) => {
+  const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [name, setName] = useState('');
   const [qty, setQty] = useState('1');
   const [unit, setUnit] = useState<PantryUnit>('pcs');

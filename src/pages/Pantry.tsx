@@ -584,10 +584,13 @@ export default function Pantry() {
           }}
         >
           <div className="max-w-2xl mx-auto p-4">
-            <ManualAddInput onAdd={(name, qty, unit) => {
-              handleManualAdd(name, qty, unit);
-              setViewMode('list');
-            }} />
+            <ManualAddInput 
+              initialExpanded={true}
+              onAdd={(name, qty, unit) => {
+                handleManualAdd(name, qty, unit);
+                setViewMode('list');
+              }} 
+            />
           </div>
         </div>
       )}
