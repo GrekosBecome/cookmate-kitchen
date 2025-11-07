@@ -1,4 +1,4 @@
-import { Clock, Eye, Trash2, Heart } from "lucide-react";
+import { Clock, Eye, Trash2, Heart, ArrowLeft } from "lucide-react";
 import { ViewedRecipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,11 +34,17 @@ export const RecipeHistorySheet = ({
   onToggleFavorite
 }: RecipeHistorySheetProps) => {
   const [activeTab, setActiveTab] = useState<"all" | "favorites">("all");
+  const [expandedRecipeId, setExpandedRecipeId] = useState<string | null>(null);
   const favoriteRecipes = viewedRecipes.filter(v => v.isFavorite);
   const displayedRecipes = activeTab === "favorites" ? favoriteRecipes : viewedRecipes;
+  const expandedRecipe = expandedRecipeId ? viewedRecipes.find(v => v.id === expandedRecipeId) : null;
 
   const renderRecipeCard = (viewed: ViewedRecipe) => (
-    <Card key={viewed.id} className="overflow-hidden hover:bg-accent/5 transition-colors">
+    <Card 
+      key={viewed.id} 
+      className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer"
+      onClick={() => setExpandedRecipeId(viewed.id)}
+    >
       <CardContent className="p-3">
         <div className="flex items-start gap-3">
           {/* Recipe Info */}
@@ -57,7 +63,7 @@ export const RecipeHistorySheet = ({
           </div>
 
           {/* Compact Actions */}
-          <div className="flex gap-1 shrink-0">
+          <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
             <Button
               size="icon"
               variant="ghost"
@@ -66,18 +72,6 @@ export const RecipeHistorySheet = ({
               aria-label="Toggle favorite"
             >
               <Heart className={`h-4 w-4 ${viewed.isFavorite ? "fill-current" : ""}`} />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => {
-                onViewRecipe(viewed.recipe);
-                onOpenChange(false);
-              }}
-              className="h-8 w-8"
-              aria-label="View recipe"
-            >
-              <Eye className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
@@ -121,7 +115,92 @@ export const RecipeHistorySheet = ({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | "favorites")} className="mt-4">
+        {expandedRecipe ? (
+          <div className="mt-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpandedRecipeId(null)}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to list
+            </Button>
+            
+            <div className="space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-xl font-medium mb-2">{expandedRecipe.recipe.title}</h3>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{expandedRecipe.recipe.timeMin} min</span>
+                    </div>
+                    <Badge variant="secondary" className="capitalize">
+                      {expandedRecipe.mode}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onToggleFavorite(expandedRecipe.id)}
+                    className={`h-9 w-9 ${expandedRecipe.isFavorite ? "text-red-500 hover:text-red-600" : ""}`}
+                    aria-label="Toggle favorite"
+                  >
+                    <Heart className={`h-5 w-5 ${expandedRecipe.isFavorite ? "fill-current" : ""}`} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onDeleteRecipe(expandedRecipe.id)}
+                    className="h-9 w-9"
+                    aria-label="Delete recipe"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <ScrollArea className="h-[calc(100vh-280px)]">
+                <div className="space-y-6 pr-4">
+                  <div>
+                    <h4 className="font-medium mb-3">Ingredients</h4>
+                    <ul className="space-y-2">
+                      {expandedRecipe.recipe.ingredients.map((ingredient, idx) => (
+                        <li key={idx} className="text-sm flex items-start gap-2">
+                          <span className="text-primary mt-1">•</span>
+                          <span>
+                            {ingredient.qty && ingredient.unit ? `${ingredient.qty}${ingredient.unit} ` : ''}
+                            {ingredient.name}
+                            {ingredient.optional ? ' (optional)' : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-3">Steps</h4>
+                    <ol className="space-y-3">
+                      {expandedRecipe.recipe.steps.map((step) => (
+                        <li key={step.order} className="text-sm flex gap-3">
+                          <span className="font-medium text-primary shrink-0">{step.order}.</span>
+                          <span>
+                            {step.text}
+                            {step.minutes && <span className="text-muted-foreground ml-1">({step.minutes}min)</span>}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | "favorites")} className="mt-2">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="all">
               All ({viewedRecipes.length})
@@ -164,6 +243,7 @@ export const RecipeHistorySheet = ({
             </ScrollArea>
           </TabsContent>
         </Tabs>
+        )}
       </SheetContent>
     </Sheet>
   );
