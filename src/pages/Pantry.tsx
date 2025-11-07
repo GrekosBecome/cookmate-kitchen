@@ -7,6 +7,7 @@ import { ManualAddInput } from '@/components/pantry/ManualAddInput';
 import { ShoppingListView } from '@/components/pantry/ShoppingListView';
 import { DetectedItemCard } from '@/components/pantry/DetectedItemCard';
 import { AddOptionsSheet } from '@/components/pantry/AddOptionsSheet';
+import { EditPantryItemDialog } from '@/components/pantry/EditPantryItemDialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Camera, Info, ChefHat, AlertTriangle, Plus, Sparkles, Loader2 } from 'lucide-react';
@@ -39,6 +40,7 @@ export default function Pantry() {
     addPantryItems,
     togglePantryItemUsed,
     removePantryItem,
+    updatePantryItem,
     shoppingState,
     markShoppingItemBought,
     removeShoppingItem,
@@ -56,6 +58,8 @@ export default function Pantry() {
   const [borderlineCoverage, setBorderlineCoverage] = useState(0);
   const [showAddOptions, setShowAddOptions] = useState(false);
   const [autoAction, setAutoAction] = useState<'camera' | 'gallery' | null>(null);
+  const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const activeItems = pantryItems.filter(item => !item.used);
   const usedItems = pantryItems.filter(item => item.used);
@@ -286,6 +290,20 @@ export default function Pantry() {
   const handleRemoveShoppingItem = (id: string) => {
     removeShoppingItem(id);
     toast.success('Removed from shopping list');
+  };
+
+  const handleEditItem = (id: string) => {
+    const item = pantryItems.find(i => i.id === id);
+    if (item) {
+      setEditingItem(item);
+      setShowEditDialog(true);
+    }
+  };
+
+  const handleSaveEdit = (id: string, name: string, qty: number, unit: PantryUnit) => {
+    updatePantryItem(id, { name: name.toLowerCase(), qty, unit });
+    toast.success('Updated ' + name);
+    setEditingItem(null);
   };
 
   const handleGenerateAIFromPantry = async () => {
@@ -526,6 +544,7 @@ export default function Pantry() {
                       item={item}
                       onToggleUsed={handleToggleUsed}
                       onRemove={handleRemoveItem}
+                      onEdit={handleEditItem}
                     />
                   ))}
                 </div>
@@ -545,6 +564,7 @@ export default function Pantry() {
                       item={item}
                       onToggleUsed={handleToggleUsed}
                       onRemove={handleRemoveItem}
+                      onEdit={handleEditItem}
                     />
                   ))}
                 </div>
@@ -648,6 +668,14 @@ export default function Pantry() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Pantry Item Dialog */}
+      <EditPantryItemDialog
+        item={editingItem}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 }

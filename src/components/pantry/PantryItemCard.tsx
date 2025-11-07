@@ -9,9 +9,10 @@ interface PantryItemCardProps {
   item: PantryItem;
   onToggleUsed: (id: string) => void;
   onRemove: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
-export const PantryItemCard = ({ item, onToggleUsed, onRemove }: PantryItemCardProps) => {
+export const PantryItemCard = ({ item, onToggleUsed, onRemove, onEdit }: PantryItemCardProps) => {
   const displayQty = item.qty ? `${item.qty}${item.unit || ''}` : '';
   const emoji = getIngredientEmoji(item.name);
   
@@ -21,7 +22,10 @@ export const PantryItemCard = ({ item, onToggleUsed, onRemove }: PantryItemCardP
       item.used && "opacity-60 bg-muted"
     )}>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 space-y-2">
+        <button
+          onClick={() => onEdit(item.id)}
+          className="flex-1 space-y-2 text-left hover:opacity-80 transition-opacity"
+        >
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className={cn(
               "font-semibold text-base capitalize flex items-center gap-2",
@@ -49,7 +53,7 @@ export const PantryItemCard = ({ item, onToggleUsed, onRemove }: PantryItemCardP
               </Badge>
             )}
           </div>
-        </div>
+        </button>
 
         <div className="flex gap-2">
           <Button
