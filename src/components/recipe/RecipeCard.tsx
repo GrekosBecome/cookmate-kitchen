@@ -6,7 +6,6 @@ import { Clock, Flame, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getWhyThisReasons } from '@/lib/learning';
 import { useState } from 'react';
-
 interface RecipeCardProps {
   recipe: Recipe;
   onAnother?: () => void;
@@ -14,24 +13,25 @@ interface RecipeCardProps {
   showActions?: boolean;
   learning?: LearningState;
 }
-
-export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true, learning }: RecipeCardProps) => {
+export const RecipeCard = ({
+  recipe,
+  onAnother,
+  onSkip,
+  showActions = true,
+  learning
+}: RecipeCardProps) => {
   const navigate = useNavigate();
   const whyThisReasons = getWhyThisReasons(recipe.tags, learning);
   const [isAnimating, setIsAnimating] = useState(false);
-
   const topNeeds = recipe.needs.slice(0, 3);
   const isFastRecipe = recipe.timeMin <= 20;
-
   const handleCookThis = () => {
     setIsAnimating(true);
     setTimeout(() => {
       navigate(`/recipe/${recipe.id}`);
     }, 400);
   };
-
-  return (
-    <Card className={`overflow-hidden ${isAnimating ? 'animate-chef-bounce' : ''} hover:shadow-xl hover:shadow-primary/10 transition-all duration-500`}>
+  return <Card className={`overflow-hidden ${isAnimating ? 'animate-chef-bounce' : ''} hover:shadow-xl hover:shadow-primary/10 transition-all duration-500`}>
       <CardHeader className="pb-3">
         <CardTitle className="text-2xl gradient-text">{recipe.title}</CardTitle>
         <p className="text-sm text-muted-foreground font-light">Ready in {recipe.timeMin} minutes</p>
@@ -40,73 +40,42 @@ export const RecipeCard = ({ recipe, onAnother, onSkip, showActions = true, lear
             <Clock className="h-3 w-3" />
             {recipe.timeMin}m
           </Badge>
-          {recipe.kcal && (
-            <Badge variant="outline" className="gap-1 glass-card font-light">
+          {recipe.kcal && <Badge variant="outline" className="gap-1 glass-card font-light">
               <Flame className="h-3 w-3" />
               {recipe.kcal} kcal
-            </Badge>
-          )}
-          {isFastRecipe && (
-            <Badge variant="secondary" className="glass-card font-light">≤20m</Badge>
-          )}
+            </Badge>}
+          {isFastRecipe && <Badge variant="secondary" className="glass-card font-light">≤20m</Badge>}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {whyThisReasons.length > 0 && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground glass-card p-3 rounded-2xl">
+        {whyThisReasons.length > 0 && <div className="flex items-center gap-2 text-xs text-muted-foreground glass-card p-3 rounded-2xl">
             <Sparkles className="h-3 w-3 text-primary" />
             <span className="font-light">
               Because you liked <strong className="font-normal">{whyThisReasons.join(' & ')}</strong> recently
             </span>
-          </div>
-        )}
+          </div>}
 
         <div>
           <p className="text-sm text-muted-foreground mb-2 font-light">Main ingredients:</p>
           <div className="flex gap-2 flex-wrap">
-            {topNeeds.map((need) => (
-              <Badge key={need} variant="secondary" className="capitalize glass-card font-light">
+            {topNeeds.map(need => <Badge key={need} variant="secondary" className="capitalize glass-card font-light">
                 {need}
-              </Badge>
-            ))}
-            {recipe.needs.length > 3 && (
-              <Badge variant="outline" className="glass-card font-light">+{recipe.needs.length - 3} more</Badge>
-            )}
+              </Badge>)}
+            {recipe.needs.length > 3 && <Badge variant="outline" className="glass-card font-light">+{recipe.needs.length - 3} more</Badge>}
           </div>
         </div>
 
-        {showActions && (
-          <div className="flex flex-col gap-2 pt-2">
-            <Button 
-              onClick={handleCookThis}
-              className="w-full"
-              size="lg"
-            >
+        {showActions && <div className="flex flex-col gap-2 pt-2">
+            <Button onClick={handleCookThis} className="w-full" size="lg">
               Cook this
             </Button>
             <div className="flex gap-2">
-              {onAnother && (
-                <Button 
-                  onClick={onAnother}
-                  variant="ghost"
-                  className="flex-1"
-                >
+              {onAnother && <Button onClick={onAnother} variant="ghost" className="flex-1">
                   Another idea
-                </Button>
-              )}
-              {onSkip && (
-                <Button 
-                  onClick={onSkip}
-                  variant="ghost"
-                  size="sm"
-                >
-                  Skip
-                </Button>
-              )}
+                </Button>}
+              {onSkip}
             </div>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
