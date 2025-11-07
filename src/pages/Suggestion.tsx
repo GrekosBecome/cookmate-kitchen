@@ -8,7 +8,7 @@ import { GourmetRecipeCard } from '@/components/recipe/GourmetRecipeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Sparkles, Loader2, Clock } from 'lucide-react';
+import { AlertCircle, Sparkles, Loader2, Clock, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { track } from '@/lib/analytics';
@@ -52,6 +52,7 @@ const Suggestion = () => {
   const [isImprovising, setIsImprovising] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [dismissedShoppingAlert, setDismissedShoppingAlert] = useState(false);
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
@@ -550,7 +551,7 @@ const Suggestion = () => {
           </Card>}
 
         {/* Shopping reminder card */}
-        {pendingItems.length > 0 && !canUseAI && <Card className="bg-accent/20 border-accent animate-fade-in">
+        {pendingItems.length > 0 && !canUseAI && !dismissedShoppingAlert && <Card className="bg-accent/20 border-accent animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -560,9 +561,20 @@ const Suggestion = () => {
                     {pendingItems.length} {pendingItems.length === 1 ? 'item' : 'items'} waiting on your shopping list
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/pantry?tab=shopping')} className="flex-shrink-0">
-                  Show me
-                </Button>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/pantry?tab=shopping')}>
+                    Show me
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setDismissedShoppingAlert(true)}
+                    className="h-8 w-8"
+                    aria-label="Dismiss notification"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>}
