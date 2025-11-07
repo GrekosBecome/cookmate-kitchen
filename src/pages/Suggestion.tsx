@@ -71,16 +71,18 @@ const Suggestion = () => {
       aiRecipes?: Recipe[];
     };
     if (locationState?.aiRecipes) {
+      // Store all AI recipes globally for "Another" button
       setAIGeneratedRecipes(locationState.aiRecipes);
-      setSuggestions(locationState.aiRecipes);
-      setCurrentIndex(0);
-      setUseAI(true);
-      setSpinCount(0);
-
-      // Save to cache
-      // Save only first recipe to cache
+      
+      // Show ONLY first recipe
       const firstRecipe = locationState.aiRecipes[0];
       if (firstRecipe) {
+        setSuggestions([firstRecipe]);
+        setCurrentIndex(0);
+        setUseAI(true);
+        setSpinCount(0);
+
+        // Save only first recipe to cache
         setTodaysPick({
           date: today,
           recipeIds: [firstRecipe.id],
@@ -100,28 +102,37 @@ const Suggestion = () => {
 
     // Hybrid approach: Check for cached AI recipes first (< 24h old)
     if (hasRecentAI && aiGeneratedRecipes.length > 0) {
-      // Use cached AI recipes (from background fetch)
-      setSuggestions(aiGeneratedRecipes);
-      setUseAI(false); // Still classic mode UI, just AI-powered
-      setCurrentIndex(0);
-      console.log('✨ Using cached AI recipes');
+      // Show ONLY first AI recipe (rest available via "Another")
+      const firstRecipe = aiGeneratedRecipes[0];
+      if (firstRecipe) {
+        setSuggestions([firstRecipe]);
+        setUseAI(false); // Still classic mode UI, just AI-powered
+        setCurrentIndex(0);
+        console.log('✨ Using cached AI recipes');
+      }
     } else if (!todaysPick || todaysPick.date !== today) {
       // First visit or new day: Show static instantly + background fetch AI
       generateSuggestions();
     } else {
       // Restore only last viewed recipe from cache
+      console.log('📍 RESTORE: todaysPick =', todaysPick);
       if (todaysPick.suggestions && todaysPick.suggestions.length > 0) {
         const lastViewed = todaysPick.suggestions[todaysPick.indexShown || 0];
+        console.log('📍 RESTORE: lastViewed =', lastViewed?.title, 'from index', todaysPick.indexShown);
+        console.log('📍 RESTORE: todaysPick had', todaysPick.suggestions.length, 'suggestions');
         
         if (lastViewed) {
           setSuggestions([lastViewed]);
           setCurrentIndex(0);
           setUseAI(todaysPick.mode === 'ai' || todaysPick.mode === 'improvised');
+          console.log('📍 RESTORE: Set suggestions to ONLY lastViewed');
         } else {
+          console.log('📍 RESTORE: No lastViewed, generating new');
           generateSuggestions();
         }
       } else {
         // Fallback: regenerate if no cached suggestions
+        console.log('📍 RESTORE: No cached suggestions, generating new');
         generateSuggestions();
       }
     }
@@ -130,6 +141,7 @@ const Suggestion = () => {
     // Log viewed signal when suggestions change
     if (suggestions.length > 0 && currentIndex >= 0) {
       const current = suggestions[currentIndex];
+      console.log('📍 VIEWING:', current?.title, '| currentIndex:', currentIndex, '| total suggestions:', suggestions.length);
       if (current) {
         addSignal({
           ts: new Date().toISOString(),
@@ -151,6 +163,7 @@ const Suggestion = () => {
           mode: mode,
           suggestions: [current]
         });
+        console.log('📍 SAVED to todaysPick:', current.title);
       }
     }
   }, [suggestions, currentIndex, useAI, isImprovising]);
