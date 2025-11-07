@@ -78,13 +78,17 @@ const Suggestion = () => {
       setSpinCount(0);
 
       // Save to cache
-      setTodaysPick({
-        date: today,
-        recipeIds: locationState.aiRecipes.map(r => r.id),
-        indexShown: 0,
-        mode: 'ai',
-        suggestions: locationState.aiRecipes
-      });
+      // Save only first recipe to cache
+      const firstRecipe = locationState.aiRecipes[0];
+      if (firstRecipe) {
+        setTodaysPick({
+          date: today,
+          recipeIds: [firstRecipe.id],
+          indexShown: 0,
+          mode: 'ai',
+          suggestions: [firstRecipe]
+        });
+      }
 
       // Clear the state to prevent re-rendering
       window.history.replaceState({}, document.title);
@@ -165,13 +169,15 @@ const Suggestion = () => {
     setCurrentIndex(0);
     setSpinCount(0);
     setUseAI(false);
+    // Save only first recipe to cache
     if (newSuggestions.length > 0) {
+      const firstRecipe = newSuggestions[0];
       setTodaysPick({
         date: today,
-        recipeIds: newSuggestions.map(r => r.id),
+        recipeIds: [firstRecipe.id],
         indexShown: 0,
         mode: 'classic',
-        suggestions: newSuggestions
+        suggestions: [firstRecipe]
       });
     }
 
@@ -245,14 +251,17 @@ const Suggestion = () => {
         // Store in global state so RecipeDetail can find it
         setAIGeneratedRecipes([...aiGeneratedRecipes, ...data.recipes]);
 
-        // Save to cache as 'improvised' mode
-        setTodaysPick({
-          date: today,
-          recipeIds: newSuggestions.map(r => r.id),
-          indexShown: newIndex,
-          mode: 'improvised',
-          suggestions: newSuggestions
-        });
+        // Save only the new improvised recipe to cache
+        const newRecipe = data.recipes[0];
+        if (newRecipe) {
+          setTodaysPick({
+            date: today,
+            recipeIds: [newRecipe.id],
+            indexShown: 0,
+            mode: 'improvised',
+            suggestions: [newRecipe]
+          });
+        }
 
         track('improvise_recipe_success', {
           starIngredients: starNames
@@ -323,14 +332,17 @@ const Suggestion = () => {
         setUseAI(true);
         setSpinCount(0);
 
-        // Save to cache
-        setTodaysPick({
-          date: today,
-          recipeIds: data.recipes.map(r => r.id),
-          indexShown: 0,
-          mode: 'ai',
-          suggestions: data.recipes
-        });
+        // Save only first AI recipe to cache
+        const firstRecipe = data.recipes[0];
+        if (firstRecipe) {
+          setTodaysPick({
+            date: today,
+            recipeIds: [firstRecipe.id],
+            indexShown: 0,
+            mode: 'ai',
+            suggestions: [firstRecipe]
+          });
+        }
 
         track('ai_generation_success', {
           recipeCount: data.recipes.length
