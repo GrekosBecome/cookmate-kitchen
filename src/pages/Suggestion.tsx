@@ -69,6 +69,15 @@ const Suggestion = () => {
       setUseAI(true);
       setSpinCount(0);
 
+      // Save to cache
+      setTodaysPick({
+        date: today,
+        recipeIds: locationState.aiRecipes.map(r => r.id),
+        indexShown: 0,
+        mode: 'ai',
+        suggestions: locationState.aiRecipes
+      });
+
       // Clear the state to prevent re-rendering
       window.history.replaceState({}, document.title);
       return;
@@ -88,10 +97,15 @@ const Suggestion = () => {
       // First visit or new day: Show static instantly + background fetch AI
       generateSuggestions();
     } else {
-      // Load cached suggestions from same day
-      const cached = todaysPick.recipeIds.map(id => getSuggestions(preferences, pantryItems, 12, learning).find(r => r.id === id)).filter(Boolean) as Recipe[];
-      setSuggestions(cached);
-      setCurrentIndex(todaysPick.indexShown);
+      // Restore full state from cache
+      if (todaysPick.suggestions && todaysPick.suggestions.length > 0) {
+        setSuggestions(todaysPick.suggestions);
+        setCurrentIndex(todaysPick.indexShown || 0);
+        setUseAI(todaysPick.mode === 'ai' || todaysPick.mode === 'improvised');
+      } else {
+        // Fallback: regenerate if no cached suggestions
+        generateSuggestions();
+      }
     }
   }, [location.state]);
   useEffect(() => {
@@ -128,7 +142,9 @@ const Suggestion = () => {
       setTodaysPick({
         date: today,
         recipeIds: newSuggestions.map(r => r.id),
-        indexShown: 0
+        indexShown: 0,
+        mode: 'classic',
+        suggestions: newSuggestions
       });
     }
 
@@ -194,11 +210,23 @@ const Suggestion = () => {
       }
       if (data?.recipes && data.recipes.length > 0) {
         // Add the new recipe to local suggestions
-        setSuggestions(prev => [...prev, ...data.recipes]);
-        setCurrentIndex(suggestions.length); // Jump to the new recipe
+        const newSuggestions = [...suggestions, ...data.recipes];
+        setSuggestions(newSuggestions);
+        const newIndex = suggestions.length;
+        setCurrentIndex(newIndex); // Jump to the new recipe
 
         // Store in global state so RecipeDetail can find it
         setAIGeneratedRecipes([...aiGeneratedRecipes, ...data.recipes]);
+
+        // Save to cache as 'improvised' mode
+        setTodaysPick({
+          date: today,
+          recipeIds: newSuggestions.map(r => r.id),
+          indexShown: newIndex,
+          mode: 'improvised',
+          suggestions: newSuggestions
+        });
+
         track('improvise_recipe_success', {
           starIngredients: starNames
         });
@@ -267,6 +295,16 @@ const Suggestion = () => {
         setCurrentIndex(0);
         setUseAI(true);
         setSpinCount(0);
+
+        // Save to cache
+        setTodaysPick({
+          date: today,
+          recipeIds: data.recipes.map(r => r.id),
+          indexShown: 0,
+          mode: 'ai',
+          suggestions: data.recipes
+        });
+
         track('ai_generation_success', {
           recipeCount: data.recipes.length
         });
@@ -311,13 +349,15 @@ const Suggestion = () => {
       // Navigate to next existing recipe
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
-      if (!useAI) {
-        setTodaysPick({
-          date: today,
-          recipeIds: suggestions.map(r => r.id),
-          indexShown: newIndex
-        });
-      }
+      
+      // Update cache with new index
+      setTodaysPick({
+        date: today,
+        recipeIds: suggestions.map(r => r.id),
+        indexShown: newIndex,
+        mode: useAI ? 'ai' : 'classic',
+        suggestions: suggestions
+      });
     } else {
       // End of suggestions - TIME TO IMPROVISE! 🎨
       if (pantryItems.length >= 2) {

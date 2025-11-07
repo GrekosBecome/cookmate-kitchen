@@ -73,6 +73,8 @@ export interface SuggestionPick {
   date: string;
   recipeIds: string[];
   indexShown: number;
+  mode?: 'classic' | 'ai' | 'improvised';
+  suggestions?: Recipe[];
 }
 
 export interface Signal {
