@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "@/store/useStore";
 import { ChatConversation } from "@/types";
 import { formatDistanceToNow } from "date-fns";
-import { el } from "date-fns/locale";
 import { MessageSquare, Trash2, Clock, ChefHat } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -49,7 +48,7 @@ const ChatHistorySheet = ({ open, onOpenChange }: ChatHistorySheetProps) => {
         (lastUserMessage.content.length > 80 ? '...' : '');
     }
     
-    return 'Νέα συνομιλία';
+    return 'New conversation';
   };
 
   return (
@@ -58,7 +57,7 @@ const ChatHistorySheet = ({ open, onOpenChange }: ChatHistorySheetProps) => {
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Ιστορικό Συνομιλιών
+            Chat History
           </SheetTitle>
         </SheetHeader>
 
@@ -66,7 +65,7 @@ const ChatHistorySheet = ({ open, onOpenChange }: ChatHistorySheetProps) => {
           {chatHistory.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <MessageSquare className="h-16 w-16 mb-4 opacity-20" />
-              <p>Δεν υπάρχουν αποθηκευμένες συνομιλίες</p>
+              <p>No saved conversations</p>
             </div>
           ) : (
             <div className="space-y-3 pb-6">
@@ -106,12 +105,11 @@ const ChatHistorySheet = ({ open, onOpenChange }: ChatHistorySheetProps) => {
                       <Clock className="h-3 w-3" />
                       {formatDistanceToNow(new Date(conv.updatedAt), {
                         addSuffix: true,
-                        locale: el,
                       })}
                     </div>
                     <div className="flex items-center gap-1">
                       <MessageSquare className="h-3 w-3" />
-                      {conv.messages.length} μηνύματα
+                      {conv.messages.length} {conv.messages.length === 1 ? 'message' : 'messages'}
                     </div>
                   </div>
                 </div>
