@@ -200,8 +200,8 @@ export const RecipeHistorySheet = ({
             </div>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | "favorites")} className="mt-2">
-          <TabsList className="grid w-full grid-cols-2">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | "favorites")} className="mt-2 w-full">
+          <TabsList className="grid w-full grid-cols-2 h-11">
             <TabsTrigger value="all">
               All ({viewedRecipes.length})
             </TabsTrigger>
