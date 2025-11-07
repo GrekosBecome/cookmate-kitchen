@@ -37,13 +37,32 @@ Guidelines:
 - Include simple step-by-step instructions
 - Focus on flavor and practicality over presentation`;
 
+const IMPROVISE_SYSTEM_PROMPT = `You are a creative chef who loves to improvise! 
+
+When given "star ingredients", create ONE unique recipe that:
+- Features the star ingredients prominently (they should be the main flavors)
+- Uses additional pantry items as supporting ingredients (50%+ match)
+- Is practical and achievable at home (15-35 minutes)
+- Respects dietary restrictions and allergies
+- Is creative but not overly complex (everyday difficulty)
+- Has clear, step-by-step instructions
+
+Think of it like a cooking show challenge: "Today's star ingredients are X and Y - let's make something amazing!"
+
+Return the recipe using the generate_gourmet_recipes tool with:
+- Creative, appetizing title that mentions the star ingredients
+- Detailed description that sells the dish
+- Practical cooking time and difficulty
+- Complete ingredient list with quantities
+- Clear step-by-step instructions with timing`;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { shoppingItems, pantryItems, preferences, mode = 'gourmet' } = await req.json();
+    const { shoppingItems, pantryItems, starIngredients, preferences, mode = 'gourmet' } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -55,18 +74,48 @@ serve(async (req) => {
     }
 
     // Build ingredients context
-    const shoppingList = shoppingItems.map((i: any) => i.name).join(', ');
+    const shoppingList = shoppingItems?.map((i: any) => i.name).join(', ') || '';
     const pantryList = pantryItems?.slice(0, 10).map((i: any) => i.name).join(', ') || 'none';
     
     const dietInfo = preferences?.diet || 'Regular';
     const allergies = preferences?.allergies?.join(', ') || 'none';
     const dislikes = preferences?.dislikes?.join(', ') || 'none';
 
-    const isGourmet = mode === 'gourmet';
-    const systemPrompt = isGourmet ? GOURMET_SYSTEM_PROMPT : EVERYDAY_SYSTEM_PROMPT;
-    
-    const userPrompt = isGourmet 
-      ? `Create 2-3 gourmet recipes using these ingredients:
+    let systemPrompt = '';
+    let userPrompt = '';
+    let minItems = 2;
+    let maxItems = 3;
+
+    if (mode === 'improvise') {
+      // Chef improvisation mode - ONE unique recipe featuring star ingredients
+      systemPrompt = IMPROVISE_SYSTEM_PROMPT;
+      minItems = 1;
+      maxItems = 1;
+      
+      const starList = starIngredients?.join(', ') || '';
+      
+      userPrompt = `STAR INGREDIENTS (feature these prominently):
+${starIngredients?.map((item: string) => `- ${item}`).join('\n') || ''}
+
+AVAILABLE SUPPORTING INGREDIENTS (pantry):
+${pantryItems?.slice(0, 10).map((item: any) => `- ${item.name} (${item.qty} ${item.unit})`).join('\n') || ''}
+
+USER PREFERENCES:
+- Diet: ${dietInfo}
+- Allergies: ${allergies}
+- Dislikes: ${dislikes}
+- Servings: ${preferences?.servings || 2}
+
+Create ONE creative recipe that highlights the star ingredients!`;
+
+      console.log('Chef is improvising with star ingredients:', starList);
+    } else {
+      // Gourmet or everyday mode - 2-3 recipes
+      const isGourmet = mode === 'gourmet';
+      systemPrompt = isGourmet ? GOURMET_SYSTEM_PROMPT : EVERYDAY_SYSTEM_PROMPT;
+      
+      userPrompt = isGourmet 
+        ? `Create 2-3 gourmet recipes using these ingredients:
 
 Shopping List (primary ingredients): ${shoppingList}
 Available in Pantry: ${pantryList}
@@ -76,7 +125,7 @@ Allergies to avoid: ${allergies}
 Dislikes to avoid: ${dislikes}
 
 Generate creative, restaurant-quality recipes that showcase these ingredients.`
-      : `Create 2-3 simple everyday recipes using these pantry ingredients:
+        : `Create 2-3 simple everyday recipes using these pantry ingredients:
 
 Available Ingredients: ${pantryList}
 Additional items available: ${shoppingList}
@@ -86,6 +135,7 @@ Allergies to avoid: ${allergies}
 Dislikes to avoid: ${dislikes}
 
 Generate practical, quick recipes that work with what's available.`;
+    }
 
     console.log(`Calling Lovable AI for ${mode} recipes...`);
 
@@ -110,10 +160,10 @@ Generate practical, quick recipes that work with what's available.`;
               parameters: {
                 type: 'object',
                 properties: {
-                  recipes: {
+                   recipes: {
                     type: 'array',
-                    minItems: 2,
-                    maxItems: 3,
+                    minItems: minItems,
+                    maxItems: maxItems,
                     items: {
                       type: 'object',
                       properties: {

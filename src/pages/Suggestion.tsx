@@ -42,6 +42,7 @@ const Suggestion = () => {
   const [spinCount, setSpinCount] = useState(0);
   const [useAI, setUseAI] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isImprovising, setIsImprovising] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
   const today = new Date().toISOString().split('T')[0];
@@ -167,6 +168,62 @@ const Suggestion = () => {
     }
   };
 
+  const improviseRecipe = async () => {
+    setIsImprovising(true);
+    track('improvise_recipe_requested', { pantryCount: pantryItems.length });
+
+    try {
+      // Pick 2-3 random ingredients as "stars"
+      const shuffled = [...pantryItems].sort(() => Math.random() - 0.5);
+      const starIngredients = shuffled.slice(0, Math.min(3, shuffled.length));
+      const starNames = starIngredients.map(i => i.name);
+      
+      toast({
+        title: "🎨 Chef is improvising...",
+        description: `Creating something with ${starNames.join(', ')}`,
+      });
+
+      const { data, error } = await supabase.functions.invoke('generate-gourmet-recipes', {
+        body: {
+          shoppingItems: [],
+          pantryItems: pantryItems.slice(0, 10),
+          starIngredients: starNames,
+          preferences,
+          mode: 'improvise'
+        }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.message || 'Improvisation failed');
+      }
+
+      if (data?.recipes && data.recipes.length > 0) {
+        // Add the new recipe to suggestions
+        setSuggestions(prev => [...prev, ...data.recipes]);
+        setCurrentIndex(suggestions.length); // Jump to the new recipe
+        
+        track('improvise_recipe_success', { starIngredients: starNames });
+        
+        toast({
+          title: "✨ Fresh creation ready!",
+          description: "The chef outdid themselves!",
+        });
+      }
+    } catch (error) {
+      console.error('Improvisation error:', error);
+      
+      toast({
+        title: "Oops!",
+        description: "The chef's creativity ran out. Try refreshing your pantry!",
+        variant: "destructive"
+      });
+      
+      track('improvise_recipe_failed', { reason: 'error' });
+    } finally {
+      setIsImprovising(false);
+    }
+  };
+
   const generateAIRecipes = async () => {
     setIsGenerating(true);
     setAiError(null);
@@ -237,14 +294,6 @@ const Suggestion = () => {
   const handleAnother = () => {
     track('clicked_cta', { action: 'another', mode: useAI ? 'ai' : 'classic' });
     addRecentAction('another');
-    
-    if (spinCount >= 2 && !useAI) {
-      toast({
-        title: "Maximum spins reached",
-        description: "Try refreshing your pantry for more variety!",
-      });
-      return;
-    }
 
     const current = suggestions[currentIndex];
     if (current) {
@@ -258,6 +307,7 @@ const Suggestion = () => {
     }
 
     if (currentIndex < suggestions.length - 1) {
+      // Navigate to next existing recipe
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       if (!useAI) {
@@ -267,11 +317,16 @@ const Suggestion = () => {
           indexShown: newIndex,
         });
       }
-    } else if (useAI) {
-      // For AI mode, generate new recipes
-      generateAIRecipes();
     } else {
-      generateSuggestions();
+      // End of suggestions - TIME TO IMPROVISE! 🎨
+      if (pantryItems.length >= 2) {
+        improviseRecipe();
+      } else {
+        toast({
+          title: "Need more ingredients",
+          description: "Add at least 2 items to your pantry for the chef to get creative!",
+        });
+      }
     }
     
     setSpinCount(prev => prev + 1);
@@ -416,14 +471,19 @@ const Suggestion = () => {
 
 
         <div className="space-y-4">
-          {isGenerating ? (
+          {(isGenerating || isImprovising) ? (
             <Card className="animate-fade-in">
               <CardContent className="p-12 text-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
                 <div>
-                  <h3 className="font-semibold text-lg">Crafting gourmet recipes...</h3>
+                  <h3 className="font-semibold text-lg">
+                    {isImprovising ? 'Chef is improvising...' : 'Crafting gourmet recipes...'}
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Our chef is creating something special
+                    {isImprovising 
+                      ? 'Creating something special just for you' 
+                      : 'Our chef is creating something special'
+                    }
                   </p>
                 </div>
               </CardContent>
