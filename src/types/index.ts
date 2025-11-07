@@ -119,4 +119,5 @@ export interface ViewedRecipe {
   recipe: Recipe;
   viewedAt: string;
   mode: 'classic' | 'ai' | 'improvised';
+  isFavorite?: boolean;
 }

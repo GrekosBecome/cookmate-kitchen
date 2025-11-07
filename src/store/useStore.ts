@@ -64,6 +64,7 @@ interface AppState {
   addViewedRecipe: (recipe: Recipe, mode: 'classic' | 'ai' | 'improvised') => void;
   removeViewedRecipe: (id: string) => void;
   clearViewedRecipes: () => void;
+  toggleViewedRecipeFavorite: (id: string) => void;
   reset: () => void;
 }
 
@@ -585,6 +586,12 @@ export const useStore = create<AppState>()(
           viewedRecipes: state.viewedRecipes.filter(v => v.id !== id)
         })),
       clearViewedRecipes: () => set({ viewedRecipes: [] }),
+      toggleViewedRecipeFavorite: (id) =>
+        set((state) => ({
+          viewedRecipes: state.viewedRecipes.map(v =>
+            v.id === id ? { ...v, isFavorite: !v.isFavorite } : v
+          )
+        })),
       reset: () =>
         set({
           preferences: null,

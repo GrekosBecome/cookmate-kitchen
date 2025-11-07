@@ -41,7 +41,8 @@ const Suggestion = () => {
     viewedRecipes,
     addViewedRecipe,
     removeViewedRecipe,
-    clearViewedRecipes
+    clearViewedRecipes,
+    toggleViewedRecipeFavorite
   } = useStore();
   const [suggestions, setSuggestions] = useState<Recipe[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -577,6 +578,7 @@ const Suggestion = () => {
         viewedRecipes={viewedRecipes}
         onViewRecipe={handleViewRecipeFromHistory}
         onDeleteRecipe={removeViewedRecipe}
+        onToggleFavorite={toggleViewedRecipeFavorite}
         onClearAll={() => {
           clearViewedRecipes();
           toast({ 
