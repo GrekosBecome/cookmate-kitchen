@@ -11,6 +11,7 @@ export interface PantryItem {
   lastUsed?: string;
   used?: boolean;
   favorite?: boolean;
+  originalQty?: number;
 }
 
 export interface DetectedItem {

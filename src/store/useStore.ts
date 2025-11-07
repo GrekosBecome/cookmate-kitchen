@@ -73,6 +73,37 @@ export const defaultPreferences: Preferences = {
   privacyNoStoreImages: true,
 };
 
+// Helper to normalize ingredient names for better matching
+const normalizeIngredientName = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/\b(fresh|organic|chopped|diced|sliced|minced|grated|raw|cooked)\b/g, '')
+    .replace(/s\b/g, '') // Simple singularization
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+// Helper to match pantry item with recipe ingredient
+const matchIngredient = (pantryItemName: string, recipeIngredientName: string): boolean => {
+  const pantryNorm = normalizeIngredientName(pantryItemName);
+  const recipeNorm = normalizeIngredientName(recipeIngredientName);
+  
+  // Exact match
+  if (pantryNorm === recipeNorm) return true;
+  
+  // Check if one contains the other (with word boundary safety)
+  const pantryWords = pantryNorm.split(' ');
+  const recipeWords = recipeNorm.split(' ');
+  
+  // If all recipe words are in pantry name, it's a match
+  if (recipeWords.every(word => pantryNorm.includes(word))) return true;
+  
+  // If all pantry words are in recipe name, it's a match
+  if (pantryWords.every(word => recipeNorm.includes(word))) return true;
+  
+  return false;
+};
+
 const mergePantryItems = (existing: PantryItem[], newItems: PantryItem[]): PantryItem[] => {
   const itemMap = new Map<string, PantryItem>();
   
@@ -87,15 +118,24 @@ const mergePantryItems = (existing: PantryItem[], newItems: PantryItem[]): Pantr
     const existingItem = itemMap.get(normalizedName);
     
     if (existingItem) {
+      const newQty = (existingItem.qty || 1) + (newItem.qty || 1);
+      const originalQty = existingItem.originalQty || existingItem.qty || 1;
+      
       // Merge: increase quantity and update lastSeenAt
       itemMap.set(normalizedName, {
         ...existingItem,
-        qty: (existingItem.qty || 1) + (newItem.qty || 1),
+        qty: newQty,
+        originalQty: originalQty,
         lastSeenAt: new Date().toISOString(),
         confidence: newItem.confidence || existingItem.confidence,
       });
     } else {
-      itemMap.set(normalizedName, newItem);
+      // New item: set originalQty = qty
+      const qty = newItem.qty || 1;
+      itemMap.set(normalizedName, {
+        ...newItem,
+        originalQty: qty,
+      });
     }
   });
   
@@ -180,17 +220,27 @@ export const useStore = create<AppState>()(
         }),
       consumePantryForRecipe: (ingredients: Ingredient[]) => {
         let consumedCount = 0;
+        const now = new Date().toISOString();
+        
         set((state) => {
-          const updatedItems = state.pantryItems.map((item) => {
-            // Find matching ingredient from recipe
-            const matchingIngredient = ingredients.find(ing => {
-              const pantryName = ing.pantryName || ing.name;
-              return item.name.toLowerCase().includes(pantryName.toLowerCase()) ||
-                     pantryName.toLowerCase().includes(item.name.toLowerCase());
-            });
-            
-            if (matchingIngredient && !item.used) {
+          const itemsToAdd: ShoppingItem[] = [];
+          
+          const updatedItems = state.pantryItems
+            .map((item) => {
+              // Find matching ingredient from recipe
+              const matchingIngredient = ingredients.find(ing => {
+                const pantryName = ing.pantryName || ing.name;
+                return matchIngredient(item.name, pantryName);
+              });
+              
+              if (!matchingIngredient || item.used) {
+                return item;
+              }
+              
               consumedCount++;
+              
+              // Initialize originalQty if not set (migration for old data)
+              const originalQty = item.originalQty || item.qty || 100;
               
               // Calculate quantity reduction
               const recipeQty = matchingIngredient.qty || 0;
@@ -198,27 +248,82 @@ export const useStore = create<AppState>()(
               const pantryQty = item.qty || 0;
               const pantryUnit = item.unit?.toLowerCase();
               
-              // If we have quantity info for both, reduce proportionally
+              let newQty = pantryQty;
+              
+              // If we have quantity info for both and units match, reduce proportionally
               if (recipeQty > 0 && pantryQty > 0 && recipeUnit === pantryUnit) {
-                const newQty = Math.max(0, pantryQty - recipeQty);
-                
-                // If quantity reaches 0, mark as used
-                if (newQty === 0) {
-                  return { ...item, qty: 0, used: true, lastUsed: new Date().toISOString() };
-                }
-                
-                // Otherwise just reduce quantity
-                return { ...item, qty: newQty, lastUsed: new Date().toISOString() };
+                newQty = Math.max(0, pantryQty - recipeQty);
+              } else if (recipeQty > 0 && pantryQty > 0) {
+                // Units don't match, reduce by a percentage (conservative estimate)
+                newQty = Math.max(0, pantryQty * 0.7);
+              } else {
+                // No quantity info, reduce by 50% as estimate
+                newQty = pantryQty * 0.5;
               }
               
-              // If no quantity match, just mark as used (fallback to old behavior)
-              return { ...item, used: true, lastUsed: new Date().toISOString() };
+              // Calculate confidence based on remaining percentage
+              const newConfidence = originalQty > 0 ? (newQty / originalQty) * 100 : 0;
+              
+              // Decision tree based on confidence threshold
+              if (newConfidence <= 0) {
+                // Item completely used up - remove from pantry, add to shopping list
+                itemsToAdd.push({
+                  id: `shop-${Date.now()}-${Math.random()}`,
+                  name: item.name,
+                  reason: 'used_up',
+                  suggestedQty: originalQty,
+                  unit: item.unit,
+                  autoGenerated: true,
+                  addedAt: now,
+                  bought: false,
+                });
+                return null; // Will be filtered out
+              } else if (newConfidence < 20) {
+                // Low stock - add to shopping list and remove from pantry
+                itemsToAdd.push({
+                  id: `shop-${Date.now()}-${Math.random()}`,
+                  name: item.name,
+                  reason: 'low_stock',
+                  suggestedQty: originalQty,
+                  unit: item.unit,
+                  autoGenerated: true,
+                  addedAt: now,
+                  bought: false,
+                });
+                return null; // Will be filtered out
+              } else {
+                // Still have enough - update quantity and confidence
+                return {
+                  ...item,
+                  qty: newQty,
+                  originalQty: originalQty,
+                  confidence: Math.round(newConfidence),
+                  lastUsed: now,
+                };
+              }
+            })
+            .filter((item): item is PantryItem => item !== null);
+          
+          // Add new shopping items
+          const updatedQueue = [...state.shoppingState.queue];
+          const queueNames = new Set(updatedQueue.map(i => i.name.toLowerCase()));
+          
+          itemsToAdd.forEach(newItem => {
+            // Only add if not already in queue
+            if (!queueNames.has(newItem.name.toLowerCase())) {
+              updatedQueue.push(newItem);
             }
-            return item;
           });
           
-          return { pantryItems: updatedItems };
+          return {
+            pantryItems: updatedItems,
+            shoppingState: {
+              ...state.shoppingState,
+              queue: updatedQueue,
+            },
+          };
         });
+        
         return consumedCount;
       },
       recordUsageEvent: (event: UsageEvent) => {
@@ -317,31 +422,9 @@ export const useStore = create<AppState>()(
         }));
       },
       updatePantryConfidenceAfterRecipe: (recipeId: string, recipeName: string, ingredients: Ingredient[]) => {
-        set((state) => {
-          const now = new Date().toISOString();
-          const updatedItems = state.pantryItems.map((item) => {
-            const usedIngredient = ingredients.find(
-              (ing) =>
-                !ing.optional &&
-                (ing.pantryName || ing.name).toLowerCase() === item.name.toLowerCase()
-            );
-
-            if (usedIngredient) {
-              return {
-                ...item,
-                confidence: updateConfidenceAfterCooking(
-                  item,
-                  true,
-                  usedIngredient.qty
-                ),
-                lastUsed: now,
-              };
-            }
-            return item;
-          });
-
-          return { pantryItems: updatedItems };
-        });
+        // This function is now a no-op for backwards compatibility
+        // All logic has been moved to consumePantryForRecipe
+        // We still call regenerateShoppingQueue for any edge cases
         get().regenerateShoppingQueue();
       },
       undoLastUsageEvent: () => {

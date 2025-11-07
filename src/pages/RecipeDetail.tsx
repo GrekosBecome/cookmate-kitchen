@@ -91,11 +91,14 @@ const RecipeDetail = () => {
         })),
     };
 
-    // Record usage and update confidence
+    // Record usage
     recordUsageEvent(usageEvent);
-    updatePantryConfidenceAfterRecipe(recipe.id, recipe.title, recipe.ingredients);
 
-    // Consume pantry items with proper quantity reduction
+    // Consume pantry items - this now handles everything:
+    // - Quantity reduction
+    // - Confidence calculation
+    // - Shopping list transfer at < 20%
+    // - Removal at 0%
     consumePantryForRecipe(recipe.ingredients.filter((ing) => !ing.optional));
 
     // Add learning signal
