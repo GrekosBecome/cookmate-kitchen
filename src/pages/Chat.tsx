@@ -389,13 +389,13 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
             {recipe ? <p className="text-xs text-muted-foreground italic truncate">Talking about: {recipe.title}</p> : <p className="text-xs text-muted-foreground italic">Your cooking companion</p>}
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => setHistorySheetOpen(true)}
-            className="h-8 w-8 flex-shrink-0"
+            className="h-9 w-9 flex-shrink-0 border-primary/20 hover:bg-primary/10 hover:border-primary/40"
             aria-label="Chat history"
           >
-            <MessageSquareText className="h-4 w-4" />
+            <MessageSquareText className="h-5 w-5 text-primary" />
           </Button>
         </div>
         
