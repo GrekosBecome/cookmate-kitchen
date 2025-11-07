@@ -58,7 +58,7 @@ const Suggestion = () => {
   useEffect(() => {
     track('opened_screen', { screen: 'suggestion' });
     
-    // Check if coming from Pantry AI generation
+    // Check if coming from Pantry AI generation (Gourmet mode)
     const locationState = location.state as { aiRecipes?: Recipe[] };
     if (locationState?.aiRecipes) {
       setAIGeneratedRecipes(locationState.aiRecipes);
@@ -75,15 +75,18 @@ const Suggestion = () => {
     // Recompute learning on app start
     recomputeLearning();
 
-    // Load AI recipes if available and recent
+    // Hybrid approach: Check for cached AI recipes first (< 24h old)
     if (hasRecentAI && aiGeneratedRecipes.length > 0) {
+      // Use cached AI recipes (from background fetch)
       setSuggestions(aiGeneratedRecipes);
-      setUseAI(true);
+      setUseAI(false); // Still classic mode UI, just AI-powered
       setCurrentIndex(0);
+      console.log('✨ Using cached AI recipes');
     } else if (!todaysPick || todaysPick.date !== today) {
+      // First visit or new day: Show static instantly + background fetch AI
       generateSuggestions();
     } else {
-      // Load cached suggestions
+      // Load cached suggestions from same day
       const cached = todaysPick.recipeIds.map(id => 
         getSuggestions(preferences, pantryItems, 12, learning).find(r => r.id === id)
       ).filter(Boolean) as Recipe[];
@@ -111,13 +114,14 @@ const Suggestion = () => {
   const generateSuggestions = () => {
     const newSuggestions = getSuggestions(preferences, pantryItems, 2, learning);
     
-    // AI fallback: If no matches found and we have enough items, use AI
-    if (newSuggestions.length === 0 && pantryItems.length >= 3) {
-      console.log('No static matches found, falling back to AI everyday recipes...');
-      generateAIRecipes();
+    // If no matches found and not enough items, show empty state
+    if (newSuggestions.length === 0 && pantryItems.length < 3) {
+      setSuggestions([]);
+      setCurrentIndex(0);
       return;
     }
     
+    // Show static results immediately (instant feedback)
     setSuggestions(newSuggestions);
     setCurrentIndex(0);
     setSpinCount(0);
@@ -129,6 +133,37 @@ const Suggestion = () => {
         recipeIds: newSuggestions.map(r => r.id),
         indexShown: 0,
       });
+    }
+    
+    // Background: Fetch AI recipes for next time (if we have enough items)
+    if (pantryItems.length >= 3) {
+      backgroundFetchAI();
+    }
+  };
+
+  const backgroundFetchAI = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-gourmet-recipes', {
+        body: {
+          shoppingItems: shoppingState.queue,
+          pantryItems: pantryItems.slice(0, 10),
+          preferences,
+          mode: 'everyday'
+        }
+      });
+
+      if (error || data?.error) {
+        console.log('Background AI fetch failed, will use static next time');
+        return;
+      }
+
+      if (data?.recipes && data.recipes.length > 0) {
+        // Cache for next time
+        setAIGeneratedRecipes(data.recipes);
+        console.log(`✨ ${data.recipes.length} AI recipes cached for next visit`);
+      }
+    } catch (error) {
+      console.error('Background AI fetch error:', error);
     }
   };
 
@@ -401,12 +436,19 @@ const Suggestion = () => {
                   onAnother={handleAnother}
                 />
               ) : (
-                <RecipeCard
-                  recipe={currentRecipe}
-                  onAnother={handleAnother}
-                  onSkip={handleSkip}
-                  learning={learning}
-                />
+                <div className="space-y-2">
+                  <RecipeCard
+                    recipe={currentRecipe}
+                    onAnother={handleAnother}
+                    onSkip={handleSkip}
+                    learning={learning}
+                  />
+                  {currentRecipe.aiGenerated && (
+                    <p className="text-center text-xs text-muted-foreground">
+                      ✨ AI-crafted recipe
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           ) : (
