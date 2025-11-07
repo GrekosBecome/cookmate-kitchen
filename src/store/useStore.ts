@@ -569,17 +569,33 @@ export const useStore = create<AppState>()(
         }),
       addViewedRecipe: (recipe, mode) => 
         set((state) => {
-          const viewed: ViewedRecipe = {
-            id: `${recipe.id}-${Date.now()}`,
-            recipe,
-            viewedAt: new Date().toISOString(),
-            mode
-          };
+          // Check if this recipe already exists in the history
+          const existingIndex = state.viewedRecipes.findIndex(
+            v => v.recipe.id === recipe.id
+          );
           
-          // Keep only last 50 recipes for performance
-          const updated = [viewed, ...state.viewedRecipes].slice(0, 50);
-          
-          return { viewedRecipes: updated };
+          if (existingIndex !== -1) {
+            // Recipe already exists - update viewedAt and move to top
+            const existing = state.viewedRecipes[existingIndex];
+            const updated = [
+              { ...existing, viewedAt: new Date().toISOString(), mode },
+              ...state.viewedRecipes.filter((_, idx) => idx !== existingIndex)
+            ];
+            return { viewedRecipes: updated };
+          } else {
+            // New recipe - add to history
+            const viewed: ViewedRecipe = {
+              id: `${recipe.id}-${Date.now()}`,
+              recipe,
+              viewedAt: new Date().toISOString(),
+              mode
+            };
+            
+            // Keep only last 50 recipes for performance
+            const updated = [viewed, ...state.viewedRecipes].slice(0, 50);
+            
+            return { viewedRecipes: updated };
+          }
         }),
       removeViewedRecipe: (id) => 
         set((state) => ({
