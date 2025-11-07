@@ -473,7 +473,7 @@ export default function Pantry() {
                 onClick={() => setViewMode('list')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   viewMode === 'list'
-                    ? 'bg-accent/70 text-accent-foreground shadow-lg'
+                    ? 'bg-accent/50 text-accent-foreground shadow-lg'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -483,7 +483,7 @@ export default function Pantry() {
                 onClick={() => setViewMode('shopping')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   viewMode === 'shopping'
-                    ? 'bg-accent/70 text-accent-foreground shadow-lg'
+                    ? 'bg-accent/50 text-accent-foreground shadow-lg'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
