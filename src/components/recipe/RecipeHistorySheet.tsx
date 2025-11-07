@@ -112,8 +112,8 @@ export const RecipeHistorySheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg">
-        <SheetHeader>
+      <SheetContent side="right">
+        <SheetHeader className="pt-2">
           <div className="flex items-center justify-between pr-12">
             <div className="flex items-center gap-1.5">
               <Clock className="h-5 w-5" />
@@ -185,7 +185,7 @@ export const RecipeHistorySheet = ({
                 </div>
               </div>
 
-              <ScrollArea className="h-[calc(100vh-280px)]">
+              <ScrollArea className="h-[calc(100vh-300px)]">
                 <div className="space-y-6 pr-4">
                   <div>
                     <h4 className="font-medium mb-3">Ingredients</h4>
@@ -257,7 +257,7 @@ export const RecipeHistorySheet = ({
             </div>
 
             {activeTab === "all" ? (
-              <ScrollArea className="h-[calc(100vh-220px)] mt-4">
+              <ScrollArea className="h-[calc(100vh-240px)] mt-4">
                 {viewedRecipes.length === 0 ? (
                   <div className="text-center py-12">
                     <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -270,7 +270,7 @@ export const RecipeHistorySheet = ({
                 )}
               </ScrollArea>
             ) : (
-              <ScrollArea className="h-[calc(100vh-220px)] mt-4">
+              <ScrollArea className="h-[calc(100vh-240px)] mt-4">
                 {favoriteRecipes.length === 0 ? (
                   <div className="text-center py-12">
                     <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
