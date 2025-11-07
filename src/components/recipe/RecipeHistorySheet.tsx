@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface RecipeHistorySheetProps {
   open: boolean;
@@ -32,11 +33,33 @@ export const RecipeHistorySheet = ({
   onClearAll,
   onToggleFavorite
 }: RecipeHistorySheetProps) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "favorites">("all");
   const [expandedRecipeId, setExpandedRecipeId] = useState<string | null>(null);
   const favoriteRecipes = viewedRecipes.filter(v => v.isFavorite);
   const displayedRecipes = activeTab === "favorites" ? favoriteRecipes : viewedRecipes;
   const expandedRecipe = expandedRecipeId ? viewedRecipes.find(v => v.id === expandedRecipeId) : null;
+
+  const handleCookThis = (viewed: ViewedRecipe) => {
+    // Close the sheet first
+    onOpenChange(false);
+    setExpandedRecipeId(null);
+    
+    // Navigate to chat with recipe context - all ingredients as "need" since we don't know what they have
+    const allIngredients = viewed.recipe.ingredients
+      .filter(ing => !ing.optional)
+      .map(ing => ing.name)
+      .join(',');
+    
+    const params = new URLSearchParams({
+      recipeId: viewed.recipe.id,
+      recipeTitle: viewed.recipe.title,
+      have: '',
+      need: allIngredients,
+    });
+    
+    navigate(`/chat?${params.toString()}`);
+  };
 
   const renderRecipeCard = (viewed: ViewedRecipe) => (
     <Card 
@@ -196,6 +219,16 @@ export const RecipeHistorySheet = ({
                   </div>
                 </div>
               </ScrollArea>
+
+              <div className="mt-4 pt-4 border-t">
+                <Button
+                  onClick={() => handleCookThis(expandedRecipe)}
+                  className="w-full gradient-primary"
+                  size="lg"
+                >
+                  🧑‍🍳 Cook This Recipe
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
