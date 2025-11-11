@@ -439,7 +439,7 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
           </div>}
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-2 pb-32">
+      <div className="flex-1 overflow-y-auto px-4 py-2 pb-44">
         <div className="container max-w-2xl mx-auto space-y-4">
           {restoredFromCache && <div className="text-center animate-fade-in">
               <p className="text-xs text-muted-foreground">Restored your chat from a few minutes ago ⏳</p>
