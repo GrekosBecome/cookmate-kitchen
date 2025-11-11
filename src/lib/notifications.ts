@@ -8,6 +8,25 @@ export interface NotificationPreferences {
   days: string[];
 }
 
+const NOTIFICATION_VARIANTS = [
+  {
+    title: '🍳 Your recipe is ready!',
+    body: 'Check what delicious meals await you today'
+  },
+  {
+    title: '👨‍🍳 Chef\'s got ideas!',
+    body: 'Discover personalized recipes from your pantry'
+  },
+  {
+    title: '🥘 Time to cook something amazing!',
+    body: 'See what you can make with what you have'
+  },
+  {
+    title: '✨ Fresh recipe suggestions!',
+    body: 'Your pantry is full of possibilities'
+  }
+];
+
 class NotificationService {
   private isNative = Capacitor.isNativePlatform();
 
@@ -81,23 +100,28 @@ class NotificationService {
         'Fri': 5, 'Sat': 6, 'Sun': 0
       };
 
-      const notifications = preferences.days.map((day, index) => ({
-        id: index + 1,
-        title: '🍳 Time for a delicious recipe!',
-        body: 'Check your pantry and discover what you can cook today',
-        schedule: {
-          on: {
-            hour: hours,
-            minute: minutes,
-            weekday: dayMap[day],
+      const notifications = preferences.days.map((day, index) => {
+        // Pick a variant based on the day index (cycles through variants)
+        const variant = NOTIFICATION_VARIANTS[index % NOTIFICATION_VARIANTS.length];
+        
+        return {
+          id: index + 1,
+          title: variant.title,
+          body: variant.body,
+          schedule: {
+            on: {
+              hour: hours,
+              minute: minutes,
+              weekday: dayMap[day],
+            },
+            allowWhileIdle: true,
           },
-          allowWhileIdle: true,
-        },
-        actionTypeId: 'RECIPE_SUGGESTION',
-        extra: {
-          route: '/suggestion'
-        }
-      }));
+          actionTypeId: 'RECIPE_SUGGESTION',
+          extra: {
+            route: '/suggestion'
+          }
+        };
+      });
 
       await LocalNotifications.schedule({
         notifications
