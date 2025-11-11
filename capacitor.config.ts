@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.cookmate.kitchen',
-  appName: 'cookmate-kitchen',
+  appName: 'KitchenMate',
   webDir: 'dist',
   plugins: {
     LocalNotifications: {
