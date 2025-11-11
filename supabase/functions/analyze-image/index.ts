@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkAndIncrementUsage } from "../_shared/usageTracking.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,6 +41,22 @@ serve(async (req) => {
   }
 
   try {
+    // Check usage limits
+    const authHeader = req.headers.get('authorization');
+    const usageCheck = await checkAndIncrementUsage(authHeader, 'image');
+    
+    if (!usageCheck.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: usageCheck.error,
+          limitReached: true,
+          remaining: usageCheck.remaining,
+          limit: usageCheck.limit
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { images } = await req.json();
     
     if (!images || !Array.isArray(images) || images.length === 0) {

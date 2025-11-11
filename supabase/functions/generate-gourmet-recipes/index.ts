@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkAndIncrementUsage } from "../_shared/usageTracking.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,6 +63,22 @@ serve(async (req) => {
   }
 
   try {
+    // Check usage limits
+    const authHeader = req.headers.get('authorization');
+    const usageCheck = await checkAndIncrementUsage(authHeader, 'recipe');
+    
+    if (!usageCheck.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: usageCheck.error,
+          limitReached: true,
+          remaining: usageCheck.remaining,
+          limit: usageCheck.limit
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { shoppingItems, pantryItems, starIngredients, preferences, mode = 'gourmet' } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');

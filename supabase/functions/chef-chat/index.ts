@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkAndIncrementUsage } from "../_shared/usageTracking.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -116,6 +117,22 @@ serve(async (req) => {
   }
 
   try {
+    // Check usage limits
+    const authHeader = req.headers.get('authorization');
+    const usageCheck = await checkAndIncrementUsage(authHeader, 'chat');
+    
+    if (!usageCheck.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: usageCheck.error,
+          limitReached: true,
+          remaining: usageCheck.remaining,
+          limit: usageCheck.limit
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { messages, context, pantry = [], cart = [] } = await req.json();
     console.log('=== CHEF CHAT REQUEST START ===');
     console.log('Messages count:', messages?.length);
