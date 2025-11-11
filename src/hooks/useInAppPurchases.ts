@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { Purchases, PurchasesPackage } from '@revenuecat/purchases-capacitor';
+import { Purchases, PurchasesPackage, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// Entitlement identifier - MUST match RevenueCat Dashboard
+const ENTITLEMENT_ID = 'pro';
 
 // Product IDs - must match App Store Connect
 const PRODUCT_IDS = {
@@ -40,7 +43,11 @@ export const useInAppPurchases = () => {
 
   const initializeStore = async () => {
     try {
-      // Get authenticated user
+      // Enable debug logging in development
+      if (import.meta.env.DEV) {
+        await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user) {
@@ -48,22 +55,24 @@ export const useInAppPurchases = () => {
         return;
       }
 
-      // Configure RevenueCat with your API key
-      // Note: API key should be added via Lovable secrets
       const apiKey = Capacitor.getPlatform() === 'ios' 
-        ? import.meta.env.VITE_REVENUECAT_IOS_KEY || 'your_ios_key'
-        : import.meta.env.VITE_REVENUECAT_ANDROID_KEY || 'your_android_key';
+        ? import.meta.env.VITE_REVENUECAT_IOS_KEY || ''
+        : import.meta.env.VITE_REVENUECAT_ANDROID_KEY || '';
+      
+      if (!apiKey) {
+        console.error('RevenueCat API key not configured');
+        return;
+      }
       
       await Purchases.configure({ 
         apiKey,
-        appUserID: session.user.id // Link purchases to authenticated user
+        appUserID: session.user.id
       });
 
-      // Load product offerings
+      console.log('✅ RevenueCat configured successfully');
       await loadProducts();
-
     } catch (error) {
-      console.error('Error initializing store:', error);
+      console.error('❌ RevenueCat initialization error:', error);
     }
   };
 
@@ -96,18 +105,19 @@ export const useInAppPurchases = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get customer info from RevenueCat
       const { customerInfo } = await Purchases.getCustomerInfo();
       
-      // Check if user has active subscription
-      const hasActiveSubscription = customerInfo && Object.keys(customerInfo.entitlements.active).length > 0;
+      // Check specific "pro" entitlement
+      const proEntitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+      const hasActiveSubscription = proEntitlement !== undefined;
+      
+      console.log('🔍 Checking entitlement:', ENTITLEMENT_ID);
+      console.log('✅ Has active subscription:', hasActiveSubscription);
       
       if (hasActiveSubscription) {
-        const activeEntitlementId = Object.keys(customerInfo.entitlements.active)[0];
-        const activeEntitlement = customerInfo.entitlements.active[activeEntitlementId];
-        const expirationDate = activeEntitlement?.expirationDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const expirationDate = proEntitlement.expirationDate || 
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         
-        // Update subscription in database
         const { error } = await supabase
           .from('user_subscriptions')
           .update({
@@ -123,12 +133,14 @@ export const useInAppPurchases = () => {
 
         if (error) throw error;
         
-        toast.success('Subscription activated successfully!');
+        toast.success('✅ Subscription activated!');
         window.location.reload();
+      } else {
+        toast.info('No active subscription found');
       }
     } catch (error) {
       console.error('Error syncing purchase:', error);
-      toast.error('Failed to sync subscription. Please try again.');
+      toast.error('Failed to sync subscription');
     } finally {
       setLoading(false);
     }
@@ -193,6 +205,16 @@ export const useInAppPurchases = () => {
     }
   }, [isNative]);
 
+  const checkEntitlement = useCallback(async (): Promise<boolean> => {
+    try {
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      return customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+    } catch (error) {
+      console.error('Error checking entitlement:', error);
+      return false;
+    }
+  }, []);
+
   return {
     isNative,
     products,
@@ -200,5 +222,6 @@ export const useInAppPurchases = () => {
     restoring,
     purchaseProduct,
     restorePurchases,
+    checkEntitlement,
   };
 };

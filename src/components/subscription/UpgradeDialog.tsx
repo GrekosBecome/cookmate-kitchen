@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useInAppPurchases } from '@/hooks/useInAppPurchases';
+import { useRevenueCatPaywall } from '@/hooks/useRevenueCatPaywall';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Camera, ChefHat, MessageCircle, Zap, Check, Crown } from 'lucide-react';
+import { Camera, ChefHat, MessageCircle, Zap, Check, Crown, Loader2 } from 'lucide-react';
 
 interface UpgradeDialogProps {
   open: boolean;
@@ -20,7 +21,8 @@ interface UpgradeDialogProps {
 
 export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
   const navigate = useNavigate();
-  const { isNative, products, loading, purchaseProduct } = useInAppPurchases();
+  const { isNative } = useInAppPurchases();
+  const { presentPaywall, loading: paywallLoading } = useRevenueCatPaywall();
 
   const features = [
     {
@@ -47,16 +49,23 @@ export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
   ];
 
   const handleUpgrade = async () => {
-    if (isNative && products.length > 0) {
-      // Use native purchase
-      await purchaseProduct(products[0].id);
-      onOpenChange(false);
-    } else {
-      // Navigate to settings for web checkout
-      onOpenChange(false);
-      navigate('/settings');
+    // Native app: Use RevenueCat native paywall
+    if (isNative) {
+      console.log('📱 Native app detected - showing RevenueCat paywall');
+      const success = await presentPaywall();
+      if (success) {
+        onOpenChange(false);
+      }
+      return;
     }
+    
+    // Web: Navigate to settings for Stripe checkout
+    console.log('🌐 Web app detected - navigating to settings');
+    onOpenChange(false);
+    navigate('/settings');
   };
+
+  const isLoading = paywallLoading;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,10 +154,20 @@ export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
         <DialogFooter className="flex-col sm:flex-col gap-2">
           <Button
             onClick={handleUpgrade}
+            disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90"
           >
-            <Zap className="h-4 w-4 mr-2" />
-            Start Free Trial
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Zap className="h-4 w-4 mr-2" />
+                {isNative ? 'View Premium Plans' : 'Start Free Trial'}
+              </>
+            )}
           </Button>
           <Button
             onClick={() => onOpenChange(false)}
