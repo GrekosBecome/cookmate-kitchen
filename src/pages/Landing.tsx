@@ -4,7 +4,6 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { ServicesSection } from '@/components/landing/ServicesSection';
 import { StatsSection } from '@/components/landing/StatsSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { InstallSection } from '@/components/landing/InstallSection';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ const Landing = () => {
         <ServicesSection />
         <StatsSection />
         <TestimonialsSection />
-        <InstallSection />
       </div>
       
       {/* Footer */}
@@ -42,11 +40,6 @@ const Landing = () => {
                 <li>
                   <button onClick={() => navigate('/features')} className="text-muted-foreground hover:text-primary transition-colors">
                     Features
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => navigate('/install')} className="text-muted-foreground hover:text-primary transition-colors">
-                    Install App
                   </button>
                 </li>
                 <li>

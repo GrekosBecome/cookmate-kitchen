@@ -211,9 +211,6 @@ const Privacy = () => {
             <Button size="lg" onClick={() => navigate('/onboarding')}>
               Get Started
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/install')}>
-              Install App
-            </Button>
           </div>
         </div>
       </main>

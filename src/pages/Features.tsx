@@ -263,9 +263,6 @@ const Features = () => {
             <Button size="lg" onClick={() => navigate('/onboarding')}>
               Ξεκινήστε Τώρα
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/install')}>
-              Οδηγίες Εγκατάστασης
-            </Button>
           </div>
         </div>
       </main>
@@ -291,11 +288,6 @@ const Features = () => {
                 <li>
                   <button onClick={() => navigate('/features')} className="text-muted-foreground hover:text-primary transition-colors">
                     Features
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => navigate('/install')} className="text-muted-foreground hover:text-primary transition-colors">
-                    Install
                   </button>
                 </li>
                 <li>

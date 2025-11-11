@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChefHat, Sparkles } from 'lucide-react';
-import { InstallButton } from './InstallButton';
 
 export const HeroSection = () => {
   const navigate = useNavigate();
@@ -33,15 +32,22 @@ export const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <InstallButton />
               <Button
-                variant="outline"
                 size="lg"
                 onClick={() => navigate('/onboarding')}
                 className="gap-2"
               >
+                <ChefHat className="w-5 h-5" />
+                Get Started
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate('/features')}
+                className="gap-2"
+              >
                 <Sparkles className="w-5 h-5" />
-                Try Demo
+                Learn More
               </Button>
             </div>
 

@@ -19,7 +19,6 @@ export const Header = () => {
   const menuItems = [
     { label: 'Features', href: '/features', isRoute: true },
     { label: 'Services', href: '#services', isRoute: false },
-    { label: 'Install', href: '/install', isRoute: true },
     { label: 'Privacy', href: '/privacy', isRoute: true },
   ];
 
