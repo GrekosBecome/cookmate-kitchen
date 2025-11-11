@@ -257,7 +257,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: fullMessages,
         tools,
         tool_choice: 'auto',
@@ -419,7 +419,7 @@ serve(async (req) => {
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-4o-mini',
           messages: followUpMessages,
           temperature: 0.7,
           max_tokens: 2000,
