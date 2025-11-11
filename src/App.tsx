@@ -9,6 +9,8 @@ import { Capacitor } from '@capacitor/core';
 import { useStore } from "@/store/useStore";
 import { BottomNav } from "@/components/BottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { TrialEndingBanner } from "@/components/subscription/TrialEndingBanner";
+import { useSubscription } from "@/hooks/useSubscription";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Onboarding from "./pages/Onboarding";
@@ -30,6 +32,10 @@ function AppContent() {
   const applyConfidenceDecay = useStore((state) => state.applyConfidenceDecay);
   const location = useLocation();
   const navigate = useNavigate();
+  const { subscription, getDaysUntilTrialEnd } = useSubscription();
+
+  const daysLeft = getDaysUntilTrialEnd();
+  const showTrialBanner = subscription?.subscription_status === 'trial' && daysLeft !== null && daysLeft <= 3;
 
   useEffect(() => {
     applyConfidenceDecay();
@@ -65,6 +71,16 @@ function AppContent() {
 
   return (
     <>
+      {/* Trial Ending Banner - Shows on all pages except onboarding, landing, offline */}
+      {showTrialBanner && !hideBottomNav && (
+        <div className="fixed top-0 left-0 right-0 z-50 p-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <TrialEndingBanner 
+            daysLeft={daysLeft!} 
+            onUpgrade={() => navigate('/settings')} 
+          />
+        </div>
+      )}
+
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/landing" element={<Landing />} />

@@ -15,6 +15,8 @@ import { track } from '@/lib/analytics';
 import { supabase } from '@/integrations/supabase/client';
 import { RecipeHistorySheet } from '@/components/recipe/RecipeHistorySheet';
 import { Badge } from '@/components/ui/badge';
+import { LimitReachedDialog, UsageWarning } from '@/components/subscription';
+import { useSubscriptionUI } from '@/hooks/useSubscriptionUI';
 const Suggestion = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +55,16 @@ const Suggestion = () => {
   const [aiError, setAiError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [dismissedShoppingAlert, setDismissedShoppingAlert] = useState(false);
+  
+  const {
+    usage,
+    subscription,
+    getUsagePercentage,
+    showLimitDialog,
+    setShowLimitDialog,
+    limitFeature,
+    handleUpgrade,
+  } = useSubscriptionUI();
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const isPantryStale = !lastSyncAt || lastSyncAt < sevenDaysAgo;
@@ -259,6 +271,13 @@ const Suggestion = () => {
         }
       });
       if (error || data?.error) {
+        // Handle limit reached (403)
+        if (data?.limitReached) {
+          setShowLimitDialog(true);
+          track('improvise_recipe_failed', { reason: 'limit_reached' });
+          return;
+        }
+        
         throw new Error(data?.message || 'Improvisation failed');
       }
       if (data?.recipes && data.recipes.length > 0) {
@@ -325,6 +344,13 @@ const Suggestion = () => {
       });
       if (error) throw error;
       if (data?.error) {
+        // Handle limit reached (403)
+        if (data.limitReached) {
+          setShowLimitDialog(true);
+          track('ai_generation_failed', { reason: 'limit_reached' });
+          return;
+        }
+        
         if (data.error === 'rate_limit') {
           setAiError('Too many requests. Please try again in a moment.');
           track('ai_generation_failed', {
@@ -659,6 +685,30 @@ const Suggestion = () => {
       />
 
       <FloatingButtons recipeId={currentRecipe?.id} />
+
+      {/* Usage Warning - Show when 80%+ of recipe limit used */}
+      {usage && subscription && (
+        <div className="fixed bottom-24 left-4 right-4 z-10">
+          <UsageWarning
+            feature="recipe"
+            used={usage.ai_recipe_used}
+            limit={subscription.ai_recipe_limit}
+            onUpgrade={handleUpgrade}
+          />
+        </div>
+      )}
+
+      {/* Limit Reached Dialog */}
+      {usage && subscription && (
+        <LimitReachedDialog
+          open={showLimitDialog}
+          onOpenChange={setShowLimitDialog}
+          feature="recipe"
+          used={usage.ai_recipe_used}
+          limit={subscription.ai_recipe_limit}
+          onUpgrade={handleUpgrade}
+        />
+      )}
     </div>;
 };
 export default Suggestion;

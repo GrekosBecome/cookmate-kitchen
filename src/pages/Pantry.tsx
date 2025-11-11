@@ -26,6 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { LimitReachedDialog, UsageWarning } from '@/components/subscription';
+import { useSubscriptionUI } from '@/hooks/useSubscriptionUI';
 
 type ViewMode = 'list' | 'detect' | 'shopping' | 'manual';
 
@@ -46,6 +48,16 @@ export default function Pantry() {
     setTodaysPick,
     preferences,
   } = useStore();
+  
+  const {
+    usage,
+    subscription,
+    getUsagePercentage,
+    showLimitDialog,
+    setShowLimitDialog,
+    limitFeature,
+    handleUpgrade,
+  } = useSubscriptionUI();
   
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -114,6 +126,14 @@ export default function Pantry() {
         .catch(error => {
           console.error('Detection failed:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          // Check for limit reached (403)
+          if (errorMessage.includes('limit reached') || errorMessage.includes('403')) {
+            setShowLimitDialog(true);
+            setUploadedImages([]);
+            setDetectedItems([]);
+            return;
+          }
           
           if (errorMessage.includes('Invalid API key') || errorMessage.includes('API_KEY_INVALID')) {
             toast.error('Invalid API key. Please check your API keys in settings.');
@@ -658,23 +678,73 @@ export default function Pantry() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleRetryBorderline}>
-              Try Different Photo
+            <AlertDialogCancel onClick={() => {
+              setShowBorderlineDialog(false);
+              setUploadedImages([]);
+            }}>
+              Retake Photo
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleProceedWithBorderline}>
-              Proceed Anyway
+            <AlertDialogAction onClick={() => {
+              setShowBorderlineDialog(false);
+              setIsDetecting(true);
+              detectIngredientsFromImages(uploadedImages)
+                .then(detected => {
+                  setDetectedItems(detected);
+                  if (detected.length > 0) {
+                    toast.success(`Found ${detected.length} ingredients in your photos`);
+                  } else {
+                    toast.info('No ingredients detected. Try different photos or add items manually.');
+                  }
+                })
+                .catch(error => {
+                  console.error('Detection failed:', error);
+                  toast.error("Couldn't analyze this photo right now — please try again later 🌿");
+                  setUploadedImages([]);
+                  setDetectedItems([]);
+                })
+                .finally(() => {
+                  setIsDetecting(false);
+                });
+            }}>
+              Continue Anyway
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* Edit Pantry Item Dialog */}
-      <EditPantryItemDialog
-        item={editingItem}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onSave={handleSaveEdit}
-      />
+      {editingItem && (
+        <EditPantryItemDialog
+          item={editingItem}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onSave={handleSaveEdit}
+        />
+      )}
+
+      {/* Usage Warning - Show when 80%+ of image analysis limit used */}
+      {usage && subscription && viewMode === 'list' && (
+        <div className="fixed bottom-24 left-4 right-4 z-10">
+          <UsageWarning
+            feature="image"
+            used={usage.image_analysis_used}
+            limit={subscription.image_analysis_limit}
+            onUpgrade={handleUpgrade}
+          />
+        </div>
+      )}
+
+      {/* Limit Reached Dialog */}
+      {usage && subscription && (
+        <LimitReachedDialog
+          open={showLimitDialog}
+          onOpenChange={setShowLimitDialog}
+          feature={limitFeature}
+          used={usage.image_analysis_used}
+          limit={subscription.image_analysis_limit}
+          onUpgrade={handleUpgrade}
+        />
+      )}
     </div>
   );
 }

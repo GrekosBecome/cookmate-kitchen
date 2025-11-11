@@ -255,6 +255,13 @@ const callEdgeFunction = async (request: LLMRequest): Promise<LLMResponse> => {
     
     if (!response.ok) {
       console.error('Edge function error:', response.status);
+      
+      // Handle limit reached (403)
+      if (response.status === 403) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Usage limit reached');
+      }
+      
       return generateMockResponse(request);
     }
     

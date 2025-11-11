@@ -13,6 +13,8 @@ import { track } from '@/lib/analytics';
 import { saveChef, loadChef, clearChef } from '@/lib/sessionChat';
 import chefAvatar from '@/assets/chef-avatar-new.png';
 import ChatHistorySheet from '@/components/recipe/ChatHistorySheet';
+import { LimitReachedDialog, UsageWarning } from '@/components/subscription';
+import { useSubscriptionUI } from '@/hooks/useSubscriptionUI';
 
 interface Message extends LLMChatMessage {
   allergenWarning?: string;
@@ -37,6 +39,16 @@ const Chat = () => {
     updateChatConversation,
     chatHistory
   } = useStore();
+  
+  const {
+    usage,
+    subscription,
+    getUsagePercentage,
+    showLimitDialog,
+    setShowLimitDialog,
+    limitFeature,
+    handleUpgrade,
+  } = useSubscriptionUI();
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -372,6 +384,14 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
       }
     } catch (error) {
       console.error('Error getting response:', error);
+      const errorMessage = error instanceof Error ? error.message : '';
+      
+      // Check for limit reached
+      if (errorMessage.includes('limit reached') || errorMessage.includes('403')) {
+        setShowLimitDialog(true);
+        return;
+      }
+      
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Sorry, I had trouble processing that. Could you try again? 🤔',
@@ -516,6 +536,30 @@ I need: ${need.length > 0 ? need.join(', ') : 'all ingredients'}.`;
         open={historySheetOpen}
         onOpenChange={setHistorySheetOpen}
       />
+
+      {/* Usage Warning - Show when 80%+ of chat limit used */}
+      {usage && subscription && (
+        <div className="fixed bottom-24 left-4 right-4 z-10">
+          <UsageWarning
+            feature="chat"
+            used={usage.chat_messages_used}
+            limit={subscription.chat_message_limit}
+            onUpgrade={handleUpgrade}
+          />
+        </div>
+      )}
+
+      {/* Limit Reached Dialog */}
+      {usage && subscription && (
+        <LimitReachedDialog
+          open={showLimitDialog}
+          onOpenChange={setShowLimitDialog}
+          feature={limitFeature}
+          used={usage.chat_messages_used}
+          limit={subscription.chat_message_limit}
+          onUpgrade={handleUpgrade}
+        />
+      )}
     </>
   );
 };
