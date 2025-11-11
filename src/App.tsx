@@ -13,6 +13,7 @@ import { TrialEndingBanner } from "@/components/subscription/TrialEndingBanner";
 import { useSubscription } from "@/hooks/useSubscription";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Pantry from "./pages/Pantry";
 import Suggestion from "./pages/Suggestion";
@@ -25,6 +26,7 @@ import Offline from "./pages/Offline";
 import Privacy from "./pages/Privacy";
 import Features from "./pages/Features";
 import Support from "./pages/Support";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -66,8 +68,8 @@ function AppContent() {
     };
   }, [navigate]);
 
-  // Hide bottom nav on onboarding, index, landing, offline, privacy, features, support, and chat pages
-  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/features' || location.pathname === '/support' || location.pathname === '/chat';
+  // Hide bottom nav on onboarding, index, landing, offline, privacy, features, support, auth, and chat pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/features' || location.pathname === '/support' || location.pathname === '/auth' || location.pathname === '/chat';
 
   return (
     <>
@@ -84,13 +86,14 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/landing" element={<Landing />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/pantry" element={<Pantry />} />
-        <Route path="/suggestion" element={<Suggestion />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/recipe/:id" element={<RecipeDetail />} />
-        <Route path="/insights" element={<Insights />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+        <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
+        <Route path="/suggestion" element={<ProtectedRoute><Suggestion /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/recipe/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
+        <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="/offline" element={<Offline />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/features" element={<Features />} />

@@ -40,13 +40,24 @@ export const useInAppPurchases = () => {
 
   const initializeStore = async () => {
     try {
+      // Get authenticated user
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        console.warn('No authenticated user for RevenueCat');
+        return;
+      }
+
       // Configure RevenueCat with your API key
       // Note: API key should be added via Lovable secrets
       const apiKey = Capacitor.getPlatform() === 'ios' 
         ? import.meta.env.VITE_REVENUECAT_IOS_KEY || 'your_ios_key'
         : import.meta.env.VITE_REVENUECAT_ANDROID_KEY || 'your_android_key';
       
-      await Purchases.configure({ apiKey });
+      await Purchases.configure({ 
+        apiKey,
+        appUserID: session.user.id // Link purchases to authenticated user
+      });
 
       // Load product offerings
       await loadProducts();

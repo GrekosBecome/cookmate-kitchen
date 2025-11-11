@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import { NotificationPermission } from '@/components/NotificationPermission';
 import { notificationService } from '@/lib/notifications';
 import { toast as sonnerToast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -716,6 +717,28 @@ const Settings = () => {
             >
               <HelpCircle className="h-5 w-5" />
               Support & Help
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await supabase.auth.signOut();
+                  sonnerToast.success('Logged out successfully');
+                  navigate('/landing', { replace: true });
+                } catch (error: any) {
+                  console.error('Logout error:', error);
+                  sonnerToast.error('Failed to logout');
+                }
+              }}
+              className="w-full gap-2 h-11 min-h-[44px] hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              Logout
             </Button>
           </CardContent>
         </Card>

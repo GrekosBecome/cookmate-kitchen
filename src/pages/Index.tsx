@@ -1,21 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
   const { hasCompletedOnboarding, pantryItems } = useStore();
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Smart redirect logic
-    if (!hasCompletedOnboarding) {
-      navigate('/onboarding', { replace: true });
-    } else if (pantryItems.length === 0) {
-      navigate('/pantry', { replace: true });
-    } else {
-      navigate('/suggestion', { replace: true });
-    }
+    // Check authentication first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate('/landing', { replace: true });
+      } else {
+        // User is authenticated, apply smart redirect logic
+        if (!hasCompletedOnboarding) {
+          navigate('/onboarding', { replace: true });
+        } else if (pantryItems.length === 0) {
+          navigate('/pantry', { replace: true });
+        } else {
+          navigate('/suggestion', { replace: true });
+        }
+      }
+      setCheckingAuth(false);
+    });
   }, [hasCompletedOnboarding, pantryItems.length, navigate]);
 
   return (

@@ -34,7 +34,7 @@ export const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                onClick={() => navigate('/onboarding')}
+                onClick={() => navigate('/auth')}
                 className="gap-2"
               >
                 <ChefHat className="w-5 h-5" />
