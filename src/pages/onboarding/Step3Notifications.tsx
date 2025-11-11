@@ -1,6 +1,5 @@
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-
 interface Step3NotificationsProps {
   notificationTime: string;
   notificationDays: string[];
@@ -9,39 +8,26 @@ interface Step3NotificationsProps {
   onUpdateDays: (days: string[]) => void;
   onUpdateServings: (servings: number) => void;
 }
-
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const timeSlots = [
-  '07:00',
-  '07:30',
-  '08:00',
-  '08:30',
-  '09:00',
-  '09:30',
-  '10:00',
-];
-
+const timeSlots = ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00'];
 export const Step3Notifications = ({
   notificationTime,
   notificationDays,
   servings,
   onUpdateTime,
   onUpdateDays,
-  onUpdateServings,
+  onUpdateServings
 }: Step3NotificationsProps) => {
   const toggleDay = (day: string) => {
     if (notificationDays.includes(day)) {
-      onUpdateDays(notificationDays.filter((d) => d !== day));
+      onUpdateDays(notificationDays.filter(d => d !== day));
     } else {
       onUpdateDays([...notificationDays, day]);
     }
   };
-
-  return (
-    <div className="space-y-8">
+  return <div className="space-y-8">
       <div className="space-y-3 text-center">
-        <h1 className="text-4xl font-extralight tracking-wide gradient-text">
+        <h1 className="text-4xl tracking-wide gradient-text font-normal">
           Set your preferences
         </h1>
         <p className="text-muted-foreground text-lg font-light">
@@ -53,15 +39,7 @@ export const Step3Notifications = ({
       <div className="space-y-4">
         <h2 className="text-xl font-extralight">Notification time</h2>
         <div className="flex flex-wrap gap-3">
-          {timeSlots.map((time) => (
-            <SelectableChip
-              key={time}
-              label={time}
-              selected={notificationTime === time}
-              onToggle={() => onUpdateTime(time)}
-              variant="small"
-            />
-          ))}
+          {timeSlots.map(time => <SelectableChip key={time} label={time} selected={notificationTime === time} onToggle={() => onUpdateTime(time)} variant="small" />)}
         </div>
       </div>
 
@@ -69,15 +47,7 @@ export const Step3Notifications = ({
       <div className="space-y-4">
         <h2 className="text-xl font-extralight">Days</h2>
         <div className="flex flex-wrap gap-3">
-          {weekDays.map((day) => (
-            <SelectableChip
-              key={day}
-              label={day}
-              selected={notificationDays.includes(day)}
-              onToggle={() => toggleDay(day)}
-              variant="small"
-            />
-          ))}
+          {weekDays.map(day => <SelectableChip key={day} label={day} selected={notificationDays.includes(day)} onToggle={() => toggleDay(day)} variant="small" />)}
         </div>
       </div>
 
@@ -85,12 +55,7 @@ export const Step3Notifications = ({
       <div className="space-y-4">
         <h2 className="text-xl font-extralight">Default servings</h2>
         <div className="flex justify-center py-4">
-          <ServingsStepper
-            value={servings}
-            onChange={onUpdateServings}
-            min={1}
-            max={10}
-          />
+          <ServingsStepper value={servings} onChange={onUpdateServings} min={1} max={10} />
         </div>
       </div>
 
@@ -99,6 +64,5 @@ export const Step3Notifications = ({
           Your preferences are stored locally. You control your data.
         </p>
       </div>
-    </div>
-  );
+    </div>;
 };
