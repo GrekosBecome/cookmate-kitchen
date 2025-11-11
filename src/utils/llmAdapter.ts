@@ -1,5 +1,6 @@
 import { PantryItem, Preferences, Recipe, ShoppingState } from '@/types';
 import { allergenCheck, buildContextMessage, proposeSubstitutions, scaleServings } from './chatTools';
+import { supabase } from '@/integrations/supabase/client';
 
 const SYSTEM_PROMPT = `You are "The Chef" — a warm, witty, emotionally intelligent AI cooking companion.
 Your mission is to make cooking feel effortless, personal, and uplifting.
@@ -239,11 +240,19 @@ const callEdgeFunction = async (request: LLMRequest): Promise<LLMResponse> => {
     
     const messages = request.messages.filter(m => m.role !== 'system');
     
+    // Get current session for authorization
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      console.error('No active session');
+      return generateMockResponse(request);
+    }
+    
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     const response = await fetch(`${SUPABASE_URL}/functions/v1/chef-chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         messages,
