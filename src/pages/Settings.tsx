@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, TrendingDown, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
@@ -60,7 +60,6 @@ const Settings = () => {
   const currentPrefs = preferences || defaultPreferences;
   const topTags = getTopTags(learning, 8);
   const likedTags = topTags.filter(t => t.weight > 0);
-  const mutedTags = topTags.filter(t => t.weight < 0);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -502,21 +501,7 @@ const Settings = () => {
                 </div>
               )}
 
-              {mutedTags.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Muted Tags</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {mutedTags.map(({ tag, weight }) => (
-                      <Badge key={tag} variant="outline" className="gap-1">
-                        <TrendingDown className="h-3 w-3" />
-                        {tag} ({weight.toFixed(1)})
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {likedTags.length === 0 && mutedTags.length === 0 && (
+              {likedTags.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   No learning data yet. Keep using the app to personalize your suggestions!
                 </p>
