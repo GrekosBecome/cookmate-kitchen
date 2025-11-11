@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle, CreditCard, Zap, RefreshCw, Settings as SettingsIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
@@ -31,6 +31,8 @@ import { track } from '@/lib/analytics';
 import { ProfileHeader } from '@/components/settings/ProfileHeader';
 import { PreferenceSummaryCard } from '@/components/settings/PreferenceSummaryCard';
 import { GoalsSection } from '@/components/settings/GoalsSection';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Progress } from '@/components/ui/progress';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 4 }, (_, i) => {
@@ -45,6 +47,18 @@ const Settings = () => {
   const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  
+  // Subscription hook
+  const {
+    subscription,
+    usage,
+    loading: subscriptionLoading,
+    getUsagePercentage,
+    handleManageSubscription,
+    handleRestorePurchases,
+    getDaysUntilTrialEnd,
+    formatDate,
+  } = useSubscription();
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
@@ -215,6 +229,161 @@ const Settings = () => {
             onClick={() => toggleSection('servings')}
           />
         </div>
+
+        {/* Subscription & Usage Section */}
+        {!subscriptionLoading && subscription && usage && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <CreditCard className="h-4 w-4" />
+              <h2 className="text-sm font-semibold uppercase tracking-wide">Subscription</h2>
+            </div>
+
+            {/* Subscription Status Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Subscription Status
+                </CardTitle>
+                <CardDescription>
+                  {subscription.subscription_status === 'trial' && getDaysUntilTrialEnd() !== null && (
+                    `Trial ends in ${getDaysUntilTrialEnd()} days`
+                  )}
+                  {subscription.subscription_status === 'premium' && 'Premium active'}
+                  {subscription.subscription_status === 'free' && 'Free tier'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Status Badge */}
+                <div className="flex items-center justify-between">
+                  <Label>Status</Label>
+                  <Badge variant={subscription.subscription_status === 'premium' || subscription.subscription_status === 'trial' ? 'default' : 'secondary'}>
+                    {subscription.subscription_status === 'trial' && '🎁 Trial'}
+                    {subscription.subscription_status === 'premium' && '⭐ Premium'}
+                    {subscription.subscription_status === 'free' && 'Free'}
+                  </Badge>
+                </div>
+                
+                {/* Trial Countdown (if in trial) */}
+                {subscription.subscription_status === 'trial' && (
+                  <div className="bg-primary/10 rounded-lg p-3">
+                    <p className="text-sm font-medium">
+                      Your trial ends on {formatDate(subscription.trial_end_date)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      After trial, you'll be charged €{subscription.price_amount}/month
+                    </p>
+                  </div>
+                )}
+                
+                {/* Renewal Info (if premium) */}
+                {subscription.subscription_status === 'premium' && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <Label>Next billing date</Label>
+                      <span className="text-sm">{formatDate(subscription.next_billing_date)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label>Price</Label>
+                      <span className="text-sm">€{subscription.price_amount}/month</span>
+                    </div>
+                  </>
+                )}
+                
+                <Separator />
+                
+                {/* REQUIRED: Manage Subscription Button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2"
+                  onClick={handleManageSubscription}
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                  Manage Subscription
+                </Button>
+                
+                {/* REQUIRED: Restore Purchases Button */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full gap-2"
+                  onClick={handleRestorePurchases}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Restore Purchases
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Usage Limits Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Usage This Month
+                </CardTitle>
+                <CardDescription>
+                  Resets on {formatDate(usage.reset_date)}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Image Analysis Usage */}
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <Label>Image Analysis</Label>
+                    <span className="text-muted-foreground">
+                      {usage.image_analysis_used}/{subscription.image_analysis_limit}
+                    </span>
+                  </div>
+                  <Progress value={getUsagePercentage('image')} className="h-2" />
+                </div>
+                
+                {/* AI Recipes Usage */}
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <Label>AI Recipes</Label>
+                    <span className="text-muted-foreground">
+                      {usage.ai_recipe_used}/{subscription.ai_recipe_limit}
+                    </span>
+                  </div>
+                  <Progress value={getUsagePercentage('recipe')} className="h-2" />
+                </div>
+                
+                {/* Chat Messages Usage */}
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <Label>Chat Messages</Label>
+                    <span className="text-muted-foreground">
+                      {usage.chat_messages_used}/{subscription.chat_message_limit}
+                    </span>
+                  </div>
+                  <Progress value={getUsagePercentage('chat')} className="h-2" />
+                </div>
+                
+                {/* Upgrade Button (if free) */}
+                {subscription.subscription_status === 'free' && (
+                  <>
+                    <Separator />
+                    <Button className="w-full gap-2">
+                      <Zap className="h-4 w-4" />
+                      Upgrade to Premium
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Terms & Privacy Links */}
+            <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+              <button onClick={() => navigate('/privacy')} className="hover:underline">
+                Privacy Policy
+              </button>
+              <span>•</span>
+              <button onClick={() => navigate('/support')} className="hover:underline">
+                Support
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Preferences Section */}
         <div className="space-y-4">
