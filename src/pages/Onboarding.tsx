@@ -8,6 +8,7 @@ import { Step3Notifications } from './onboarding/Step3Notifications';
 import { useStore, defaultPreferences } from '@/store/useStore';
 import { Preferences } from '@/types';
 import { notificationService } from '@/lib/notifications';
+import { toast } from 'sonner';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -20,18 +21,39 @@ export default function Onboarding() {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Final step
+      // Final step - Request permission BEFORE scheduling
       setPreferences(formData);
       
-      // Schedule notifications if days are selected
+      // Only request permission if user selected notification days
       if (formData.notificationDays.length > 0) {
-        await notificationService.scheduleNotifications({
-          enabled: true,
-          time: formData.notificationTime,
-          days: formData.notificationDays
-        });
+        try {
+          // Request permission NOW (when button clicked)
+          const granted = await notificationService.requestPermission();
+          
+          if (granted) {
+            // Permission granted - schedule notifications
+            await notificationService.scheduleNotifications({
+              enabled: true,
+              time: formData.notificationTime,
+              days: formData.notificationDays
+            });
+            
+            toast.success('Notifications enabled!', {
+              description: 'You\'ll receive daily recipe suggestions'
+            });
+          } else {
+            // Permission denied - show warning but continue
+            toast.error('Notifications blocked', {
+              description: 'You can enable them later in Settings'
+            });
+          }
+        } catch (error) {
+          console.error('Notification permission error:', error);
+          toast.error('Failed to setup notifications');
+        }
       }
       
+      // Navigate to pantry regardless of permission status
       navigate('/pantry');
     }
   };

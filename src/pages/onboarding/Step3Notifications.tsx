@@ -1,10 +1,5 @@
-import { useEffect, useState } from 'react';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { Card, CardHeader, CardDescription } from '@/components/ui/card';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { notificationService } from '@/lib/notifications';
-import { toast } from 'sonner';
 interface Step3NotificationsProps {
   notificationTime: string;
   notificationDays: string[];
@@ -23,32 +18,6 @@ export const Step3Notifications = ({
   onUpdateDays,
   onUpdateServings
 }: Step3NotificationsProps) => {
-  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const requestPermission = async () => {
-      try {
-        const granted = await notificationService.requestPermission();
-        setPermissionGranted(granted);
-        
-        if (granted) {
-          toast.success('Notifications enabled!', {
-            description: 'You\'ll receive daily recipe suggestions'
-          });
-        } else {
-          toast.error('Notifications blocked', {
-            description: 'You can enable them later in Settings'
-          });
-        }
-      } catch (error) {
-        setPermissionGranted(false);
-        toast.error('Failed to request notification permission');
-      }
-    };
-
-    requestPermission();
-  }, []);
-
   const toggleDay = (day: string) => {
     if (notificationDays.includes(day)) {
       onUpdateDays(notificationDays.filter(d => d !== day));
@@ -65,29 +34,6 @@ export const Step3Notifications = ({
           When would you like recipe suggestions?
         </p>
       </div>
-
-      {/* Permission Status Card */}
-      {permissionGranted !== null && (
-        <Card className={permissionGranted ? "border-green-500/50 bg-green-50/50 dark:bg-green-950/20" : "border-orange-500/50 bg-orange-50/50 dark:bg-orange-950/20"}>
-          <CardHeader className="flex flex-row items-center gap-3 space-y-0 py-3">
-            {permissionGranted ? (
-              <>
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <CardDescription className="text-green-700 dark:text-green-300">
-                  ✅ Notifications enabled! Choose when you'd like to be notified.
-                </CardDescription>
-              </>
-            ) : (
-              <>
-                <XCircle className="w-5 h-5 text-orange-500" />
-                <CardDescription className="text-orange-700 dark:text-orange-300">
-                  ⚠️ Notifications blocked. You can enable them later in Settings.
-                </CardDescription>
-              </>
-            )}
-          </CardHeader>
-        </Card>
-      )}
 
       {/* Time */}
       <div className="space-y-4">
