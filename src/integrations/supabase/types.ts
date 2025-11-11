@@ -14,7 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      subscription_transactions: {
+        Row: {
+          app_store_receipt: string | null
+          app_store_transaction_id: string | null
+          created_at: string | null
+          id: string
+          new_status: string
+          old_status: string | null
+          raw_response: Json | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          app_store_receipt?: string | null
+          app_store_transaction_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_status: string
+          old_status?: string | null
+          raw_response?: Json | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          app_store_receipt?: string | null
+          app_store_transaction_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          raw_response?: Json | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          ai_recipe_limit: number
+          app_store_original_transaction_id: string | null
+          app_store_receipt: string | null
+          app_store_transaction_id: string | null
+          auto_renew: boolean | null
+          chat_message_limit: number
+          created_at: string | null
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          image_analysis_limit: number
+          next_billing_date: string | null
+          price_amount: number | null
+          subscription_status: string
+          tier: string
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_recipe_limit?: number
+          app_store_original_transaction_id?: string | null
+          app_store_receipt?: string | null
+          app_store_transaction_id?: string | null
+          auto_renew?: boolean | null
+          chat_message_limit?: number
+          created_at?: string | null
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          image_analysis_limit?: number
+          next_billing_date?: string | null
+          price_amount?: number | null
+          subscription_status?: string
+          tier?: string
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_recipe_limit?: number
+          app_store_original_transaction_id?: string | null
+          app_store_receipt?: string | null
+          app_store_transaction_id?: string | null
+          auto_renew?: boolean | null
+          chat_message_limit?: number
+          created_at?: string | null
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          image_analysis_limit?: number
+          next_billing_date?: string | null
+          price_amount?: number | null
+          subscription_status?: string
+          tier?: string
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_usage: {
+        Row: {
+          ai_recipe_used: number
+          chat_messages_used: number
+          created_at: string | null
+          current_month: string
+          id: string
+          image_analysis_used: number
+          reset_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_recipe_used?: number
+          chat_messages_used?: number
+          created_at?: string | null
+          current_month: string
+          id?: string
+          image_analysis_used?: number
+          reset_date?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_recipe_used?: number
+          chat_messages_used?: number
+          created_at?: string | null
+          current_month?: string
+          id?: string
+          image_analysis_used?: number
+          reset_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
