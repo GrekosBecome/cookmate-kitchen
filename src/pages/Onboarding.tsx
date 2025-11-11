@@ -7,6 +7,7 @@ import { Step2Restrictions } from './onboarding/Step2Restrictions';
 import { Step3Notifications } from './onboarding/Step3Notifications';
 import { useStore, defaultPreferences } from '@/store/useStore';
 import { Preferences } from '@/types';
+import { notificationService } from '@/lib/notifications';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -15,12 +16,22 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Preferences>(defaultPreferences);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
       // Final step
       setPreferences(formData);
+      
+      // Schedule notifications if days are selected
+      if (formData.notificationDays.length > 0) {
+        await notificationService.scheduleNotifications({
+          enabled: true,
+          time: formData.notificationTime,
+          days: formData.notificationDays
+        });
+      }
+      
       navigate('/pantry');
     }
   };

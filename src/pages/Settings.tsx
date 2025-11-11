@@ -44,9 +44,17 @@ const Settings = () => {
   const { preferences, updatePreferences, reset, learning, resetLearning, memory, updateMemory } = useStore();
   const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
+    
+    // Check notification permission status
+    const checkPermission = async () => {
+      const granted = await notificationService.checkPermission();
+      setPermissionDenied(!granted);
+    };
+    checkPermission();
   }, []);
 
   const currentPrefs = preferences || defaultPreferences;
@@ -315,8 +323,23 @@ const Settings = () => {
             </button>
             {expandedSection === 'notifications' && (
               <CardContent className="space-y-4 pt-0">
-                <NotificationPermission />
+                {/* Compact Permission Warning */}
+                {permissionDenied && (
+                  <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-3 flex items-start gap-2">
+                    <Bell className="w-4 h-4 text-orange-600 mt-0.5" />
+                    <div className="flex-1 text-sm">
+                      <p className="font-medium text-orange-900 dark:text-orange-100">
+                        Notifications are blocked
+                      </p>
+                      <p className="text-orange-700 dark:text-orange-300 text-xs mt-1">
+                        Enable them in Settings → Kitchen Mate → Notifications
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
                 <Separator />
+                
                 <div>
                   <Label htmlFor="time-select">Time</Label>
                   <Select
