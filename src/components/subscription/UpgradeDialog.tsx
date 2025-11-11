@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+import { useInAppPurchases } from '@/hooks/useInAppPurchases';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Camera, ChefHat, MessageCircle, Zap, Check, Crown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface UpgradeDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface UpgradeDialogProps {
 
 export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
   const navigate = useNavigate();
+  const { isNative, products, loading, purchaseProduct } = useInAppPurchases();
 
   const features = [
     {
@@ -44,9 +46,16 @@ export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
     },
   ];
 
-  const handleUpgrade = () => {
-    onOpenChange(false);
-    navigate('/settings');
+  const handleUpgrade = async () => {
+    if (isNative && products.length > 0) {
+      // Use native purchase
+      await purchaseProduct(products[0].id);
+      onOpenChange(false);
+    } else {
+      // Navigate to settings for web checkout
+      onOpenChange(false);
+      navigate('/settings');
+    }
   };
 
   return (

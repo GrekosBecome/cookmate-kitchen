@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle, CreditCard, Zap, RefreshCw, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle, CreditCard, Zap, RefreshCw, Settings as SettingsIcon, RotateCcw, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
@@ -32,6 +32,7 @@ import { ProfileHeader } from '@/components/settings/ProfileHeader';
 import { PreferenceSummaryCard } from '@/components/settings/PreferenceSummaryCard';
 import { GoalsSection } from '@/components/settings/GoalsSection';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useInAppPurchases } from '@/hooks/useInAppPurchases';
 import { Progress } from '@/components/ui/progress';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -54,11 +55,10 @@ const Settings = () => {
     usage,
     loading: subscriptionLoading,
     getUsagePercentage,
-    handleManageSubscription,
-    handleRestorePurchases,
     getDaysUntilTrialEnd,
     formatDate,
   } = useSubscription();
+  const { isNative, products, loading: purchaseLoading, restoring, purchaseProduct, restorePurchases } = useInAppPurchases();
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
@@ -157,6 +157,26 @@ const Settings = () => {
         ? "We'll remember your preferences and adapt over time." 
         : "We'll stop tracking your cooking patterns.",
     });
+  };
+
+  const handleManageSubscription = () => {
+    if (isNative) {
+      sonnerToast.info('Please use the App Store to manage your subscription');
+    } else {
+      // Web users: Navigate to Apple subscriptions
+      window.open('itms-apps://apps.apple.com/account/subscriptions', '_system');
+    }
+  };
+
+  const handleNativePurchase = async (productId: string) => {
+    await purchaseProduct(productId);
+  };
+
+  const handleRestorePurchases = async () => {
+    await restorePurchases();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   const handleDeleteAllData = () => {
