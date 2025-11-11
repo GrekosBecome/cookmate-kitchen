@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from './CameraCapture';
+import { toast } from 'sonner';
+import { compressImage } from '@/utils/imageCompression';
 
 interface ImageUploaderProps {
   onImagesChange: (images: string[]) => void;
@@ -24,24 +26,24 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5, autoOpenCamera = 
     }
   }, [autoOpenCamera, autoOpenGallery]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const remainingSlots = maxImages - images.length;
     const filesToProcess = files.slice(0, remainingSlots);
 
-    const readers = filesToProcess.map((file) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(readers).then((newImages) => {
-      const updated = [...images, ...newImages];
+    try {
+      // Compress all images in parallel (800x800px for pantry, higher quality than profile)
+      const compressedImages = await Promise.all(
+        filesToProcess.map(file => compressImage(file, 800, 800, 0.85))
+      );
+      
+      const updated = [...images, ...compressedImages];
       setImages(updated);
       onImagesChange(updated);
-    });
+    } catch (error) {
+      console.error('Image compression error:', error);
+      toast.error('Failed to process images');
+    }
   };
 
   const removeImage = (index: number) => {

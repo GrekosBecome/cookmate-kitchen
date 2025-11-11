@@ -2,28 +2,49 @@ import { User, Camera } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useStore, defaultPreferences } from '@/store/useStore';
 import { useRef } from 'react';
+import { toast } from 'sonner';
+import { compressImage, getImageSizeKB } from '@/utils/imageCompression';
 
 export const ProfileHeader = () => {
   const { preferences, updatePreferences } = useStore();
   const currentPrefs = preferences || defaultPreferences;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Limit file size to 500KB
-    if (file.size > 500 * 1024) {
-      alert('Image size should be less than 500KB');
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      updatePreferences({ profileImage: base64String });
-    };
-    reader.readAsDataURL(file);
+    // Increased limit to 10MB (reasonable for raw photos)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size should be less than 10MB');
+      return;
+    }
+
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading('Uploading image...');
+      
+      // Compress image automatically
+      const compressedBase64 = await compressImage(file, 400, 400, 0.8);
+      const finalSizeKB = getImageSizeKB(compressedBase64);
+      
+      // Update preferences with compressed image
+      updatePreferences({ profileImage: compressedBase64 });
+      
+      // Dismiss loading and show success
+      toast.dismiss(loadingToast);
+      toast.success(`Photo updated (${finalSizeKB}KB)`);
+      
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error('Failed to upload image');
+    }
   };
 
   const handleRemovePhoto = () => {
