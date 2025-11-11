@@ -211,13 +211,6 @@ export default function Pantry() {
     addPantryItems(itemsToSave);
     setTodaysPick(null);
     track('pantry_scan', { itemsCount: itemsToSave.length });
-    toast.success(`Added ${itemsToSave.length} items to pantry`, {
-      duration: 6000,
-      action: {
-        label: 'View Recipes',
-        onClick: () => navigate('/suggestion'),
-      },
-    });
     
     // Reset detection state
     setViewMode('list');
@@ -238,13 +231,6 @@ export default function Pantry() {
     };
     addPantryItem(item);
     setTodaysPick(null);
-    toast.success(`Added ${name}`, {
-      duration: 6000,
-      action: {
-        label: 'View Recipes',
-        onClick: () => navigate('/suggestion'),
-      },
-    });
   };
 
   const handleToggleUsed = (id: string) => {
@@ -288,7 +274,6 @@ export default function Pantry() {
 
   const handleRemoveShoppingItem = (id: string) => {
     removeShoppingItem(id);
-    toast.success('Removed from shopping list');
   };
 
   const handleEditItem = (id: string) => {
@@ -301,7 +286,6 @@ export default function Pantry() {
 
   const handleSaveEdit = (id: string, name: string, qty: number, unit: PantryUnit) => {
     updatePantryItem(id, { name: name.toLowerCase(), qty, unit });
-    toast.success('Updated ' + name);
     setEditingItem(null);
   };
 

@@ -37,10 +37,6 @@ export default function Onboarding() {
               time: formData.notificationTime,
               days: formData.notificationDays
             });
-            
-            toast.success('Notifications enabled!', {
-              description: 'You\'ll receive daily recipe suggestions'
-            });
           } else {
             // Permission denied - show warning but continue
             toast.error('Notifications blocked', {
