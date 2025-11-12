@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Purchases, PurchasesPackage, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
+import { RevenueCatUI } from '@revenuecat/purchases-capacitor-ui';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -215,6 +216,39 @@ export const useInAppPurchases = () => {
     }
   }, []);
 
+  const getManagementURL = useCallback(async (): Promise<string | null> => {
+    if (!isNative) return null;
+    
+    try {
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      return customerInfo.managementURL || null;
+    } catch (error) {
+      console.error('Error getting management URL:', error);
+      return null;
+    }
+  }, [isNative]);
+
+  const presentCustomerCenter = useCallback(async () => {
+    if (!isNative) {
+      toast.error('Customer Center is only available in the mobile app');
+      return;
+    }
+
+    try {
+      console.log('🏪 Presenting Customer Center...');
+      await RevenueCatUI.presentCustomerCenter();
+    } catch (error) {
+      console.error('Error presenting customer center:', error);
+      // Fallback to management URL
+      const url = await getManagementURL();
+      if (url) {
+        window.open(url, '_system');
+      } else {
+        toast.error('Unable to open subscription management');
+      }
+    }
+  }, [isNative, getManagementURL]);
+
   return {
     isNative,
     products,
@@ -223,5 +257,7 @@ export const useInAppPurchases = () => {
     purchaseProduct,
     restorePurchases,
     checkEntitlement,
+    getManagementURL,
+    presentCustomerCenter,
   };
 };

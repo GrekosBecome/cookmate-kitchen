@@ -59,7 +59,16 @@ const Settings = () => {
     getDaysUntilTrialEnd,
     formatDate,
   } = useSubscription();
-  const { isNative, products, loading: purchaseLoading, restoring, purchaseProduct, restorePurchases } = useInAppPurchases();
+  const { 
+    isNative, 
+    products, 
+    loading: purchaseLoading, 
+    restoring, 
+    purchaseProduct, 
+    restorePurchases,
+    presentCustomerCenter,
+    getManagementURL 
+  } = useInAppPurchases();
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
@@ -160,12 +169,18 @@ const Settings = () => {
     });
   };
 
-  const handleManageSubscription = () => {
+  const handleManageSubscription = async () => {
     if (isNative) {
-      sonnerToast.info('Please use the App Store to manage your subscription');
+      // Native apps: Use RevenueCat Customer Center
+      await presentCustomerCenter();
     } else {
-      // Web users: Navigate to Apple subscriptions
-      window.open('itms-apps://apps.apple.com/account/subscriptions', '_system');
+      // Web: Open management URL
+      const url = await getManagementURL();
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        sonnerToast.info('Subscription management is available in the mobile app');
+      }
     }
   };
 
@@ -318,20 +333,33 @@ const Settings = () => {
                   variant="outline" 
                   className="w-full gap-2"
                   onClick={handleManageSubscription}
+                  disabled={purchaseLoading || restoring}
                 >
                   <SettingsIcon className="h-4 w-4" />
                   Manage Subscription
                 </Button>
                 
-                {/* REQUIRED: Restore Purchases Button */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full gap-2"
-                  onClick={handleRestorePurchases}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Restore Purchases
-                </Button>
+                {/* REQUIRED: Restore Purchases Button (Native only) */}
+                {isNative && (
+                  <Button 
+                    variant="ghost" 
+                    className="w-full gap-2"
+                    onClick={handleRestorePurchases}
+                    disabled={purchaseLoading || restoring}
+                  >
+                    {restoring ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Restoring...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4" />
+                        Restore Purchases
+                      </>
+                    )}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
