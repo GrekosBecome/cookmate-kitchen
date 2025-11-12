@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
       iconColor: '#488AFF',
       sound: 'beep.wav',
     },
+    SignInWithApple: {
+      clientId: 'com.cookmate.kitchen',
+      redirectURI: 'https://gsozaqboqcjbthbighqg.supabase.co/auth/v1/callback',
+      scopes: 'email name',
+    },
   },
 };
 

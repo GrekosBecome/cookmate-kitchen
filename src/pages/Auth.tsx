@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ChefHat, Mail, X, User } from 'lucide-react';
+import { Loader2, ChefHat, Mail, X, User, Apple } from 'lucide-react';
+import { SignInWithApple, SignInWithAppleResponse, SignInWithAppleOptions } from '@capacitor-community/apple-sign-in';
+import { Capacitor } from '@capacitor/core';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -29,6 +31,58 @@ const Auth = () => {
       setCheckingSession(false);
     });
   }, [navigate, location]);
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      // Check if running on iOS
+      if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') {
+        toast({
+          title: "Not available",
+          description: "Apple Sign-In is only available on iOS devices",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      const options: SignInWithAppleOptions = {
+        clientId: 'com.cookmate.kitchen',
+        redirectURI: 'https://gsozaqboqcjbthbighqg.supabase.co/auth/v1/callback',
+        scopes: 'email name',
+        state: '12345',
+        nonce: 'nonce',
+      };
+
+      const result: SignInWithAppleResponse = await SignInWithApple.authorize(options);
+
+      // Sign in to Supabase with Apple ID token
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: result.response.identityToken,
+        nonce: 'nonce',
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        toast({
+          title: "Welcome!",
+          description: "You're now logged in with Apple",
+        });
+        navigate('/onboarding', { replace: true });
+      }
+    } catch (error: any) {
+      console.error('Apple Sign In error:', error);
+      toast({
+        title: "Apple Sign In failed",
+        description: error.message || "Please try again",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,16 +193,19 @@ const Auth = () => {
           <div className="px-6 pb-8 space-y-3">
             {!showEmailForm ? (
               <>
-                {/* Email Option */}
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full h-14 text-base font-medium justify-start gap-4"
-                  onClick={() => setShowEmailForm(true)}
-                >
-                  <Mail className="h-5 w-5" />
-                  Continue with Email
-                </Button>
+                {/* Apple Sign-In Option (iOS only) */}
+                {Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios' && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full h-14 text-base font-medium justify-start gap-4 bg-black text-white hover:bg-black/90 hover:text-white border-black"
+                    onClick={handleAppleSignIn}
+                    disabled={loading}
+                  >
+                    <Apple className="h-5 w-5" />
+                    Continue with Apple
+                  </Button>
+                )}
 
                 {/* Google Option */}
                 <Button
@@ -183,6 +240,17 @@ const Auth = () => {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                   Continue with Google
+                </Button>
+
+                {/* Email Option */}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-14 text-base font-medium justify-start gap-4"
+                  onClick={() => setShowEmailForm(true)}
+                >
+                  <Mail className="h-5 w-5" />
+                  Continue with Email
                 </Button>
               </>
             ) : (
