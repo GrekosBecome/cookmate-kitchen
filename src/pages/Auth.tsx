@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { SignInWithApple, SignInWithAppleResponse, SignInWithAppleOptions } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
+import { z } from 'zod';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -92,16 +94,59 @@ const Auth = () => {
     }
   };
 
+  const emailSchema = z.string().trim().email({ message: "Invalid email address" });
+
   const handleContinueWithEmail = () => {
-    if (!email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address",
-        variant: "destructive"
-      });
-      return;
+    try {
+      emailSchema.parse(email);
+      setShowPasswordDialog(true);
+      setIsForgotPassword(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Invalid email",
+          description: error.errors[0].message,
+          variant: "destructive"
+        });
+      }
     }
-    setShowPasswordDialog(true);
+  };
+
+  const handleForgotPassword = async () => {
+    try {
+      emailSchema.parse(email);
+      
+      setLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a password reset link",
+      });
+      
+      setShowPasswordDialog(false);
+      setIsForgotPassword(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Invalid email",
+          description: error.errors[0].message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to send reset email",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -287,35 +332,78 @@ const Auth = () => {
       </div>
 
       {/* Password Dialog */}
-      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+      <Dialog open={showPasswordDialog} onOpenChange={(open) => {
+        setShowPasswordDialog(open);
+        if (!open) {
+          setIsForgotPassword(false);
+          setPassword('');
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Enter your password</DialogTitle>
+            <DialogTitle className="text-2xl">
+              {isForgotPassword ? 'Reset your password' : 'Enter your password'}
+            </DialogTitle>
             <DialogDescription>
-              for {email}
+              {isForgotPassword 
+                ? `We'll send a reset link to ${email}`
+                : `for ${email}`
+              }
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoFocus
-              className="h-12 text-base"
-            />
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-12 text-base"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                'Continue'
-              )}
-            </Button>
-          </form>
+          
+          {isForgotPassword ? (
+            <div className="space-y-4 mt-4">
+              <Button
+                onClick={handleForgotPassword}
+                disabled={loading}
+                className="w-full h-12 text-base"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  'Send reset link'
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsForgotPassword(false)}
+                className="w-full"
+              >
+                Back to sign in
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+                className="h-12 text-base"
+              />
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 text-base"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  'Continue'
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(true)}
+                className="text-sm text-muted-foreground hover:text-foreground underline w-full text-center"
+              >
+                Forgot password?
+              </button>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </>
