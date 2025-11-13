@@ -386,10 +386,10 @@ const Settings = () => {
                   <Progress value={getUsagePercentage('image')} className="h-2" />
                 </div>
                 
-                {/* AI Recipes Usage */}
+                {/* Recipes Usage */}
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <Label>AI Recipes</Label>
+                    <Label>Recipes</Label>
                     <span className="text-muted-foreground">
                       {usage.ai_recipe_used}/{subscription.ai_recipe_limit}
                     </span>

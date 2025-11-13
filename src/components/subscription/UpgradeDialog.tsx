@@ -34,7 +34,7 @@ export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
     },
     {
       icon: ChefHat,
-      title: '50 AI Recipe Generations',
+      title: '50 Recipe Generations',
       description: 'Get custom gourmet recipes',
       free: '0/month',
       premium: '50/month',
