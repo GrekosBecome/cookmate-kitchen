@@ -59,6 +59,71 @@
 
 ---
 
+## ⚠️ ΠΡΟΣΟΧΗ: Κρίσιμα Security Requirements
+
+### 🔐 Service ID vs App ID
+
+**ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ**: Υπάρχει διαφορά μεταξύ **App ID** και **Service ID**!
+
+- **App ID** (`com.cookmate.kitchen`): Identifies την iOS εφαρμογή σου
+- **Service ID** (`com.cookmate.kitchen.auth`): Identifies το web authentication service για Supabase
+
+**❌ ΛΑΘΟΣ**:
+```typescript
+clientId: 'com.cookmate.kitchen'  // App ID - ΔΕΝ θα λειτουργήσει με Supabase!
+```
+
+**✅ ΣΩΣΤΟ**:
+```typescript
+clientId: 'com.cookmate.kitchen.auth'  // Service ID - Απαραίτητο για Supabase!
+```
+
+### 🔒 Random Nonce & State
+
+Τα `nonce` και `state` **ΠΡΕΠΕΙ** να είναι cryptographically secure random values για κάθε authentication request.
+
+**❌ ΛΑΘΟΣ** (Security Risk!):
+```typescript
+nonce: 'nonce',        // Hardcoded - ΕΠΙΚΙΝΔΥΝΟ!
+state: '12345',        // Hardcoded - ΕΠΙΚΙΝΔΥΝΟ!
+```
+
+**✅ ΣΩΣΤΟ**:
+```typescript
+const rawNonce = crypto.randomUUID();  // Random για κάθε request
+const state = crypto.randomUUID();     // Random για κάθε request
+```
+
+### 🔄 Same Nonce για Capacitor και Supabase
+
+Το **ίδιο** raw nonce πρέπει να χρησιμοποιηθεί και στα δύο:
+
+```typescript
+// 1. Generate once
+const rawNonce = crypto.randomUUID();
+
+// 2. Use in Capacitor authorize
+await SignInWithApple.authorize({
+  nonce: rawNonce,  // Raw nonce
+  // ...
+});
+
+// 3. Use the SAME in Supabase
+await supabase.auth.signInWithIdToken({
+  nonce: rawNonce,  // Same raw nonce!
+  // ...
+});
+```
+
+### 🚫 Common Mistakes να αποφύγεις
+
+1. ❌ Χρήση App ID αντί για Service ID → Authentication θα αποτύχει
+2. ❌ Hardcoded nonce → Security vulnerability (replay attacks)
+3. ❌ Διαφορετικά nonces σε Capacitor/Supabase → Token validation θα αποτύχει
+4. ❌ Λάθος redirect URL στο Apple Developer → invalid_request error
+
+---
+
 ## 🔧 Βήμα 2: Supabase Configuration
 
 ### 2.1 Ρύθμιση στο Lovable Cloud

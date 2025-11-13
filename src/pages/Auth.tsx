@@ -46,21 +46,25 @@ const Auth = () => {
         return;
       }
 
+      // Generate secure random nonce and state
+      const rawNonce = crypto.randomUUID();
+      const state = crypto.randomUUID();
+      
       const options: SignInWithAppleOptions = {
-        clientId: 'com.cookmate.kitchen',
+        clientId: 'com.cookmate.kitchen.auth', // Service ID (not App ID!)
         redirectURI: 'https://gsozaqboqcjbthbighqg.supabase.co/auth/v1/callback',
         scopes: 'email name',
-        state: '12345',
-        nonce: 'nonce',
+        state: state,
+        nonce: rawNonce,
       };
 
       const result: SignInWithAppleResponse = await SignInWithApple.authorize(options);
 
-      // Sign in to Supabase with Apple ID token
+      // Sign in to Supabase with Apple ID token using the SAME raw nonce
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
         token: result.response.identityToken,
-        nonce: 'nonce',
+        nonce: rawNonce,
       });
 
       if (error) throw error;

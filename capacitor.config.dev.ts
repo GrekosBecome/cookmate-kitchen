@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
       sound: 'beep.wav',
     },
     SignInWithApple: {
-      clientId: 'com.cookmate.kitchen',
+      clientId: 'com.cookmate.kitchen.auth',
       redirectURI: 'https://gsozaqboqcjbthbighqg.supabase.co/auth/v1/callback',
       scopes: 'email name',
     },
