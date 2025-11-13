@@ -251,63 +251,66 @@ const Auth = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           {/* Logo/Icon */}
-          <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center">
-              <svg className="w-10 h-10 text-background" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2c-.8 0-1.5.4-1.9 1.1-.5.7-.6 1.5-.4 2.3L12 14l2.3-8.6c.2-.8.1-1.6-.4-2.3C13.5 2.4 12.8 2 12 2z"/>
-                <path d="M17.5 8c-1.2 0-2.3.6-3 1.5l-2 2.5-2-2.5C9.8 8.6 8.7 8 7.5 8c-2.5 0-4.5 2-4.5 4.5S5 17 7.5 17c1.2 0 2.3-.6 3-1.5l2-2.5 2 2.5c.7.9 1.8 1.5 3 1.5 2.5 0 4.5-2 4.5-4.5S20 8 17.5 8zm-10 7c-1.4 0-2.5-1.1-2.5-2.5S6.1 10 7.5 10s2.5 1.1 2.5 2.5S8.9 15 7.5 15zm10 0c-1.4 0-2.5-1.1-2.5-2.5s1.1-2.5 2.5-2.5 2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/>
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-foreground flex items-center justify-center">
+              <svg className="w-12 h-12 text-background" viewBox="0 0 64 64" fill="currentColor">
+                {/* Chef Hat */}
+                <path d="M32 8C28 8 24.5 10 22 13c-2-1-4.5-1.5-7-1.5-6.5 0-12 5.5-12 12 0 4 2 7.5 5 9.5V52c0 2 1.5 4 4 4h40c2.5 0 4-2 4-4V33c3-2 5-5.5 5-9.5 0-6.5-5.5-12-12-12-2.5 0-5 .5-7 1.5C39.5 10 36 8 32 8zm0 4c3 0 5.5 1.5 7 4 0 0 .5 1 1.5 1s1.5-1 1.5-1c1.5-1.5 3.5-2 5.5-2 4.5 0 8 3.5 8 8 0 3-1.5 5.5-4 7-1 .5-1.5 1.5-1.5 2.5V52H14V32.5c0-1-.5-2-1.5-2.5-2.5-1.5-4-4-4-7 0-4.5 3.5-8 8-8 2 0 4 .5 5.5 2 0 0 .5 1 1.5 1s1.5-1 1.5-1c1.5-2.5 4-4 7-4z"/>
+                {/* Hat pleats */}
+                <ellipse cx="32" cy="22" rx="14" ry="4" opacity="0.2"/>
+                <path d="M46 22c0 2.2-6.3 4-14 4s-14-1.8-14-4c0-2.2 6.3-4 14-4s14 1.8 14 4z" opacity="0.3"/>
               </svg>
             </div>
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-semibold text-center text-foreground mb-8">
+          <h1 className="text-xl sm:text-2xl font-semibold text-center text-foreground mb-6 sm:mb-8 px-2">
             Get started with your email
           </h1>
 
           {/* Email Input */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <Input
               type="email"
               placeholder="your.email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-14 bg-muted/30 border-border text-base placeholder:text-muted-foreground/60 rounded-xl"
+              className="h-12 sm:h-14 bg-muted/30 border-border text-sm sm:text-base placeholder:text-muted-foreground/60 rounded-xl"
             />
 
             <Button
               onClick={handleContinueWithEmail}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
+              className="w-full h-12 sm:h-14 text-sm sm:text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
             >
               Continue
             </Button>
           </div>
 
           {/* Divider */}
-          <div className="relative my-8">
+          <div className="relative my-6 sm:my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
+            <div className="relative flex justify-center text-xs sm:text-sm">
               <span className="px-4 bg-background text-muted-foreground">or</span>
             </div>
           </div>
 
           {/* Social Login Buttons */}
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             <Button
               type="button"
               onClick={handleAppleSignIn}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
+              className="w-full h-12 sm:h-14 text-sm sm:text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
             >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
               </svg>
               Continue with Apple
@@ -320,9 +323,9 @@ const Auth = () => {
               }}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
+              className="w-full h-12 sm:h-14 text-sm sm:text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
             >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -333,7 +336,7 @@ const Auth = () => {
           </div>
 
           {/* Sign in link */}
-          <p className="text-center text-sm text-muted-foreground pt-4">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground pt-3 sm:pt-4">
             Already have an account?{' '}
             <button 
               onClick={handleSignInClick}
@@ -344,7 +347,7 @@ const Auth = () => {
           </p>
 
           {/* Terms */}
-          <p className="text-center text-xs text-muted-foreground/70 px-8 pt-4">
+          <p className="text-center text-xs text-muted-foreground/70 px-4 sm:px-8 pt-3 sm:pt-4">
             By continuing, you agree to our{' '}
             <a href="/terms" className="underline hover:text-foreground">
               Terms of Use
@@ -367,12 +370,12 @@ const Auth = () => {
           setIsForgotPassword(false);
         }
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md mx-4 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl">
+            <DialogTitle className="text-xl sm:text-2xl">
               {isForgotPassword ? 'Reset your password' : 'Sign in'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               {isForgotPassword 
                 ? `We'll send a reset link to your email`
                 : 'Enter your email to continue'
@@ -381,21 +384,21 @@ const Auth = () => {
           </DialogHeader>
           
           {isForgotPassword ? (
-            <div className="space-y-4 mt-4">
+            <div className="space-y-3 sm:space-y-4 mt-4">
               <Input
                 type="email"
                 placeholder="your.email@example.com"
                 value={signInEmail}
                 onChange={(e) => setSignInEmail(e.target.value)}
-                className="h-12 text-base"
+                className="h-11 sm:h-12 text-sm sm:text-base"
               />
               <Button
                 onClick={handleForgotPassword}
                 disabled={loading}
-                className="w-full h-12 text-base"
+                className="w-full h-11 sm:h-12 text-sm sm:text-base"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
                   'Send reset link'
                 )}
@@ -404,20 +407,20 @@ const Auth = () => {
                 type="button"
                 variant="ghost"
                 onClick={() => setIsForgotPassword(false)}
-                className="w-full"
+                className="w-full text-sm sm:text-base"
               >
                 Back to sign in
               </Button>
             </div>
           ) : (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
-              <div className="space-y-4">
+            <form onSubmit={handlePasswordSubmit} className="space-y-3 sm:space-y-4 mt-4">
+              <div className="space-y-3 sm:space-y-4">
                 <Input
                   type="email"
                   placeholder="your.email@example.com"
                   value={signInEmail}
                   onChange={(e) => setSignInEmail(e.target.value)}
-                  className="h-12 text-base"
+                  className="h-11 sm:h-12 text-sm sm:text-base"
                   disabled={showPasswordField}
                 />
                 
@@ -426,7 +429,7 @@ const Auth = () => {
                     type="button"
                     onClick={handleSignInEmailContinue}
                     disabled={loading}
-                    className="w-full h-12 text-base"
+                    className="w-full h-11 sm:h-12 text-sm sm:text-base"
                   >
                     Continue
                   </Button>
@@ -438,15 +441,15 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       autoFocus
-                      className="h-12 text-base"
+                      className="h-11 sm:h-12 text-sm sm:text-base"
                     />
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12 text-base"
+                      className="w-full h-11 sm:h-12 text-sm sm:text-base"
                     >
                       {loading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                       ) : (
                         'Sign in'
                       )}
@@ -454,7 +457,7 @@ const Auth = () => {
                     <button
                       type="button"
                       onClick={() => setIsForgotPassword(true)}
-                      className="text-sm text-muted-foreground hover:text-foreground underline w-full text-center"
+                      className="text-xs sm:text-sm text-muted-foreground hover:text-foreground underline w-full text-center"
                     >
                       Forgot password?
                     </button>
@@ -473,29 +476,29 @@ const Auth = () => {
           setPassword('');
         }
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md mx-4 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Enter your password</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl sm:text-2xl">Enter your password</DialogTitle>
+            <DialogDescription className="text-sm">
               for {email}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
+          <form onSubmit={handlePasswordSubmit} className="space-y-3 sm:space-y-4 mt-4">
             <Input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoFocus
-              className="h-12 text-base"
+              className="h-11 sm:h-12 text-sm sm:text-base"
             />
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 text-base"
+              className="w-full h-11 sm:h-12 text-sm sm:text-base"
             >
               {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
               ) : (
                 'Continue'
               )}
