@@ -1,16 +1,16 @@
 project_id = "gsozaqboqcjbthbighqg"
 
 [functions.chef-chat]
-verify_jwt = true
+verify_jwt = false
 
 [functions.detect-ingredients]
-verify_jwt = true
+verify_jwt = false
 
 [functions.analyze-image]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-gourmet-recipes]
-verify_jwt = true
+verify_jwt = false
 
 [functions.validate-receipt]
-verify_jwt = true
+verify_jwt = false
