@@ -757,7 +757,7 @@ const Settings = () => {
                 try {
                   await supabase.auth.signOut();
                   sonnerToast.success('Logged out successfully');
-                  navigate('/landing', { replace: true });
+                  navigate('/auth', { replace: true });
                 } catch (error: any) {
                   console.error('Logout error:', error);
                   sonnerToast.error('Failed to logout');
