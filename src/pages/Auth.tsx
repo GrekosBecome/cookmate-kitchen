@@ -26,6 +26,9 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showSignInDialog, setShowSignInDialog] = useState(false);
+  const [showPasswordField, setShowPasswordField] = useState(false);
+  const [signInEmail, setSignInEmail] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -112,12 +115,33 @@ const Auth = () => {
     }
   };
 
+  const handleSignInClick = () => {
+    setShowSignInDialog(true);
+    setShowPasswordField(false);
+    setPassword('');
+  };
+
+  const handleSignInEmailContinue = () => {
+    try {
+      emailSchema.parse(signInEmail);
+      setShowPasswordField(true);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Invalid email",
+          description: error.errors[0].message,
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   const handleForgotPassword = async () => {
     try {
-      emailSchema.parse(email);
+      emailSchema.parse(signInEmail);
       
       setLoading(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(signInEmail, {
         redirectTo: `${window.location.origin}/auth`,
       });
 
@@ -128,7 +152,8 @@ const Auth = () => {
         description: "We've sent you a password reset link",
       });
       
-      setShowPasswordDialog(false);
+      setShowSignInDialog(false);
+      setShowPasswordField(false);
       setIsForgotPassword(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -164,9 +189,10 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Try to sign in first
+      // Try to sign in with the sign in email
+      const emailToUse = showSignInDialog ? signInEmail : email;
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailToUse,
         password,
       });
 
@@ -310,7 +336,7 @@ const Auth = () => {
           <p className="text-center text-sm text-muted-foreground pt-4">
             Already have an account?{' '}
             <button 
-              onClick={() => setShowPasswordDialog(true)}
+              onClick={handleSignInClick}
               className="text-foreground underline hover:text-foreground/80 font-medium"
             >
               Sign in
@@ -331,29 +357,38 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Password Dialog */}
-      <Dialog open={showPasswordDialog} onOpenChange={(open) => {
-        setShowPasswordDialog(open);
+      {/* Sign In Dialog */}
+      <Dialog open={showSignInDialog} onOpenChange={(open) => {
+        setShowSignInDialog(open);
         if (!open) {
-          setIsForgotPassword(false);
+          setShowPasswordField(false);
           setPassword('');
+          setSignInEmail('');
+          setIsForgotPassword(false);
         }
       }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {isForgotPassword ? 'Reset your password' : 'Enter your password'}
+              {isForgotPassword ? 'Reset your password' : 'Sign in'}
             </DialogTitle>
             <DialogDescription>
               {isForgotPassword 
-                ? `We'll send a reset link to ${email}`
-                : `for ${email}`
+                ? `We'll send a reset link to your email`
+                : 'Enter your email to continue'
               }
             </DialogDescription>
           </DialogHeader>
           
           {isForgotPassword ? (
             <div className="space-y-4 mt-4">
+              <Input
+                type="email"
+                placeholder="your.email@example.com"
+                value={signInEmail}
+                onChange={(e) => setSignInEmail(e.target.value)}
+                className="h-12 text-base"
+              />
               <Button
                 onClick={handleForgotPassword}
                 disabled={loading}
@@ -376,34 +411,96 @@ const Auth = () => {
             </div>
           ) : (
             <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoFocus
-                className="h-12 text-base"
-              />
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 text-base"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={signInEmail}
+                  onChange={(e) => setSignInEmail(e.target.value)}
+                  className="h-12 text-base"
+                  disabled={showPasswordField}
+                />
+                
+                {!showPasswordField ? (
+                  <Button
+                    type="button"
+                    onClick={handleSignInEmailContinue}
+                    disabled={loading}
+                    className="w-full h-12 text-base"
+                  >
+                    Continue
+                  </Button>
                 ) : (
-                  'Continue'
+                  <>
+                    <Input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoFocus
+                      className="h-12 text-base"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-12 text-base"
+                    >
+                      {loading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        'Sign in'
+                      )}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(true)}
+                      className="text-sm text-muted-foreground hover:text-foreground underline w-full text-center"
+                    >
+                      Forgot password?
+                    </button>
+                  </>
                 )}
-              </Button>
-              <button
-                type="button"
-                onClick={() => setIsForgotPassword(true)}
-                className="text-sm text-muted-foreground hover:text-foreground underline w-full text-center"
-              >
-                Forgot password?
-              </button>
+              </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Dialog for Sign Up */}
+      <Dialog open={showPasswordDialog} onOpenChange={(open) => {
+        setShowPasswordDialog(open);
+        if (!open) {
+          setPassword('');
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Enter your password</DialogTitle>
+            <DialogDescription>
+              for {email}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+              className="h-12 text-base"
+            />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 text-base"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                'Continue'
+              )}
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </>
