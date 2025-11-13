@@ -36,8 +36,8 @@ export const LimitReachedDialog = ({
     },
     recipe: {
       icon: ChefHat,
-      title: 'AI Recipe Limit Reached',
-      description: "You've used all your AI recipe generations for this month.",
+      title: 'Recipe Limit Reached',
+      description: "You've used all your recipe generations for this month.",
       color: 'text-primary',
     },
     chat: {
@@ -88,7 +88,7 @@ export const LimitReachedDialog = ({
               </div>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• 100 image analyses/month</li>
-                <li>• 50 AI recipe generations/month</li>
+                <li>• 50 recipe generations/month</li>
                 <li>• 1000 chat messages/month</li>
                 <li>• Priority support</li>
               </ul>

@@ -19,7 +19,7 @@ export const UsageWarning = ({ feature, used, limit, onUpgrade }: UsageWarningPr
 
   const featureNames = {
     image: 'image analyses',
-    recipe: 'AI recipes',
+    recipe: 'recipes',
     chat: 'chat messages',
   };
 
