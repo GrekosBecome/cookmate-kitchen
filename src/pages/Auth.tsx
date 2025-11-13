@@ -51,7 +51,7 @@ const Auth = () => {
       const state = crypto.randomUUID();
       
       const options: SignInWithAppleOptions = {
-        clientId: 'com.cookmate.kitchen.auth', // Service ID (not App ID!)
+        clientId: 'com.cookmate.signin', // Service ID (not App ID!)
         redirectURI: 'https://gsozaqboqcjbthbighqg.supabase.co/auth/v1/callback',
         scopes: 'email name',
         state: state,
