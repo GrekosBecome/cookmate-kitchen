@@ -210,7 +210,7 @@ const Auth = () => {
             <Button
               onClick={handleContinueWithEmail}
               disabled={loading}
-              className="w-full h-14 text-base bg-foreground text-background hover:bg-foreground/90 rounded-xl font-medium"
+              className="w-full h-14 text-base bg-foreground text-primary-foreground hover:bg-foreground/90 rounded-xl font-medium"
             >
               Continue
             </Button>
