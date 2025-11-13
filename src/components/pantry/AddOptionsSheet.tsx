@@ -33,15 +33,7 @@ export function AddOptionsSheet({
         side="bottom" 
         className="h-auto rounded-t-3xl border-none bg-background/95 backdrop-blur-xl"
       >
-        <SheetHeader className="relative pb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="absolute left-0 top-0 h-10 w-10 rounded-full"
-          >
-            <X className="h-5 w-5" />
-          </Button>
+        <SheetHeader className="pb-6">
           <SheetTitle className="text-center text-xl">Add to Pantry</SheetTitle>
         </SheetHeader>
 
