@@ -59,71 +59,6 @@
 
 ---
 
-## ⚠️ ΠΡΟΣΟΧΗ: Κρίσιμα Security Requirements
-
-### 🔐 Service ID vs App ID
-
-**ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ**: Υπάρχει διαφορά μεταξύ **App ID** και **Service ID**!
-
-- **App ID** (`com.cookmate.kitchen`): Identifies την iOS εφαρμογή σου
-- **Service ID** (`com.cookmate.kitchen.auth`): Identifies το web authentication service για Supabase
-
-**❌ ΛΑΘΟΣ**:
-```typescript
-clientId: 'com.cookmate.kitchen'  // App ID - ΔΕΝ θα λειτουργήσει με Supabase!
-```
-
-**✅ ΣΩΣΤΟ**:
-```typescript
-clientId: 'com.cookmate.kitchen.auth'  // Service ID - Απαραίτητο για Supabase!
-```
-
-### 🔒 Random Nonce & State
-
-Τα `nonce` και `state` **ΠΡΕΠΕΙ** να είναι cryptographically secure random values για κάθε authentication request.
-
-**❌ ΛΑΘΟΣ** (Security Risk!):
-```typescript
-nonce: 'nonce',        // Hardcoded - ΕΠΙΚΙΝΔΥΝΟ!
-state: '12345',        // Hardcoded - ΕΠΙΚΙΝΔΥΝΟ!
-```
-
-**✅ ΣΩΣΤΟ**:
-```typescript
-const rawNonce = crypto.randomUUID();  // Random για κάθε request
-const state = crypto.randomUUID();     // Random για κάθε request
-```
-
-### 🔄 Same Nonce για Capacitor και Supabase
-
-Το **ίδιο** raw nonce πρέπει να χρησιμοποιηθεί και στα δύο:
-
-```typescript
-// 1. Generate once
-const rawNonce = crypto.randomUUID();
-
-// 2. Use in Capacitor authorize
-await SignInWithApple.authorize({
-  nonce: rawNonce,  // Raw nonce
-  // ...
-});
-
-// 3. Use the SAME in Supabase
-await supabase.auth.signInWithIdToken({
-  nonce: rawNonce,  // Same raw nonce!
-  // ...
-});
-```
-
-### 🚫 Common Mistakes να αποφύγεις
-
-1. ❌ Χρήση App ID αντί για Service ID → Authentication θα αποτύχει
-2. ❌ Hardcoded nonce → Security vulnerability (replay attacks)
-3. ❌ Διαφορετικά nonces σε Capacitor/Supabase → Token validation θα αποτύχει
-4. ❌ Λάθος redirect URL στο Apple Developer → invalid_request error
-
----
-
 ## 🔧 Βήμα 2: Supabase Configuration
 
 ### 2.1 Ρύθμιση στο Lovable Cloud
@@ -135,22 +70,26 @@ await supabase.auth.signInWithIdToken({
    - **Users** → **Auth Settings** → **Apple Settings**
 
 3. **Συμπλήρωσε τα πεδία**:
-   
+
    ```
-   Service ID: com.cookmate.kitchen.auth
-   Team ID: [Το Team ID σου από το Βήμα 1.4]
-   Key ID: [Το Key ID από το Βήμα 1.3]
-   Private Key: [Το περιεχόμενο του .p8 αρχείου]
-   ```
+   Service  com.cookmate.signin
+   Team ID: 47VDHHUY34
+   Key ID: RSULFLF9WS
+   Private Key: -----BEGIN PRIVATE KEY-----
+   MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgsCJtHjUIM0L5LfC2
+   +1Cw35wnJmkXR1v9DxRJNPSSkrmgCgYIKoZIzj0DAQehRANCAASXPH06ozBK+nBn
+   lvY+Ixdw1xTnF6Bn2m51fy6Wn3qsb5OHxvKPRxTxsQR86vZAARlKDHd9r/ybrPHM
+   qTIyt1sb
+   -----END PRIVATE KEY-----
 
    **Private Key format**:
    ```
+
    -----BEGIN PRIVATE KEY-----
    MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg...
    [όλες οι γραμμές του .p8 αρχείου]
    ...kE1DfZpKaGkLxBzJF9A==
    -----END PRIVATE KEY-----
-   ```
 
 4. **Αποθήκευσε** τις ρυθμίσεις
 
@@ -170,6 +109,7 @@ await supabase.auth.signInWithIdToken({
 
 1. **Git pull το project** (αφού έχεις κάνει export to GitHub)
 2. Τρέξε:
+
    ```bash
    npm install
    npm run build
@@ -195,6 +135,7 @@ await supabase.auth.signInWithIdToken({
    - **Team**: Επέλεξε το team σου
 
 3. **Build το project**:
+
    ```bash
    npx cap run ios --livereload --external
    ```
@@ -217,22 +158,27 @@ await supabase.auth.signInWithIdToken({
 ## 🚨 Troubleshooting
 
 ### Error: "invalid_request"
+
 - **Αιτία**: Λάθος Service ID ή Redirect URL
 - **Λύση**: Τσέκαρε ότι το Service ID στο Apple Developer ταιριάζει με το Supabase
 
 ### Error: "invalid_client"
+
 - **Αιτία**: Λάθος Team ID ή Key ID
 - **Λύση**: Επιβεβαίωσε τα IDs στο Apple Developer και Supabase
 
 ### Error: "unauthorized_client"
+
 - **Αιτία**: Λάθος Private Key
 - **Λύση**: Αντιγράψε ξανά το **πλήρες** περιεχόμενο του .p8 αρχείου (με τις -----BEGIN/END----- γραμμές)
 
 ### Το button δεν εμφανίζεται
+
 - **Αιτία**: Δεν τρέχει σε iOS native app
 - **Λύση**: Το Apple Sign-In button εμφανίζεται μόνο όταν το app τρέχει σε iOS συσκευή/simulator μέσω Capacitor
 
 ### Error: "Sign in with Apple capability not found"
+
 - **Αιτία**: Δεν έχει προστεθεί το capability στο Xcode
 - **Λύση**: Πρόσθεσε **Sign in with Apple** capability στο Xcode (Βήμα 3.1)
 
@@ -252,6 +198,7 @@ await supabase.auth.signInWithIdToken({
 Μόλις ολοκληρώσεις όλα τα βήματα και δοκιμάσεις ότι λειτουργεί, είσαι έτοιμος για App Store submission!
 
 Θυμήσου:
+
 - Το Apple Sign-In είναι **υποχρεωτικό** για iOS apps που έχουν άλλα third-party sign-in options (όπως Google)
 - Πρέπει να εμφανίζεται πρώτο ή με ίση προβολή με τα άλλα sign-in options
 - Το button πρέπει να ακολουθεί τα [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/sign-in-with-apple)
