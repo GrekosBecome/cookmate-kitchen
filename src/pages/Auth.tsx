@@ -4,9 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ChevronLeft, Apple } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { SignInWithApple, SignInWithAppleResponse, SignInWithAppleOptions } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -14,11 +21,9 @@ const Auth = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'login' | 'signup'>('signup');
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -87,22 +92,25 @@ const Auth = () => {
     }
   };
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (mode === 'signup' && (!fullName || !username || !email || !password)) {
+  const handleContinueWithEmail = () => {
+    if (!email) {
       toast({
-        title: "Missing fields",
-        description: "Please fill in all fields",
+        title: "Email required",
+        description: "Please enter your email address",
         variant: "destructive"
       });
       return;
     }
+    setShowPasswordDialog(true);
+  };
 
-    if (mode === 'login' && (!email || !password)) {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!password) {
       toast({
-        title: "Missing fields",
-        description: "Please enter both email and password",
+        title: "Password required",
+        description: "Please enter your password",
         variant: "destructive"
       });
       return;
@@ -111,49 +119,47 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (mode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: fullName,
-              username: username,
+      // Try to sign in first
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // If sign in fails, try to sign up
+        if (signInError.message.includes('Invalid login credentials')) {
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/`,
             }
+          });
+
+          if (signUpError) throw signUpError;
+
+          if (signUpData.user) {
+            toast({
+              title: "Account created!",
+              description: "Welcome to CookMate",
+            });
+            navigate('/onboarding', { replace: true });
           }
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          toast({
-            title: "Account created!",
-            description: "Welcome to CookMate",
-          });
-          navigate('/onboarding', { replace: true });
+        } else {
+          throw signInError;
         }
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+      } else if (signInData.user) {
+        toast({
+          title: "Welcome back!",
+          description: "You're now logged in",
         });
-
-        if (error) throw error;
-
-        if (data.user) {
-          toast({
-            title: "Welcome back!",
-            description: "You're now logged in",
-          });
-          const from = (location.state as any)?.from?.pathname || '/suggestion';
-          navigate(from, { replace: true });
-        }
+        const from = (location.state as any)?.from?.pathname || '/suggestion';
+        navigate(from, { replace: true });
       }
     } catch (error: any) {
       console.error('Auth error:', error);
       toast({
-        title: mode === 'signup' ? "Sign up failed" : "Sign in failed",
+        title: "Authentication failed",
         description: error.message || "Please try again",
         variant: "destructive"
       });
@@ -173,86 +179,54 @@ const Auth = () => {
   const isIOS = Capacitor.getPlatform() === 'ios';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header with back button */}
-      <div className="px-6 pt-12 pb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6 text-foreground" />
-        </button>
-      </div>
+    <>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md space-y-8">
+          {/* Logo/Icon */}
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center">
+              <svg className="w-10 h-10 text-background" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c-.8 0-1.5.4-1.9 1.1-.5.7-.6 1.5-.4 2.3L12 14l2.3-8.6c.2-.8.1-1.6-.4-2.3C13.5 2.4 12.8 2 12 2z"/>
+                <path d="M17.5 8c-1.2 0-2.3.6-3 1.5l-2 2.5-2-2.5C9.8 8.6 8.7 8 7.5 8c-2.5 0-4.5 2-4.5 4.5S5 17 7.5 17c1.2 0 2.3-.6 3-1.5l2-2.5 2 2.5c.7.9 1.8 1.5 3 1.5 2.5 0 4.5-2 4.5-4.5S20 8 17.5 8zm-10 7c-1.4 0-2.5-1.1-2.5-2.5S6.1 10 7.5 10s2.5 1.1 2.5 2.5S8.9 15 7.5 15zm10 0c-1.4 0-2.5-1.1-2.5-2.5s1.1-2.5 2.5-2.5 2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/>
+              </svg>
+            </div>
+          </div>
 
-      {/* Content */}
-      <div className="flex-1 px-6 pb-8 overflow-y-auto">
-        <div className="max-w-md mx-auto space-y-6">
-          <h1 className="text-3xl font-light text-foreground mb-8">
-            {mode === 'signup' ? 'Create your account' : 'Welcome back'}
+          {/* Title */}
+          <h1 className="text-2xl font-semibold text-center text-foreground mb-8">
+            Get started with your email
           </h1>
 
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            {mode === 'signup' && (
-              <>
-                <Input
-                  type="text"
-                  placeholder="Full Name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="h-14 bg-muted/50 border-none text-base placeholder:text-muted-foreground/60"
-                />
-                <Input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="h-14 bg-muted/50 border-none text-base placeholder:text-muted-foreground/60"
-                />
-              </>
-            )}
-            
+          {/* Email Input */}
+          <div className="space-y-4">
             <Input
               type="email"
-              placeholder="Email"
+              placeholder="your.email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-14 bg-muted/50 border-none text-base placeholder:text-muted-foreground/60"
-            />
-            
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="h-14 bg-muted/50 border-none text-base placeholder:text-muted-foreground/60"
+              className="h-14 bg-muted/30 border-border text-base placeholder:text-muted-foreground/60 rounded-xl"
             />
 
             <Button
-              type="submit"
+              onClick={handleContinueWithEmail}
               disabled={loading}
-              className="w-full h-14 text-base bg-primary/90 hover:bg-primary"
+              className="w-full h-14 text-base bg-foreground text-background hover:bg-foreground/90 rounded-xl font-medium"
             >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                mode === 'signup' ? 'Create Account' : 'Sign In'
-              )}
+              Continue
             </Button>
-          </form>
+          </div>
 
+          {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-muted-foreground/20"></div>
+              <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-background text-muted-foreground">or</span>
             </div>
           </div>
 
+          {/* Social Login Buttons */}
           <div className="space-y-3">
             {isIOS && (
               <Button
@@ -260,9 +234,11 @@ const Auth = () => {
                 onClick={handleAppleSignIn}
                 disabled={loading}
                 variant="outline"
-                className="w-full h-14 text-base bg-card border-border hover:bg-muted/50"
+                className="w-full h-14 text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
               >
-                <Apple className="w-5 h-5 mr-2" />
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                </svg>
                 Continue with Apple
               </Button>
             )}
@@ -274,7 +250,7 @@ const Auth = () => {
               }}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 text-base bg-card border-border hover:bg-muted/50"
+              className="w-full h-14 text-base bg-muted/20 border-border hover:bg-muted/40 rounded-xl font-medium"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -286,33 +262,53 @@ const Auth = () => {
             </Button>
           </div>
 
-          <div className="text-center pt-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === 'login' ? 'signup' : 'login');
-                setFullName('');
-                setUsername('');
-                setEmail('');
-                setPassword('');
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {mode === 'login' 
-                ? "Don't have an account? Sign up" 
-                : "Already have an account? Sign in"}
-            </button>
-          </div>
-
+          {/* Terms */}
           <p className="text-center text-xs text-muted-foreground/70 px-8 pt-4">
-            By continuing you agree to our{' '}
+            By continuing, you agree to our{' '}
             <a href="/terms" className="underline hover:text-foreground">
-              Terms of Service
+              Terms of Use
+            </a>
+            {' '}and acknowledge that you have read our{' '}
+            <a href="/privacy" className="underline hover:text-foreground">
+              Privacy Policy
             </a>
           </p>
         </div>
       </div>
-    </div>
+
+      {/* Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Enter your password</DialogTitle>
+            <DialogDescription>
+              for {email}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-4">
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+              className="h-12 text-base"
+            />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 text-base"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                'Continue'
+              )}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
