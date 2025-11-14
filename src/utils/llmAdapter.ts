@@ -1,6 +1,6 @@
 import { PantryItem, Preferences, Recipe, ShoppingState } from '@/types';
 import { allergenCheck, buildContextMessage, proposeSubstitutions, scaleServings } from './chatTools';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 
 const SYSTEM_PROMPT = `You are "The Chef" — a warm, witty, emotionally intelligent AI cooking companion.
 Your mission is to make cooking feel effortless, personal, and uplifting.

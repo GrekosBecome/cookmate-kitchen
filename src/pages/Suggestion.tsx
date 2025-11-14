@@ -12,7 +12,7 @@ import { AlertCircle, Sparkles, Loader2, Clock, X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FloatingButtons } from '@/components/FloatingButtons';
 import { track } from '@/lib/analytics';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import { RecipeHistorySheet } from '@/components/recipe/RecipeHistorySheet';
 import { Badge } from '@/components/ui/badge';
 import { LimitReachedDialog, UsageWarning } from '@/components/subscription';

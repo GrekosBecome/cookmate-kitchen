@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-ro
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { useStore } from "@/store/useStore";
+import { supabase } from "@/lib/supabaseClient";
 import { BottomNav } from "@/components/BottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { TrialEndingBanner } from "@/components/subscription/TrialEndingBanner";
@@ -42,6 +43,30 @@ function AppContent() {
   useEffect(() => {
     applyConfidenceDecay();
   }, [applyConfidenceDecay]);
+
+  // Auth state logging for debugging
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔐 Auth State Change:', event);
+      console.log('📱 Platform:', Capacitor.getPlatform());
+      console.log('🎫 Has Session:', !!session);
+      console.log('👤 User:', session?.user?.email);
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('✅ Token refreshed successfully');
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out');
+      }
+      
+      if (event === 'SIGNED_IN') {
+        console.log('👋 User signed in');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Handle notification clicks
   useEffect(() => {

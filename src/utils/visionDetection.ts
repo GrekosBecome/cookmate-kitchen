@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import { DetectedItem } from '@/types';
 import { mockImageDetection } from './mockDetection';
 
