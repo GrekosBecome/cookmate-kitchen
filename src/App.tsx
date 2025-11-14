@@ -13,7 +13,6 @@ import { InstallPrompt } from "@/components/InstallPrompt";
 import { TrialEndingBanner } from "@/components/subscription/TrialEndingBanner";
 import { useSubscription } from "@/hooks/useSubscription";
 import Index from "./pages/Index";
-import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Pantry from "./pages/Pantry";
@@ -93,8 +92,8 @@ function AppContent() {
     };
   }, [navigate]);
 
-  // Hide bottom nav on onboarding, index, landing, offline, privacy, features, support, auth, and chat pages
-  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/landing' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/features' || location.pathname === '/support' || location.pathname === '/auth' || location.pathname === '/chat';
+  // Hide bottom nav on onboarding, index, offline, privacy, features, support, auth, and chat pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/features' || location.pathname === '/support' || location.pathname === '/auth' || location.pathname === '/chat';
 
   return (
     <>
@@ -110,7 +109,6 @@ function AppContent() {
 
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/landing" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
         <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
