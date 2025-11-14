@@ -104,23 +104,10 @@ export const RecipeHistorySheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] flex flex-col">
         <SheetHeader>
-          <div className="flex items-center justify-between">
-            <SheetTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Recipe History
-            </SheetTitle>
-            {viewedRecipes.length > 0 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={onClearAll}
-                aria-label="Clear all recipes"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          <SheetTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Recipe History
+          </SheetTitle>
           <SheetDescription>
             {viewedRecipes.length} {viewedRecipes.length === 1 ? 'recipe' : 'recipes'} viewed
             {favoriteRecipes.length > 0 && ` • ${favoriteRecipes.length} favorite${favoriteRecipes.length === 1 ? '' : 's'}`}
@@ -149,6 +136,19 @@ export const RecipeHistorySheet = ({
               Favorites ({favoriteRecipes.length})
             </button>
           </div>
+
+          {/* Clear All Button */}
+          {viewedRecipes.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearAll}
+              className="w-full mt-4 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear All History
+            </Button>
+          )}
         </SheetHeader>
 
         <ScrollArea className="flex-1 -mx-6 px-6 mt-4">
