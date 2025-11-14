@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react';
 import { NotificationPermission } from '@/components/NotificationPermission';
 import { notificationService } from '@/lib/notifications';
 import { toast as sonnerToast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import {
   AlertDialog,
   AlertDialogAction,

@@ -15,7 +15,7 @@ import { analyzeImagesForFood, detectIngredientsFromImages } from '@/utils/visio
 import { DetectedItem, PantryItem, PantryUnit } from '@/types';
 import { toast } from 'sonner';
 import { track } from '@/lib/analytics';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import {
   AlertDialog,
   AlertDialogAction,
