@@ -43,7 +43,7 @@ export const TrialEndingBanner = ({ daysLeft, onUpgrade }: TrialEndingBannerProp
                 {daysLeft > 1 && `${daysLeft} days left in your trial`}
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Don't lose access to premium features. Upgrade now to continue enjoying unlimited recipes and AI assistance.
+                Don't lose access to premium features. Upgrade now to continue enjoying unlimited recipes.
               </p>
             </div>
 
