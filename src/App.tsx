@@ -143,9 +143,11 @@ const App = () => (
       <Toaster />
       <Sonner 
         position="top-center"
+        offset="60px"
         toastOptions={{
           style: {
-            marginBottom: '80px', // Space for bottom nav
+            marginTop: 'env(safe-area-inset-top, 0px)',
+            marginBottom: '80px',
           },
         }}
       />

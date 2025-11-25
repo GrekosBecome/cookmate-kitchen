@@ -208,4 +208,11 @@ All colors MUST be HSL.
   .pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+  
+  /* Toast notifications safe area support for iOS */
+  @supports (padding: env(safe-area-inset-top)) {
+    [data-sonner-toaster][data-y-position="top"] {
+      top: calc(env(safe-area-inset-top) + 16px) !important;
+    }
+  }
 }
