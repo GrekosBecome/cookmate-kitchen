@@ -35,6 +35,37 @@ export interface UsageData {
   updated_at: string;
 }
 
+// Free tier limits
+const FREE_LIMITS = {
+  image_analysis_limit: 10,
+  ai_recipe_limit: 0,
+  chat_message_limit: 50,
+};
+
+/**
+ * Get effective subscription based on trial expiration
+ * If trial has expired, return free tier limits
+ */
+const getEffectiveSubscription = (sub: SubscriptionData): SubscriptionData => {
+  // If subscription status is 'trial' and trial_end_date has passed
+  if (sub.subscription_status === 'trial' && sub.trial_end_date) {
+    const trialEnd = new Date(sub.trial_end_date);
+    const now = new Date();
+    
+    if (now > trialEnd) {
+      console.log('Trial expired, applying free tier limits');
+      return {
+        ...sub,
+        subscription_status: 'expired',
+        tier: 'free',
+        ...FREE_LIMITS,
+      };
+    }
+  }
+  
+  return sub;
+};
+
 export const useSubscription = () => {
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [usage, setUsage] = useState<UsageData | null>(null);
@@ -60,7 +91,10 @@ export const useSubscription = () => {
         .single();
 
       if (subError) throw subError;
-      setSubscription(subData as SubscriptionData);
+      
+      // Check if trial has expired and adjust accordingly
+      const effectiveSub = getEffectiveSubscription(subData as SubscriptionData);
+      setSubscription(effectiveSub);
 
       // Fetch usage
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
