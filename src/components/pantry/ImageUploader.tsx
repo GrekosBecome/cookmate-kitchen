@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { CameraCapture } from './CameraCapture';
 import { toast } from 'sonner';
 import { compressImage } from '@/utils/imageCompression';
+import { takePhoto } from '@/utils/capacitorCamera';
+import { Capacitor } from '@capacitor/core';
 
 interface ImageUploaderProps {
   onImagesChange: (images: string[]) => void;
@@ -56,9 +58,31 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5, autoOpenCamera = 
     fileInputRef.current?.click();
   };
 
-  const openCamera = () => {
+  const openCamera = async () => {
     if (images.length >= maxImages) return;
-    setCameraOpen(true);
+    
+    if (Capacitor.isNativePlatform()) {
+      // Native platform: use Capacitor Camera directly
+      try {
+        const photoData = await takePhoto();
+        if (photoData) {
+          handleCameraCapture(photoData);
+        }
+      } catch (error) {
+        console.error('Camera error:', error);
+        if (error && typeof error === 'object' && 'message' in error) {
+          const errorMessage = (error as { message: string }).message;
+          if (errorMessage.includes('cancelled') || errorMessage.includes('cancel')) {
+            // User cancelled, do nothing
+            return;
+          }
+        }
+        toast.error('Camera access needed to take food photos 📸');
+      }
+    } else {
+      // Web platform: use CameraCapture component (will show error)
+      setCameraOpen(true);
+    }
   };
 
   const handleCameraCapture = (imageData: string) => {
