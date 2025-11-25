@@ -41,7 +41,7 @@ export const OnboardingLayout = ({
       </div>
 
       {/* Header */}
-      <div className="p-4 flex items-center justify-between relative z-10 frosted">
+      <div className="p-4 pt-6 flex items-center justify-between relative z-10 frosted">
         {onBack ? (
           <button
             onClick={onBack}
