@@ -287,6 +287,8 @@ const Settings = () => {
                   )}
                   {subscription.subscription_status === 'premium' && 'Premium active'}
                   {subscription.subscription_status === 'free' && 'Free tier'}
+                  {subscription.subscription_status === 'expired' && 'Trial has expired - upgrade to continue'}
+                  {subscription.subscription_status === 'cancelled' && 'Subscription cancelled'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -297,6 +299,8 @@ const Settings = () => {
                     {subscription.subscription_status === 'trial' && '🎁 Trial'}
                     {subscription.subscription_status === 'premium' && '⭐ Premium'}
                     {subscription.subscription_status === 'free' && 'Free'}
+                    {subscription.subscription_status === 'expired' && '⏰ Expired'}
+                    {subscription.subscription_status === 'cancelled' && '❌ Cancelled'}
                   </Badge>
                 </div>
                 
