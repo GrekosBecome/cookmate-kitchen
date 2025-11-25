@@ -72,8 +72,15 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5, autoOpenCamera = 
         console.error('Camera error:', error);
         if (error && typeof error === 'object' && 'message' in error) {
           const errorMessage = (error as { message: string }).message;
+          
+          // Handle permission denied
+          if (errorMessage === 'PERMISSION_DENIED') {
+            toast.error('Χρειάζεται πρόσβαση στην κάμερα. Πήγαινε στις Ρυθμίσεις → KitchenMate για να την ενεργοποιήσεις.');
+            return;
+          }
+          
+          // User cancelled
           if (errorMessage.includes('cancelled') || errorMessage.includes('cancel')) {
-            // User cancelled, do nothing
             return;
           }
         }
