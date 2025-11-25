@@ -281,7 +281,7 @@ const Features = () => {
               <h3 className="font-semibold mb-3">Σύνδεσμοι</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <button onClick={() => navigate('/landing')} className="text-muted-foreground hover:text-primary transition-colors">
+                  <button onClick={() => navigate('/auth')} className="text-muted-foreground hover:text-primary transition-colors">
                     Home
                   </button>
                 </li>

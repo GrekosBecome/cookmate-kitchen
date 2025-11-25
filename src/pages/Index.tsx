@@ -13,7 +13,7 @@ const Index = () => {
     // Check authentication first
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        navigate('/landing', { replace: true });
+        navigate('/auth', { replace: true });
       } else {
         // User is authenticated, apply smart redirect logic
         if (!hasCompletedOnboarding) {
