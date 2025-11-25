@@ -97,7 +97,7 @@ function AppContent() {
 
   return (
     <>
-      {/* Trial Ending Banner - Shows on all pages except onboarding, landing, offline */}
+      {/* Trial Ending Banner - Shows on all pages except onboarding, offline */}
       {showTrialBanner && !hideBottomNav && (
         <div className="fixed top-0 left-0 right-0 z-50 p-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <TrialEndingBanner 
