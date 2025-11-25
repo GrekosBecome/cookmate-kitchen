@@ -83,6 +83,23 @@ export async function checkAndIncrementUsage(
       return { allowed: false, error: 'Failed to fetch usage data' };
     }
 
+    // Check if trial has expired - if so, use free tier limits
+    let effectiveSubscription = subscription;
+    if (subscription.subscription_status === 'trial' && subscription.trial_end_date) {
+      const trialEnd = new Date(subscription.trial_end_date);
+      const now = new Date();
+      
+      if (now > trialEnd) {
+        console.log('Trial expired, applying free tier limits');
+        effectiveSubscription = {
+          ...subscription,
+          image_analysis_limit: 10,
+          ai_recipe_limit: 0,
+          chat_message_limit: 50,
+        };
+      }
+    }
+
     // Check limits based on feature
     let used = 0;
     let limit = 0;
@@ -91,17 +108,17 @@ export async function checkAndIncrementUsage(
     switch (feature) {
       case 'image':
         used = usage.image_analysis_used;
-        limit = subscription.image_analysis_limit;
+        limit = effectiveSubscription.image_analysis_limit;
         usageField = 'image_analysis_used';
         break;
       case 'recipe':
         used = usage.ai_recipe_used;
-        limit = subscription.ai_recipe_limit;
+        limit = effectiveSubscription.ai_recipe_limit;
         usageField = 'ai_recipe_used';
         break;
       case 'chat':
         used = usage.chat_messages_used;
-        limit = subscription.chat_message_limit;
+        limit = effectiveSubscription.chat_message_limit;
         usageField = 'chat_messages_used';
         break;
     }
