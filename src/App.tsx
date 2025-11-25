@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import Insights from "./pages/Insights";
 import Offline from "./pages/Offline";
 import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Features from "./pages/Features";
 import Support from "./pages/Support";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -92,8 +93,8 @@ function AppContent() {
     };
   }, [navigate]);
 
-  // Hide bottom nav on onboarding, index, offline, privacy, features, support, auth, and chat pages
-  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/features' || location.pathname === '/support' || location.pathname === '/auth' || location.pathname === '/chat';
+  // Hide bottom nav on onboarding, index, offline, privacy, terms, features, support, auth, and chat pages
+  const hideBottomNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname === '/offline' || location.pathname === '/privacy' || location.pathname === '/terms' || location.pathname === '/features' || location.pathname === '/support' || location.pathname === '/auth' || location.pathname === '/chat';
 
   return (
     <>
@@ -119,6 +120,7 @@ function AppContent() {
         <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="/offline" element={<Offline />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/features" element={<Features />} />
         <Route path="/support" element={<Support />} />
         <Route path="*" element={<NotFound />} />

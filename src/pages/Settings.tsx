@@ -427,6 +427,10 @@ const Settings = () => {
 
             {/* Terms & Privacy Links */}
             <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+              <button onClick={() => navigate('/terms')} className="hover:underline">
+                Terms of Service
+              </button>
+              <span>•</span>
               <button onClick={() => navigate('/privacy')} className="hover:underline">
                 Privacy Policy
               </button>
