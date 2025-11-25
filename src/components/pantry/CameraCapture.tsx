@@ -35,8 +35,16 @@ export const CameraCapture = ({ open, onClose, onCapture }: CameraCaptureProps) 
       
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as { message: string }).message;
+        
+        // Handle permission denied
+        if (errorMessage === 'PERMISSION_DENIED') {
+          toast.error('Χρειάζεται πρόσβαση στην κάμερα. Πήγαινε στις Ρυθμίσεις → KitchenMate για να την ενεργοποιήσεις.');
+          onClose();
+          return;
+        }
+        
+        // User cancelled
         if (errorMessage.includes('cancelled') || errorMessage.includes('cancel')) {
-          // User cancelled, just close silently
           onClose();
           return;
         }
