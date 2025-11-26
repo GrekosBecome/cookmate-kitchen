@@ -60,7 +60,8 @@ const Settings = () => {
     formatDate,
   } = useSubscription();
   const { 
-    isNative, 
+    isNative,
+    isInitialized,
     products, 
     loading: purchaseLoading, 
     restoring, 
@@ -338,10 +339,13 @@ const Settings = () => {
                     variant="outline" 
                     className="w-full gap-2"
                     onClick={handleManageSubscription}
-                    disabled={purchaseLoading || restoring}
+                    disabled={purchaseLoading || restoring || (isNative && !isInitialized)}
                   >
                     <SettingsIcon className="h-4 w-4" />
                     Manage Subscription
+                    {isNative && !isInitialized && (
+                      <span className="ml-2 text-xs text-muted-foreground">(Loading...)</span>
+                    )}
                   </Button>
                 )}
                 

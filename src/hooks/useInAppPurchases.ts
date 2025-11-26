@@ -4,9 +4,9 @@ import { Purchases, PurchasesPackage, LOG_LEVEL } from '@revenuecat/purchases-ca
 import { RevenueCatUI } from '@revenuecat/purchases-capacitor-ui';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
+import { REVENUECAT_CONFIG } from '@/config/revenuecat';
 
-// Entitlement identifier - MUST match RevenueCat Dashboard
-const ENTITLEMENT_ID = 'pro';
+const ENTITLEMENT_ID = REVENUECAT_CONFIG.ENTITLEMENT_ID;
 
 // Product IDs - must match App Store Connect
 const PRODUCT_IDS = {
@@ -24,6 +24,7 @@ interface Product {
 
 export const useInAppPurchases = () => {
   const [isNative, setIsNative] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -52,18 +53,21 @@ export const useInAppPurchases = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user) {
-        console.warn('No authenticated user for RevenueCat');
+        console.warn('❌ No authenticated user for RevenueCat');
         return;
       }
 
+      // Get API key from config
       const apiKey = Capacitor.getPlatform() === 'ios' 
-        ? import.meta.env.VITE_REVENUECAT_IOS_KEY || ''
-        : import.meta.env.VITE_REVENUECAT_ANDROID_KEY || '';
+        ? REVENUECAT_CONFIG.IOS_API_KEY
+        : REVENUECAT_CONFIG.ANDROID_API_KEY;
       
       if (!apiKey) {
-        console.error('RevenueCat API key not configured');
+        console.error('❌ RevenueCat API key not configured in src/config/revenuecat.ts');
         return;
       }
+      
+      console.log('🔧 Configuring RevenueCat with user:', session.user.id);
       
       await Purchases.configure({ 
         apiKey,
@@ -71,9 +75,12 @@ export const useInAppPurchases = () => {
       });
 
       console.log('✅ RevenueCat configured successfully');
+      setIsInitialized(true);
+      
       await loadProducts();
     } catch (error) {
       console.error('❌ RevenueCat initialization error:', error);
+      setIsInitialized(false);
     }
   };
 
@@ -234,23 +241,47 @@ export const useInAppPurchases = () => {
       return;
     }
 
+    // Check if RevenueCat is initialized
+    if (!isInitialized) {
+      console.error('❌ RevenueCat not initialized');
+      toast.error('Subscription management is not ready. Please restart the app.');
+      return;
+    }
+
     try {
+      // First verify we can get customer info
+      console.log('🔍 Checking customer info...');
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      
+      if (!customerInfo) {
+        console.error('❌ No customer info available');
+        toast.error('Unable to load subscription info. Please try again.');
+        return;
+      }
+
       console.log('🏪 Presenting Customer Center...');
       await RevenueCatUI.presentCustomerCenter();
     } catch (error) {
-      console.error('Error presenting customer center:', error);
+      console.error('❌ Error presenting customer center:', error);
+      
       // Fallback to management URL
-      const url = await getManagementURL();
-      if (url) {
-        window.open(url, '_system');
-      } else {
-        toast.error('Unable to open subscription management');
+      try {
+        const url = await getManagementURL();
+        if (url) {
+          window.open(url, '_system');
+        } else {
+          toast.error('Unable to open subscription management. Please try again later.');
+        }
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+        toast.error('Unable to open subscription management. Please try again later.');
       }
     }
-  }, [isNative, getManagementURL]);
+  }, [isNative, isInitialized, getManagementURL]);
 
   return {
     isNative,
+    isInitialized,
     products,
     loading,
     restoring,
