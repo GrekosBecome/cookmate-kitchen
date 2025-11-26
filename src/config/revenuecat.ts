@@ -8,7 +8,7 @@
 export const REVENUECAT_CONFIG = {
   // iOS App-Specific Shared Secret (starts with "appl_")
   // Get this from: RevenueCat Dashboard → Project Settings → API Keys
-  IOS_API_KEY: '', // User will provide this
+  IOS_API_KEY: 'appl_WEKUBBfwrAOsdEabLSqDJmEQyqT',
   
   // Android API Key (for future use)
   ANDROID_API_KEY: '',
