@@ -20,31 +20,37 @@ export const CameraCapture = ({ open, onClose, onCapture }: CameraCaptureProps) 
   }, [open]);
 
   const handleTakePhoto = async () => {
+    console.log('📷 CameraCapture: handleTakePhoto starting...');
+    
     try {
       const photoData = await takePhoto();
+      console.log('📷 CameraCapture: Photo data received:', photoData ? 'YES' : 'NO');
       
       if (photoData) {
         onCapture(photoData);
         onClose();
       } else {
+        console.log('📷 CameraCapture: No photo data');
         toast.error("Couldn't capture photo. Please try again.");
         onClose();
       }
     } catch (error) {
-      console.error('Camera error:', error);
+      console.error('📷 CameraCapture: Error caught:', error);
       
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as { message: string }).message;
+        console.log('📷 CameraCapture: Error message:', errorMessage);
         
         // Handle permission denied
-        if (errorMessage === 'PERMISSION_DENIED') {
+        if (errorMessage === 'PERMISSION_DENIED' || errorMessage === 'PERMISSION_CHECK_FAILED') {
           toast.error('Χρειάζεται πρόσβαση στην κάμερα. Πήγαινε στις Ρυθμίσεις → KitchenMate για να την ενεργοποιήσεις.');
           onClose();
           return;
         }
         
         // User cancelled
-        if (errorMessage.includes('cancelled') || errorMessage.includes('cancel')) {
+        if (errorMessage.includes('cancelled') || errorMessage.includes('cancel') || errorMessage.includes('User cancelled')) {
+          console.log('📷 CameraCapture: User cancelled');
           onClose();
           return;
         }

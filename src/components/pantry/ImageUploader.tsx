@@ -59,34 +59,49 @@ export const ImageUploader = ({ onImagesChange, maxImages = 5, autoOpenCamera = 
   };
 
   const openCamera = async () => {
-    if (images.length >= maxImages) return;
+    console.log('🎥 openCamera: Starting...');
+    
+    if (images.length >= maxImages) {
+      console.log('🎥 openCamera: Max images reached');
+      return;
+    }
     
     if (Capacitor.isNativePlatform()) {
+      console.log('🎥 openCamera: Native platform - calling takePhoto');
       // Native platform: use Capacitor Camera directly
       try {
         const photoData = await takePhoto();
+        console.log('🎥 openCamera: Photo data received:', photoData ? 'YES' : 'NO');
+        
         if (photoData) {
           handleCameraCapture(photoData);
+        } else {
+          console.log('🎥 openCamera: No photo data returned');
         }
       } catch (error) {
-        console.error('Camera error:', error);
+        console.error('🎥 openCamera: Error caught:', error);
+        
         if (error && typeof error === 'object' && 'message' in error) {
           const errorMessage = (error as { message: string }).message;
+          console.log('🎥 openCamera: Error message:', errorMessage);
           
           // Handle permission denied
-          if (errorMessage === 'PERMISSION_DENIED') {
+          if (errorMessage === 'PERMISSION_DENIED' || errorMessage === 'PERMISSION_CHECK_FAILED') {
             toast.error('Χρειάζεται πρόσβαση στην κάμερα. Πήγαινε στις Ρυθμίσεις → KitchenMate για να την ενεργοποιήσεις.');
             return;
           }
           
           // User cancelled
-          if (errorMessage.includes('cancelled') || errorMessage.includes('cancel')) {
+          if (errorMessage.includes('cancelled') || errorMessage.includes('cancel') || errorMessage.includes('User cancelled')) {
+            console.log('🎥 openCamera: User cancelled');
             return;
           }
         }
+        
         toast.error('Camera access needed to take food photos 📸');
       }
     } else {
+      console.log('🎥 openCamera: Web platform - opening CameraCapture');
       // Web platform: use CameraCapture component (will show error)
       setCameraOpen(true);
     }
