@@ -332,16 +332,29 @@ const Settings = () => {
                 
                 <Separator />
                 
-                {/* REQUIRED: Manage Subscription Button */}
-                <Button 
-                  variant="outline" 
-                  className="w-full gap-2"
-                  onClick={handleManageSubscription}
-                  disabled={purchaseLoading || restoring}
-                >
-                  <SettingsIcon className="h-4 w-4" />
-                  Manage Subscription
-                </Button>
+                {/* Manage Subscription Button - Only show if user has active paid subscription */}
+                {subscription.subscription_status === 'premium' && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2"
+                    onClick={handleManageSubscription}
+                    disabled={purchaseLoading || restoring}
+                  >
+                    <SettingsIcon className="h-4 w-4" />
+                    Manage Subscription
+                  </Button>
+                )}
+                
+                {/* Upgrade Button - Show for trial and free users */}
+                {(subscription.subscription_status === 'trial' || subscription.subscription_status === 'free' || subscription.subscription_status === 'expired') && (
+                  <Button 
+                    className="w-full gap-2"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <Zap className="h-4 w-4" />
+                    Upgrade to Premium
+                  </Button>
+                )}
                 
                 {/* REQUIRED: Restore Purchases Button (Native only) */}
                 {isNative && (
