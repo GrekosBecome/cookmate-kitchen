@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Loader2 } from 'lucide-react';
 
@@ -13,6 +12,7 @@ const AuthCallback = () => {
       try {
         // Close the in-app browser if it's open (native platforms)
         if (Capacitor.isNativePlatform()) {
+          const { Browser } = await import('@capacitor/browser');
           await Browser.close();
         }
 
