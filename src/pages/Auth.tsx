@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { SignInWithApple, SignInWithAppleResponse, SignInWithAppleOptions } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { z } from 'zod';
 import {
   Dialog,
@@ -60,7 +61,7 @@ const Auth = () => {
       const state = crypto.randomUUID();
       
       const options: SignInWithAppleOptions = {
-        clientId: 'com.cookmate.signin',
+        clientId: 'com.cookmate.kitchen',
         redirectURI: 'https://gsozaqboqcjbthbighqg.supabase.co/auth/v1/callback',
         scopes: 'email name',
         state: state,
@@ -200,7 +201,7 @@ const Auth = () => {
         // If sign in fails, try to sign up
         if (signInError.message.includes('Invalid login credentials')) {
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email,
+            email: emailToUse,
             password,
             options: {
               emailRedirectTo: `${window.location.origin}/`,
@@ -318,8 +319,47 @@ const Auth = () => {
 
             <Button
               type="button"
-              onClick={() => {
-                window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}`;
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  if (Capacitor.isNativePlatform()) {
+                    // Use in-app browser (Safari View Controller) for native
+                    const { data, error } = await supabase.auth.signInWithOAuth({
+                      provider: 'google',
+                      options: {
+                        skipBrowserRedirect: true,
+                        redirectTo: `${window.location.origin}/auth/callback`
+                      }
+                    });
+                    
+                    if (error) throw error;
+                    
+                    if (data?.url) {
+                      // Open with Safari View Controller (in-app browser)
+                      await Browser.open({ 
+                        url: data.url,
+                        presentationStyle: 'popover'
+                      });
+                    }
+                  } else {
+                    // Web: normal OAuth flow
+                    await supabase.auth.signInWithOAuth({
+                      provider: 'google',
+                      options: {
+                        redirectTo: `${window.location.origin}/auth/callback`
+                      }
+                    });
+                  }
+                } catch (error: any) {
+                  console.error('Google Sign In error:', error);
+                  toast({
+                    title: "Google Sign In failed",
+                    description: error.message || "Please try again",
+                    variant: "destructive"
+                  });
+                } finally {
+                  setLoading(false);
+                }
               }}
               disabled={loading}
               variant="outline"
