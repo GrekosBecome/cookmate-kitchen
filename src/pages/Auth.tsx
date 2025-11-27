@@ -17,6 +17,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// Password validation schema
+const passwordSchema = z.string()
+  .min(8, { message: "Password must be at least 8 characters" })
+  .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+  .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+  .regex(/[0-9]/, { message: "Password must contain at least one number" });
+
+// Password requirements component
+const PasswordRequirements = ({ password }: { password: string }) => {
+  const requirements = [
+    { label: "At least 8 characters", met: password.length >= 8 },
+    { label: "One uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "One lowercase letter", met: /[a-z]/.test(password) },
+    { label: "One number", met: /[0-9]/.test(password) },
+  ];
+
+  return (
+    <div className="space-y-1.5 mt-2">
+      {requirements.map((req, idx) => (
+        <p key={idx} className={`text-xs flex items-center gap-1.5 ${req.met ? "text-green-500" : "text-muted-foreground"}`}>
+          <span>{req.met ? "✓" : "○"}</span>
+          {req.label}
+        </p>
+      ))}
+    </div>
+  );
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -187,19 +215,37 @@ const Auth = () => {
       return;
     }
 
+    const emailToUse = showSignInDialog ? signInEmail : email;
+    const isSignUp = !showSignInDialog; // Sign up is from main flow, sign in is from dialog
+
+    // For sign up, validate password strength first
+    if (isSignUp) {
+      try {
+        passwordSchema.parse(password);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          toast({
+            title: "Password too weak",
+            description: error.errors[0].message,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+
     setLoading(true);
 
     try {
-      // Try to sign in with the sign in email
-      const emailToUse = showSignInDialog ? signInEmail : email;
+      // Try to sign in first
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: emailToUse,
         password,
       });
 
       if (signInError) {
-        // If sign in fails, try to sign up
-        if (signInError.message.includes('Invalid login credentials')) {
+        // If sign in fails and we're in sign up flow, try to sign up
+        if (signInError.message.includes('Invalid login credentials') && isSignUp) {
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
             email: emailToUse,
             password,
@@ -230,9 +276,21 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      
+      // Better error messages
+      let errorMessage = error.message || "Please try again";
+      
+      if (error.message?.includes('weak_password') || error.message?.includes('weak and easy to guess')) {
+        errorMessage = "This password has been found in data breaches. Please choose a stronger, unique password.";
+      } else if (error.message?.includes('User already registered')) {
+        errorMessage = "An account with this email already exists. Try signing in instead.";
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Incorrect email or password. Please try again.";
+      }
+      
       toast({
         title: "Authentication failed",
-        description: error.message || "Please try again",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -524,14 +582,17 @@ const Auth = () => {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePasswordSubmit} className="space-y-3 sm:space-y-4 mt-4">
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoFocus
-              className="h-11 sm:h-12 text-sm sm:text-base"
-            />
+            <div>
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+                className="h-11 sm:h-12 text-sm sm:text-base"
+              />
+              <PasswordRequirements password={password} />
+            </div>
             <Button
               type="submit"
               disabled={loading}
