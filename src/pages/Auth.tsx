@@ -7,7 +7,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { SignInWithApple, SignInWithAppleResponse, SignInWithAppleOptions } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
 import { z } from 'zod';
 import {
   Dialog,
@@ -393,7 +392,8 @@ const Auth = () => {
                     if (error) throw error;
                     
                     if (data?.url) {
-                      // Open with Safari View Controller (in-app browser)
+                      // Dynamic import to avoid build error
+                      const { Browser } = await import('@capacitor/browser');
                       await Browser.open({ 
                         url: data.url,
                         presentationStyle: 'popover'
