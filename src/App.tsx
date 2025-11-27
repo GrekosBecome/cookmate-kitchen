@@ -14,6 +14,7 @@ import { TrialEndingBanner } from "@/components/subscription/TrialEndingBanner";
 import { useSubscription } from "@/hooks/useSubscription";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import Pantry from "./pages/Pantry";
 import Suggestion from "./pages/Suggestion";
@@ -111,6 +112,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
         <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
         <Route path="/suggestion" element={<ProtectedRoute><Suggestion /></ProtectedRoute>} />
