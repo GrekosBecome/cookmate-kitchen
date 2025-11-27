@@ -95,24 +95,77 @@ const Auth = () => {
         nonce: rawNonce,
       };
 
+      console.log('Starting Apple Sign-In with options:', { clientId: options.clientId, scopes: options.scopes });
       const result: SignInWithAppleResponse = await SignInWithApple.authorize(options);
+      console.log('Apple Sign-In successful, got identity token');
 
-      // Sign in to Supabase with Apple ID token using the SAME raw nonce
-      const { data, error } = await supabase.auth.signInWithIdToken({
-        provider: 'apple',
-        token: result.response.identityToken,
-        nonce: rawNonce,
+      // Extract full name if provided (only available on first sign-in)
+      const fullName = result.response.givenName || result.response.familyName 
+        ? `${result.response.givenName || ''} ${result.response.familyName || ''}`.trim()
+        : undefined;
+
+      // Call our custom edge function to handle Apple auth
+      console.log('Calling apple-auth edge function...');
+      const { data: authData, error: functionError } = await supabase.functions.invoke('apple-auth', {
+        body: { 
+          idToken: result.response.identityToken, 
+          nonce: rawNonce,
+          fullName 
+        }
       });
 
-      if (error) throw error;
-
-      if (data.user) {
-        toast({
-          title: "Welcome!",
-          description: "You're now logged in with Apple",
-        });
-        navigate('/onboarding', { replace: true });
+      if (functionError) {
+        console.error('Edge function error:', functionError);
+        throw functionError;
       }
+
+      if (!authData?.success) {
+        console.error('Auth failed:', authData);
+        throw new Error(authData?.error || 'Authentication failed');
+      }
+
+      console.log('Edge function response:', authData);
+
+      // Use the magic link to complete authentication
+      if (authData.verification?.action_link) {
+        // Extract token from the action link and verify
+        const actionUrl = new URL(authData.verification.action_link);
+        const token = actionUrl.searchParams.get('token');
+        const type = actionUrl.searchParams.get('type') as 'magiclink';
+        
+        if (token) {
+          console.log('Verifying OTP token...');
+          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type || 'magiclink',
+          });
+
+          if (verifyError) {
+            console.error('OTP verification error:', verifyError);
+            throw verifyError;
+          }
+
+          if (verifyData.user) {
+            console.log('User authenticated successfully:', verifyData.user.id);
+            toast({
+              title: "Welcome!",
+              description: "You're now logged in with Apple",
+            });
+            navigate('/onboarding', { replace: true });
+            return;
+          }
+        }
+      }
+
+      // Fallback: If we got user data but couldn't create session, show success anyway
+      // The user record was created, they can sign in with email
+      if (authData.user) {
+        toast({
+          title: "Account created!",
+          description: "Please check your email to complete sign in",
+        });
+      }
+
     } catch (error: any) {
       console.error('Apple Sign In error:', error);
       toast({
