@@ -8,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { SelectableChip } from '@/components/SelectableChip';
 import { ServingsStepper } from '@/components/ServingsStepper';
-import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle, CreditCard, Zap, RefreshCw, Settings as SettingsIcon, RotateCcw, Sparkles } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Trash2, Brain, TrendingUp, Bell, Utensils, Users, Target, Shield, ChevronRight, HelpCircle, CreditCard, Zap, RefreshCw, Settings as SettingsIcon, RotateCcw, Sparkles, UserX, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getTopTags } from '@/lib/learning';
@@ -34,6 +35,7 @@ import { PreferenceSummaryCard } from '@/components/settings/PreferenceSummaryCa
 import { GoalsSection } from '@/components/settings/GoalsSection';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useInAppPurchases } from '@/hooks/useInAppPurchases';
+import { useRevenueCatPaywall } from '@/hooks/useRevenueCatPaywall';
 import { Progress } from '@/components/ui/progress';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -47,8 +49,12 @@ const Settings = () => {
   const { toast } = useToast();
   const { preferences, updatePreferences, reset, learning, resetLearning, memory, updateMemory } = useStore();
   const [showResetLearningDialog, setShowResetLearningDialog] = useState(false);
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [upgradingLoading, setUpgradingLoading] = useState(false);
   
   // Subscription hook
   const {
@@ -70,6 +76,7 @@ const Settings = () => {
     presentCustomerCenter,
     getManagementURL 
   } = useInAppPurchases();
+  const { presentPaywall, loading: paywallLoading } = useRevenueCatPaywall();
   
   useEffect(() => {
     track('opened_screen', { screen: 'settings' });
@@ -214,6 +221,75 @@ const Settings = () => {
     });
   };
 
+  // Handle upgrade to premium
+  const handleUpgradeToPremium = async () => {
+    console.log('🚀 Upgrade to Premium clicked');
+    
+    if (isNative) {
+      try {
+        setUpgradingLoading(true);
+        console.log('📱 Native platform - presenting paywall');
+        await presentPaywall();
+      } catch (error) {
+        console.error('❌ Paywall error:', error);
+        sonnerToast.error('Failed to show upgrade options. Please try again.');
+      } finally {
+        setUpgradingLoading(false);
+      }
+    } else {
+      // Web fallback - show info message
+      sonnerToast.info('Subscriptions are available in the mobile app');
+    }
+  };
+
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      sonnerToast.error('Please type DELETE to confirm');
+      return;
+    }
+
+    try {
+      setDeletingAccount(true);
+      console.log('🗑️ Starting account deletion...');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        sonnerToast.error('Please log in to delete your account');
+        return;
+      }
+
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to delete account');
+      }
+
+      console.log('✅ Account deleted successfully');
+      
+      // Clear local data
+      reset();
+      
+      // Sign out
+      await supabase.auth.signOut();
+      
+      sonnerToast.success('Account deleted successfully');
+      navigate('/auth', { replace: true });
+      
+    } catch (error: any) {
+      console.error('❌ Delete account error:', error);
+      sonnerToast.error(error.message || 'Failed to delete account. Please try again.');
+    } finally {
+      setDeletingAccount(false);
+      setShowDeleteAccountDialog(false);
+      setDeleteConfirmText('');
+    }
+  };
+
   const commonAllergies = ['Nuts', 'Dairy', 'Eggs', 'Shellfish', 'Soy', 'Gluten', 'Fish'];
 
   return (
@@ -353,10 +429,20 @@ const Settings = () => {
                 {(subscription.subscription_status === 'trial' || subscription.subscription_status === 'free' || subscription.subscription_status === 'expired') && (
                   <Button 
                     className="w-full gap-2"
-                    onClick={() => navigate('/settings')}
+                    onClick={handleUpgradeToPremium}
+                    disabled={upgradingLoading || paywallLoading}
                   >
-                    <Zap className="h-4 w-4" />
-                    Upgrade to Premium
+                    {(upgradingLoading || paywallLoading) ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4" />
+                        Upgrade to Premium
+                      </>
+                    )}
                   </Button>
                 )}
                 
@@ -433,9 +519,22 @@ const Settings = () => {
                 {subscription.subscription_status === 'free' && (
                   <>
                     <Separator />
-                    <Button className="w-full gap-2">
-                      <Zap className="h-4 w-4" />
-                      Upgrade to Premium
+                    <Button 
+                      className="w-full gap-2"
+                      onClick={handleUpgradeToPremium}
+                      disabled={upgradingLoading || paywallLoading}
+                    >
+                      {(upgradingLoading || paywallLoading) ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="h-4 w-4" />
+                          Upgrade to Premium
+                        </>
+                      )}
                     </Button>
                   </>
                 )}
@@ -796,6 +895,29 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Delete Account Section - Required by Apple */}
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <UserX className="h-5 w-5" />
+              Delete Account
+            </CardTitle>
+            <CardDescription>
+              Permanently delete your account and all associated data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteAccountDialog(true)}
+              className="w-full gap-2 h-11 min-h-[44px]"
+            >
+              <UserX className="h-5 w-5" />
+              Delete My Account
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground text-center italic">
@@ -817,6 +939,55 @@ const Settings = () => {
             <AlertDialogCancel>Keep learning</AlertDialogCancel>
             <AlertDialogAction onClick={handleResetLearning} className="bg-muted hover:bg-muted/80 text-foreground">
               Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={showDeleteAccountDialog} onOpenChange={(open) => {
+        setShowDeleteAccountDialog(open);
+        if (!open) setDeleteConfirmText('');
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Your Account?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                This action is <strong>permanent and cannot be undone</strong>. All your data will be deleted:
+              </p>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li>Your account and profile</li>
+                <li>Subscription and payment history</li>
+                <li>Usage data and preferences</li>
+                <li>All learning and personalization data</li>
+              </ul>
+              <p className="pt-2">
+                Type <strong>DELETE</strong> below to confirm:
+              </p>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE to confirm"
+                className="mt-2"
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAccount}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmText !== 'DELETE' || deletingAccount}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deletingAccount ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Account'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

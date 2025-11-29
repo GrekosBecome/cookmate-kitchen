@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle, Utensils, User, AlertTriangle, Shield, AlertCircle, Scale, RefreshCw, Mail, FileText } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Utensils, User, AlertTriangle, Shield, AlertCircle, Scale, RefreshCw, Mail, FileText, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,31 @@ const Terms = () => {
       icon: CheckCircle,
       title: "Acceptance of Terms",
       content: `By accessing and using Kitchen Mate, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use the app.`
+    },
+    {
+      icon: CreditCard,
+      title: "Subscription Terms",
+      content: `Kitchen Mate Premium Subscription:
+
+• Title: Kitchen Mate Premium
+• Price: €6.99/month (EUR)
+• Duration: Monthly subscription (auto-renewing)
+• Free Trial: 7-day free trial for new subscribers
+
+Payment & Billing:
+• Payment will be charged to your iTunes Account at confirmation of purchase
+• Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period
+• Account will be charged for renewal within 24 hours prior to the end of the current period
+• Price may vary by location
+
+Managing Your Subscription:
+• You can manage or cancel your subscription anytime through your App Store account settings
+• Any unused portion of a free trial period will be forfeited when purchasing a subscription
+• Cancellation takes effect at the end of the current billing period
+
+Links:
+• Privacy Policy: Available at /privacy in the app
+• Terms of Use: This document`
     },
     {
       icon: Utensils,
